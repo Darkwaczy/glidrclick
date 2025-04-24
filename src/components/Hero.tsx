@@ -1,7 +1,7 @@
-
 import { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play } from 'lucide-react';
+import TypeAnimation from './TypeAnimation';
 
 const Hero = () => {
   const dotsContainerRef = useRef<HTMLDivElement>(null);
@@ -40,6 +40,14 @@ const Hero = () => {
     }
   }, []);
   
+  const typingTexts = [
+    "Generate. Schedule. Auto-post. Grow.",
+    "Write. Schedule. Share. Succeed.",
+    "Create. Optimize. Publish. Scale.",
+    "Plan. Write. Post. Repeat.",
+    "Ideate. Create. Share. Engage."
+  ];
+  
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 animated-bg">
       <div className="flowing-dots" ref={dotsContainerRef}></div>
@@ -55,9 +63,7 @@ const Hero = () => {
           </p>
           
           <div className="h-16 flex items-center justify-center animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-            <h2 className="text-xl md:text-2xl font-medium gradient-text">
-              Generate. Schedule. Auto-post. Grow.
-            </h2>
+            <TypeAnimation texts={typingTexts} className="text-xl md:text-2xl font-medium gradient-text" />
           </div>
           
           <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-6 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
