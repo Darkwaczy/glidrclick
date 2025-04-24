@@ -9,6 +9,9 @@ import NotFound from "./pages/NotFound";
 import AIWriting from "./pages/features/AIWriting";
 import AutoPosting from "./pages/features/AutoPosting";
 import SocialSharing from "./pages/features/SocialSharing";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -23,10 +26,9 @@ const App = () => (
           <Route path="/features/ai-writing" element={<AIWriting />} />
           <Route path="/features/auto-posting" element={<AutoPosting />} />
           <Route path="/features/social-sharing" element={<SocialSharing />} />
-          {/* These routes will be implemented later */}
-          <Route path="/login" element={<NotFound />} />
-          <Route path="/register" element={<NotFound />} />
-          <Route path="/dashboard" element={<NotFound />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
