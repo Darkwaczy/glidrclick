@@ -3,9 +3,12 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
-const AIResources = () => {
+interface AIResourcesProps {
+  onResourceAction: (action: string) => void;
+}
+
+const AIResources = ({ onResourceAction }: AIResourcesProps) => {
   return (
     <Card>
       <CardHeader>
@@ -31,7 +34,7 @@ const AIResources = () => {
         </div>
         <Button 
           className="w-full" 
-          onClick={() => toast.success("AI Resources adjusted!")}
+          onClick={() => onResourceAction("Adjust AI Resource Allocation")}
         >
           Adjust AI Resource Allocation
         </Button>

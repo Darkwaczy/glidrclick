@@ -12,7 +12,11 @@ import {
   LogOut
 } from "lucide-react";
 
-const AdminSidebar = () => {
+interface AdminSidebarProps {
+  activePage: string;
+}
+
+const AdminSidebar = ({ activePage }: AdminSidebarProps) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -29,28 +33,28 @@ const AdminSidebar = () => {
         <div className="space-y-1">
           <h3 className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Admin</h3>
           <Button 
-            variant="ghost" 
-            className="w-full justify-start gap-2 bg-gray-100"
+            variant={activePage === "admin-dashboard" ? "default" : "ghost"}
+            className="w-full justify-start gap-2"
             onClick={() => navigate("/admin-dashboard")}
           >
-            <LayoutDashboard size={18} className="text-glidr-purple" /> Dashboard
+            <LayoutDashboard size={18} className={activePage === "admin-dashboard" ? "text-white" : "text-glidr-purple"} /> Dashboard
           </Button>
           <Button 
-            variant="ghost" 
+            variant={activePage === "users" ? "default" : "ghost"}
             className="w-full justify-start gap-2"
             onClick={() => navigate("/admin-dashboard?tab=users")}
           >
             <Users size={18} /> User Management
           </Button>
           <Button 
-            variant="ghost" 
+            variant={activePage === "analytics" ? "default" : "ghost"}
             className="w-full justify-start gap-2"
             onClick={() => navigate("/admin-dashboard?tab=analytics")}
           >
             <BarChart size={18} /> System Analytics
           </Button>
           <Button 
-            variant="ghost" 
+            variant={activePage === "security" ? "default" : "ghost"}
             className="w-full justify-start gap-2"
             onClick={() => navigate("/admin-dashboard?tab=security")}
           >
@@ -61,7 +65,7 @@ const AdminSidebar = () => {
         <div className="space-y-1">
           <h3 className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Settings</h3>
           <Button 
-            variant="ghost" 
+            variant={activePage === "settings" ? "default" : "ghost"}
             className="w-full justify-start gap-2"
             onClick={() => navigate("/admin-dashboard?tab=settings")}
           >
