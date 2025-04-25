@@ -21,9 +21,21 @@ interface PostsListProps {
   title: string;
   posts: Post[];
   type: "scheduled" | "published";
+  onEdit?: (id: number) => void;
+  onCancel?: (id: number) => void;
+  onViewStats?: (id: number) => void;
+  onRepublish?: (id: number) => void;
 }
 
-const PostsList = ({ title, posts, type }: PostsListProps) => {
+const PostsList = ({ 
+  title, 
+  posts, 
+  type,
+  onEdit,
+  onCancel,
+  onViewStats,
+  onRepublish 
+}: PostsListProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [platformFilter, setPlatformFilter] = useState("all");
@@ -37,19 +49,35 @@ const PostsList = ({ title, posts, type }: PostsListProps) => {
   });
 
   const handleEdit = (postId: number) => {
-    toast.info(`Editing post ${postId}`);
+    if (onEdit) {
+      onEdit(postId);
+    } else {
+      toast.info(`Editing post ${postId}`);
+    }
   };
 
   const handleCancel = (postId: number) => {
-    toast.success(`Post ${postId} has been cancelled`);
+    if (onCancel) {
+      onCancel(postId);
+    } else {
+      toast.success(`Post ${postId} has been cancelled`);
+    }
   };
 
   const handleViewStats = (postId: number) => {
-    toast.info(`Viewing stats for post ${postId}`);
+    if (onViewStats) {
+      onViewStats(postId);
+    } else {
+      toast.info(`Viewing stats for post ${postId}`);
+    }
   };
 
   const handleRepublish = (postId: number) => {
-    toast.success(`Post ${postId} has been scheduled for republishing`);
+    if (onRepublish) {
+      onRepublish(postId);
+    } else {
+      toast.success(`Post ${postId} has been scheduled for republishing`);
+    }
   };
 
   const handleViewAll = () => {

@@ -12,6 +12,7 @@ import DashboardTabContent from "@/components/dashboard/content/DashboardTabCont
 const Dashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("posts");
+  const [activePage, setActivePage] = useState("dashboard"); // Added activePage state
 
   const createPost = () => {
     toast.success("Creating new post...");

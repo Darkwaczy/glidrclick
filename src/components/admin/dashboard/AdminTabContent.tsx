@@ -22,6 +22,20 @@ const AdminTabContent = ({ activeTab }: AdminTabContentProps) => {
           <AIResources />
         </div>
       </TabsContent>
+
+      <TabsContent value="analytics">
+        <div className="p-4 bg-white rounded-lg border">
+          <h3 className="font-medium mb-4">Analytics Dashboard</h3>
+          <p className="text-gray-500">Analytics content will be displayed here.</p>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="settings">
+        <div className="p-4 bg-white rounded-lg border">
+          <h3 className="font-medium mb-4">Admin Settings</h3>
+          <p className="text-gray-500">Settings content will be displayed here.</p>
+        </div>
+      </TabsContent>
     </>
   );
 };

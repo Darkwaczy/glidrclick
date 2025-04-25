@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import DashboardStats from "@/components/admin/DashboardStats";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
@@ -11,6 +12,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("users");
+  const [activePage, setActivePage] = useState("admin-dashboard"); // Added activePage state
 
   useEffect(() => {
     const tabFromUrl = searchParams.get("tab");
