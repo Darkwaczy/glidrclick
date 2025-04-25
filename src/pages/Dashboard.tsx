@@ -12,7 +12,7 @@ import DashboardTabContent from "@/components/dashboard/content/DashboardTabCont
 const Dashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("posts");
-  const [activePage, setActivePage] = useState("dashboard"); // Added activePage state
+  const [activePage, setActivePage] = useState("dashboard");
 
   const createPost = () => {
     toast.success("Creating new post...");
@@ -21,7 +21,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <DashboardSidebar />
+      <DashboardSidebar activePage={activePage} />
       <div className="flex-1 flex flex-col">
         <DashboardHeader />
         <main className="flex-1 p-4 md:p-8 overflow-y-auto">
@@ -52,3 +52,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

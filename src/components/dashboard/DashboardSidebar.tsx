@@ -7,7 +7,11 @@ import {
   Share, User, LogOut
 } from "lucide-react";
 
-const DashboardSidebar = ({ activePage }: { activePage: string }) => {
+interface DashboardSidebarProps {
+  activePage: string;
+}
+
+const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -24,7 +28,7 @@ const DashboardSidebar = ({ activePage }: { activePage: string }) => {
           <h3 className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Dashboard</h3>
           <Button 
             variant="ghost" 
-            className={`w-full justify-start gap-2 ${activePage === "overview" ? "bg-gray-100" : ""}`}
+            className={`w-full justify-start gap-2 ${activePage === "dashboard" ? "bg-gray-100" : ""}`}
             onClick={() => navigate("/dashboard")}
           >
             <LayoutDashboard size={18} className="text-glidr-purple" /> Overview
@@ -92,3 +96,4 @@ const DashboardSidebar = ({ activePage }: { activePage: string }) => {
 };
 
 export default DashboardSidebar;
+
