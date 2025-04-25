@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { 
   LayoutDashboard, Settings, Users, CalendarDays, BarChart, 
-  Shield, ChevronDown, Filter, 
+  Shield, ChevronDown, Filter, Bell,
   LogOut, Search, User
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
