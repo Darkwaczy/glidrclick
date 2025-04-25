@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
@@ -12,6 +12,7 @@ import DashboardTabContent from "@/components/dashboard/content/DashboardTabCont
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("posts");
   const [activePage, setActivePage] = useState("dashboard");
 
@@ -25,6 +26,14 @@ const Dashboard = () => {
     }
   }, [location.pathname]);
 
+  // Get tab from URL if available
+  useEffect(() => {
+    const tabFromUrl = searchParams.get("tab");
+    if (tabFromUrl && ["posts", "analytics", "platforms", "settings"].includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams]);
+
   const createPost = () => {
     toast.success("Creating new post...");
     navigate("/dashboard/new-post");
@@ -32,8 +41,8 @@ const Dashboard = () => {
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    // You could also update URL with query parameter if desired
-    // navigate(`/dashboard?tab=${value}`);
+    setSearchParams({ tab: value });
+    toast.info(`Switched to ${value} tab`);
   };
 
   return (

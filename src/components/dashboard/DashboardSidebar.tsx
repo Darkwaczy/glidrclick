@@ -17,6 +17,7 @@ const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
 
   const handleNavigation = (path: string) => {
     navigate(path);
+    toast.info(`Navigating to ${path}`);
   };
 
   const handleLogout = () => {
@@ -33,36 +34,36 @@ const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
         <div className="space-y-1">
           <h3 className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Dashboard</h3>
           <Button 
-            variant="ghost" 
-            className={`w-full justify-start gap-2 ${activePage === "dashboard" ? "bg-gray-100" : ""}`}
+            variant={activePage === "dashboard" ? "default" : "ghost"} 
+            className={`w-full justify-start gap-2`}
             onClick={() => handleNavigation("/dashboard")}
           >
             <LayoutDashboard size={18} className="text-glidr-purple" /> Overview
           </Button>
           <Button 
-            variant="ghost" 
-            className={`w-full justify-start gap-2 ${activePage === "content" ? "bg-gray-100" : ""}`}
+            variant={activePage === "content" ? "default" : "ghost"} 
+            className={`w-full justify-start gap-2`}
             onClick={() => handleNavigation("/dashboard/content")}
           >
             <File size={18} /> Content
           </Button>
           <Button 
-            variant="ghost" 
-            className={`w-full justify-start gap-2 ${activePage === "schedule" ? "bg-gray-100" : ""}`}
+            variant={activePage === "schedule" ? "default" : "ghost"} 
+            className={`w-full justify-start gap-2`}
             onClick={() => handleNavigation("/dashboard/schedule")}
           >
             <CalendarDays size={18} /> Schedule
           </Button>
           <Button 
-            variant="ghost" 
-            className={`w-full justify-start gap-2 ${activePage === "analytics" ? "bg-gray-100" : ""}`}
+            variant={activePage === "analytics" ? "default" : "ghost"} 
+            className={`w-full justify-start gap-2`}
             onClick={() => handleNavigation("/dashboard/analytics")}
           >
             <BarChart size={18} /> Analytics
           </Button>
           <Button 
-            variant="ghost" 
-            className={`w-full justify-start gap-2 ${activePage === "social" ? "bg-gray-100" : ""}`}
+            variant={activePage === "social" ? "default" : "ghost"} 
+            className={`w-full justify-start gap-2`}
             onClick={() => handleNavigation("/dashboard/social")}
           >
             <Share size={18} /> Social
@@ -72,15 +73,15 @@ const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
         <div className="space-y-1">
           <h3 className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Settings</h3>
           <Button 
-            variant="ghost" 
-            className={`w-full justify-start gap-2 ${activePage === "profile" ? "bg-gray-100" : ""}`}
+            variant={activePage === "profile" ? "default" : "ghost"} 
+            className={`w-full justify-start gap-2`}
             onClick={() => handleNavigation("/dashboard/profile")}
           >
             <User size={18} /> Profile
           </Button>
           <Button 
-            variant="ghost" 
-            className={`w-full justify-start gap-2 ${activePage === "settings" ? "bg-gray-100" : ""}`}
+            variant={activePage === "settings" ? "default" : "ghost"} 
+            className={`w-full justify-start gap-2`}
             onClick={() => handleNavigation("/dashboard/settings")}
           >
             <Settings size={18} /> Settings

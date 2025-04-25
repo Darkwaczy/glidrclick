@@ -1,8 +1,9 @@
 
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import {
   LayoutDashboard,
   Settings,
@@ -18,8 +19,20 @@ interface AdminSidebarProps {
 
 const AdminSidebar = ({ activePage }: AdminSidebarProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleNavigation = (path: string, tab?: string) => {
+    if (tab) {
+      navigate(`${path}?tab=${tab}`);
+      toast.info(`Navigating to ${tab} tab`);
+    } else {
+      navigate(path);
+      toast.info(`Navigating to ${path}`);
+    }
+  };
 
   const handleLogout = () => {
+    toast.success("Logged out successfully");
     navigate("/");
   };
 
@@ -35,28 +48,28 @@ const AdminSidebar = ({ activePage }: AdminSidebarProps) => {
           <Button 
             variant={activePage === "admin-dashboard" ? "default" : "ghost"}
             className="w-full justify-start gap-2"
-            onClick={() => navigate("/admin-dashboard")}
+            onClick={() => handleNavigation("/admin-dashboard")}
           >
             <LayoutDashboard size={18} className={activePage === "admin-dashboard" ? "text-white" : "text-glidr-purple"} /> Dashboard
           </Button>
           <Button 
-            variant={activePage === "users" ? "default" : "ghost"}
+            variant={location.search.includes("tab=users") ? "default" : "ghost"}
             className="w-full justify-start gap-2"
-            onClick={() => navigate("/admin-dashboard?tab=users")}
+            onClick={() => handleNavigation("/admin-dashboard", "users")}
           >
             <Users size={18} /> User Management
           </Button>
           <Button 
-            variant={activePage === "analytics" ? "default" : "ghost"}
+            variant={location.search.includes("tab=analytics") ? "default" : "ghost"}
             className="w-full justify-start gap-2"
-            onClick={() => navigate("/admin-dashboard?tab=analytics")}
+            onClick={() => handleNavigation("/admin-dashboard", "analytics")}
           >
             <BarChart size={18} /> System Analytics
           </Button>
           <Button 
-            variant={activePage === "security" ? "default" : "ghost"}
+            variant={location.search.includes("tab=security") ? "default" : "ghost"}
             className="w-full justify-start gap-2"
-            onClick={() => navigate("/admin-dashboard?tab=security")}
+            onClick={() => handleNavigation("/admin-dashboard", "security")}
           >
             <Shield size={18} /> Security
           </Button>
@@ -65,9 +78,9 @@ const AdminSidebar = ({ activePage }: AdminSidebarProps) => {
         <div className="space-y-1">
           <h3 className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Settings</h3>
           <Button 
-            variant={activePage === "settings" ? "default" : "ghost"}
+            variant={location.search.includes("tab=settings") ? "default" : "ghost"}
             className="w-full justify-start gap-2"
-            onClick={() => navigate("/admin-dashboard?tab=settings")}
+            onClick={() => handleNavigation("/admin-dashboard", "settings")}
           >
             <Settings size={18} /> System Settings
           </Button>

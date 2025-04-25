@@ -27,10 +27,12 @@ const AdminDashboard = () => {
   // Set active tab from URL params or default to "users"
   useEffect(() => {
     const tabFromUrl = searchParams.get("tab");
-    if (tabFromUrl && ["users", "analytics", "system", "settings"].includes(tabFromUrl)) {
+    if (tabFromUrl && ["users", "analytics", "system", "security", "settings"].includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
+    } else if (!tabFromUrl) {
+      setSearchParams({ tab: "users" });
     }
-  }, [searchParams]);
+  }, [searchParams, setSearchParams]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -56,6 +58,7 @@ const AdminDashboard = () => {
               <TabsTrigger value="users">Users</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
               <TabsTrigger value="system">System</TabsTrigger>
+              <TabsTrigger value="security">Security</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
             
