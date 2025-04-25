@@ -30,6 +30,12 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/content" element={<Dashboard />} />
+          <Route path="/dashboard/schedule" element={<Dashboard />} />
+          <Route path="/dashboard/analytics" element={<Dashboard />} />
+          <Route path="/dashboard/social" element={<Dashboard />} />
+          <Route path="/dashboard/profile" element={<Dashboard />} />
+          <Route path="/dashboard/settings" element={<Dashboard />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

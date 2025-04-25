@@ -3,30 +3,22 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { 
-  LayoutDashboard, Settings, File, CalendarDays, BarChart, 
-  Share, Bell, ChevronDown, Plus, Filter, 
-  LogOut, Search, Archive, User
-} from "lucide-react";
+import { Plus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import PostsList from "@/components/dashboard/PostsList";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("overview");
-
-  const handleLogout = () => {
-    toast.success("Logged out successfully!");
-    setTimeout(() => navigate("/"), 1500);
-  };
+  const [activeTab, setActiveTab] = useState("posts");
 
   const createPost = () => {
     toast.success("New post created! Redirecting to editor...");
+    // In a real app, this would navigate to the editor
+    // navigate("/dashboard/new-post");
   };
 
   const scheduledPosts = [
@@ -51,75 +43,11 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <div className="hidden md:flex w-64 flex-col bg-white border-r">
-        <div className="p-4 flex items-center gap-2 border-b">
-          <h1 className="text-xl font-bold gradient-text">Glidrclick</h1>
-        </div>
-        <div className="flex flex-col flex-grow p-4 space-y-6">
-          <div className="space-y-1">
-            <h3 className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Dashboard</h3>
-            <Button variant="ghost" className="w-full justify-start gap-2 bg-gray-100">
-              <LayoutDashboard size={18} className="text-glidr-purple" /> Overview
-            </Button>
-            <Button variant="ghost" className="w-full justify-start gap-2">
-              <File size={18} /> Content
-            </Button>
-            <Button variant="ghost" className="w-full justify-start gap-2">
-              <CalendarDays size={18} /> Schedule
-            </Button>
-            <Button variant="ghost" className="w-full justify-start gap-2">
-              <BarChart size={18} /> Analytics
-            </Button>
-            <Button variant="ghost" className="w-full justify-start gap-2">
-              <Share size={18} /> Social
-            </Button>
-          </div>
-
-          <div className="space-y-1">
-            <h3 className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Settings</h3>
-            <Button variant="ghost" className="w-full justify-start gap-2">
-              <User size={18} /> Profile
-            </Button>
-            <Button variant="ghost" className="w-full justify-start gap-2">
-              <Settings size={18} /> Settings
-            </Button>
-          </div>
-
-          <div className="mt-auto space-y-1">
-            <Button variant="outline" className="w-full justify-start gap-2" onClick={handleLogout}>
-              <LogOut size={18} /> Logout
-            </Button>
-          </div>
-        </div>
-      </div>
+      <DashboardSidebar activePage="overview" />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Top bar */}
-        <header className="bg-white border-b sticky top-0 z-10">
-          <div className="flex justify-between items-center p-4">
-            <div className="flex gap-2 items-center">
-              <Button variant="ghost" className="md:hidden">
-                <LayoutDashboard size={20} />
-              </Button>
-              <h1 className="text-lg font-semibold">Dashboard</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon">
-                <Bell size={20} />
-              </Button>
-              <Separator orientation="vertical" className="h-6" />
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-full bg-glidr-purple flex items-center justify-center text-white font-semibold">
-                  U
-                </div>
-                <span className="hidden sm:inline">User</span>
-                <ChevronDown size={16} />
-              </div>
-            </div>
-          </div>
-        </header>
+        <DashboardHeader />
 
         {/* Main dashboard content */}
         <main className="flex-1 p-4 md:p-8 overflow-y-auto">
@@ -182,7 +110,7 @@ const Dashboard = () => {
           </div>
 
           {/* Main Tabs */}
-          <Tabs defaultValue="posts" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger value="posts">Posts</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -193,121 +121,17 @@ const Dashboard = () => {
             {/* Posts Tab Content */}
             <TabsContent value="posts">
               <div className="space-y-6">
-                {/* Filters */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-white p-4 rounded-lg border">
-                  <div className="relative w-full sm:w-auto">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input placeholder="Search posts..." className="pl-10 w-full sm:w-[300px]" />
-                  </div>
-                  <div className="flex gap-2 w-full sm:w-auto">
-                    <Select>
-                      <SelectTrigger className="w-full sm:w-[150px]">
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All</SelectItem>
-                        <SelectItem value="scheduled">Scheduled</SelectItem>
-                        <SelectItem value="draft">Draft</SelectItem>
-                        <SelectItem value="published">Published</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select>
-                      <SelectTrigger className="w-full sm:w-[150px]">
-                        <SelectValue placeholder="Platform" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Platforms</SelectItem>
-                        <SelectItem value="blog">Blog</SelectItem>
-                        <SelectItem value="facebook">Facebook</SelectItem>
-                        <SelectItem value="twitter">Twitter</SelectItem>
-                        <SelectItem value="instagram">Instagram</SelectItem>
-                        <SelectItem value="linkedin">LinkedIn</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button variant="outline" size="icon">
-                      <Filter size={16} />
-                    </Button>
-                  </div>
-                </div>
+                <PostsList 
+                  title="Scheduled Posts" 
+                  posts={scheduledPosts} 
+                  type="scheduled" 
+                />
 
-                {/* Scheduled Posts */}
-                <div className="bg-white rounded-lg border">
-                  <div className="p-4 border-b">
-                    <h3 className="font-semibold">Scheduled Posts</h3>
-                  </div>
-                  <div className="divide-y">
-                    {scheduledPosts.map((post) => (
-                      <div key={post.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="space-y-1 flex-1">
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-medium">{post.title}</h4>
-                            <Badge variant={post.status === "scheduled" ? "secondary" : "outline"} className="text-xs">
-                              {post.status === "scheduled" ? "Scheduled" : "Draft"}
-                            </Badge>
-                          </div>
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-sm text-gray-500">
-                            <span className="flex items-center gap-1">
-                              <CalendarDays size={14} />
-                              {post.date}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Share size={14} />
-                              {post.platform}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex gap-2 self-end sm:self-center">
-                          <Button variant="outline" size="sm">Edit</Button>
-                          <Button variant="ghost" size="sm" className="text-red-500">Cancel</Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {scheduledPosts.length > 0 && (
-                    <div className="p-4 border-t flex justify-center">
-                      <Button variant="link">View All Scheduled Posts</Button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Recent Published Posts */}
-                <div className="bg-white rounded-lg border">
-                  <div className="p-4 border-b">
-                    <h3 className="font-semibold">Recently Published</h3>
-                  </div>
-                  <div className="divide-y">
-                    {recentPublishedPosts.map((post) => (
-                      <div key={post.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="space-y-1 flex-1">
-                          <h4 className="font-medium">{post.title}</h4>
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-sm text-gray-500">
-                            <span className="flex items-center gap-1">
-                              <CalendarDays size={14} />
-                              Published: {post.date}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <BarChart size={14} />
-                              {post.views.toLocaleString()} views
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Share size={14} />
-                              {post.engagement} engagements
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex gap-2 self-end sm:self-center">
-                          <Button variant="outline" size="sm">View Stats</Button>
-                          <Button variant="ghost" size="sm">Republish</Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {recentPublishedPosts.length > 0 && (
-                    <div className="p-4 border-t flex justify-center">
-                      <Button variant="link">View All Published Posts</Button>
-                    </div>
-                  )}
-                </div>
+                <PostsList 
+                  title="Recently Published" 
+                  posts={recentPublishedPosts} 
+                  type="published" 
+                />
               </div>
             </TabsContent>
             
@@ -376,7 +200,13 @@ const Dashboard = () => {
                       <span>24 posts</span>
                     </div>
                     <div className="pt-2">
-                      <Button variant="outline" className="w-full">Configure</Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => toast.info("Opening WordPress configuration...")}
+                      >
+                        Configure
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -403,7 +233,13 @@ const Dashboard = () => {
                       <span>18 posts</span>
                     </div>
                     <div className="pt-2">
-                      <Button variant="outline" className="w-full">Configure</Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => toast.info("Opening Facebook configuration...")}
+                      >
+                        Configure
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -430,7 +266,13 @@ const Dashboard = () => {
                       <span>22 posts</span>
                     </div>
                     <div className="pt-2">
-                      <Button variant="outline" className="w-full">Configure</Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => toast.info("Opening Twitter/X configuration...")}
+                      >
+                        Configure
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -446,7 +288,9 @@ const Dashboard = () => {
                     <CardDescription>Connect your Instagram account</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 flex flex-col items-center justify-center py-8">
-                    <Button>Connect Instagram</Button>
+                    <Button onClick={() => toast.info("Redirecting to Instagram authorization...")}>
+                      Connect Instagram
+                    </Button>
                     <p className="text-sm text-gray-500 max-w-xs text-center">
                       Share your blog posts as Instagram posts with auto-generated images
                     </p>
@@ -471,7 +315,13 @@ const Dashboard = () => {
                         <Badge>Social Media</Badge>
                         <Badge>SEO</Badge>
                         <Badge>Content Strategy</Badge>
-                        <Badge variant="outline">+ Add Category</Badge>
+                        <Badge 
+                          variant="outline" 
+                          className="cursor-pointer"
+                          onClick={() => toast.info("Opening category manager...")}
+                        >
+                          + Add Category
+                        </Badge>
                       </div>
                     </div>
                     
@@ -479,9 +329,9 @@ const Dashboard = () => {
                       <h4 className="font-medium">Content Tone</h4>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                         <Button variant="outline" className="bg-gray-100">Professional</Button>
-                        <Button variant="outline">Conversational</Button>
-                        <Button variant="outline">Educational</Button>
-                        <Button variant="outline">Humorous</Button>
+                        <Button variant="outline" onClick={() => toast.info("Tone set to Conversational")}>Conversational</Button>
+                        <Button variant="outline" onClick={() => toast.info("Tone set to Educational")}>Educational</Button>
+                        <Button variant="outline" onClick={() => toast.info("Tone set to Humorous")}>Humorous</Button>
                       </div>
                     </div>
                     
@@ -491,12 +341,23 @@ const Dashboard = () => {
                         <Badge>Mon, 9 AM</Badge>
                         <Badge>Wed, 10 AM</Badge>
                         <Badge>Fri, 11 AM</Badge>
-                        <Badge variant="outline">+ Add Time</Badge>
+                        <Badge 
+                          variant="outline" 
+                          className="cursor-pointer"
+                          onClick={() => toast.info("Opening schedule manager...")}
+                        >
+                          + Add Time
+                        </Badge>
                       </div>
                     </div>
                     
                     <div className="pt-4">
-                      <Button className="w-full">Save Settings</Button>
+                      <Button 
+                        className="w-full"
+                        onClick={() => toast.success("Settings saved successfully!")}
+                      >
+                        Save Settings
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

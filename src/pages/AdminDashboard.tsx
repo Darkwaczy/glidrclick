@@ -1,120 +1,37 @@
-
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { 
-  LayoutDashboard, Settings, Users, CalendarDays, BarChart, 
-  Shield, ChevronDown, Filter, Bell,
-  LogOut, Search, User
-} from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
+import AdminSidebar from "@/components/admin/AdminSidebar";
+import AdminHeader from "@/components/admin/AdminHeader";
+import UsersTable from "@/components/admin/UsersTable";
+import DashboardStats from "@/components/admin/DashboardStats";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState("users");
 
-  const handleLogout = () => {
-    toast.success("Logged out successfully!");
-    setTimeout(() => navigate("/"), 1500);
+  useEffect(() => {
+    const tabFromUrl = searchParams.get("tab");
+    if (tabFromUrl && ["users", "analytics", "system", "settings"].includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setSearchParams({ tab: value });
   };
-
-  const users = [
-    { id: 1, name: "John Doe", email: "john@example.com", plan: "Pro", status: "active", posts: 24, joined: "Apr 10, 2025" },
-    { id: 2, name: "Sarah Johnson", email: "sarah@example.com", plan: "Elite", status: "active", posts: 47, joined: "Mar 22, 2025" },
-    { id: 3, name: "Michael Brown", email: "michael@example.com", plan: "Free Trial", status: "trial", posts: 3, joined: "Apr 20, 2025" },
-    { id: 4, name: "Emily Wilson", email: "emily@example.com", plan: "Pro", status: "active", posts: 18, joined: "Feb 15, 2025" },
-    { id: 5, name: "David Lee", email: "david@example.com", plan: "Pro", status: "suspended", posts: 12, joined: "Jan 5, 2025" },
-  ];
-
-  const systemStats = [
-    { name: "Posts Generated", value: "1,247", change: "+18%" },
-    { name: "Active Users", value: "384", change: "+24%" },
-    { name: "API Requests", value: "15.2K", change: "+32%" },
-    { name: "Storage Used", value: "48 GB", change: "+15%" },
-  ];
-
-  const revenueData = [
-    { month: "January", revenue: 12400 },
-    { month: "February", revenue: 15700 },
-    { month: "March", revenue: 18200 },
-    { month: "April", revenue: 22500 },
-  ];
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <div className="hidden md:flex w-64 flex-col bg-white border-r">
-        <div className="p-4 flex items-center gap-2 border-b">
-          <h1 className="text-xl font-bold gradient-text">Glidrclick</h1>
-          <Badge variant="outline" className="ml-auto bg-gray-100">Admin</Badge>
-        </div>
-        <div className="flex flex-col flex-grow p-4 space-y-6">
-          <div className="space-y-1">
-            <h3 className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Admin</h3>
-            <Button variant="ghost" className="w-full justify-start gap-2 bg-gray-100">
-              <LayoutDashboard size={18} className="text-glidr-purple" /> Dashboard
-            </Button>
-            <Button variant="ghost" className="w-full justify-start gap-2">
-              <Users size={18} /> User Management
-            </Button>
-            <Button variant="ghost" className="w-full justify-start gap-2">
-              <BarChart size={18} /> System Analytics
-            </Button>
-            <Button variant="ghost" className="w-full justify-start gap-2">
-              <Shield size={18} /> Security
-            </Button>
-          </div>
-
-          <div className="space-y-1">
-            <h3 className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Settings</h3>
-            <Button variant="ghost" className="w-full justify-start gap-2">
-              <Settings size={18} /> System Settings
-            </Button>
-          </div>
-
-          <div className="mt-auto space-y-1">
-            <Button variant="outline" className="w-full justify-start gap-2" onClick={handleLogout}>
-              <LogOut size={18} /> Logout
-            </Button>
-          </div>
-        </div>
-      </div>
+      <AdminSidebar />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Top bar */}
-        <header className="bg-white border-b sticky top-0 z-10">
-          <div className="flex justify-between items-center p-4">
-            <div className="flex gap-2 items-center">
-              <Button variant="ghost" className="md:hidden">
-                <LayoutDashboard size={20} />
-              </Button>
-              <h1 className="text-lg font-semibold">Admin Dashboard</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon">
-                <Badge className="absolute top-0 right-0 h-4 w-4 p-0 bg-red-500">3</Badge>
-                <Bell size={20} />
-              </Button>
-              <Separator orientation="vertical" className="h-6" />
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-full bg-gray-800 flex items-center justify-center text-white font-semibold">
-                  A
-                </div>
-                <span className="hidden sm:inline">Admin</span>
-                <ChevronDown size={16} />
-              </div>
-            </div>
-          </div>
-        </header>
+        <AdminHeader />
 
         {/* Main dashboard content */}
         <main className="flex-1 p-4 md:p-8 overflow-y-auto">
@@ -125,25 +42,10 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {systemStats.map((stat, index) => (
-              <Card key={index}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-500">{stat.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stat.value}</div>
-                  <p className="text-xs text-green-600 flex items-center mt-1">
-                    <span className="flex h-2 w-2 mr-1">↑</span>{stat.change} from last month
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <DashboardStats />
 
           {/* Main Tabs */}
-          <Tabs defaultValue="users" className="w-full">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger value="users">Users</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -153,97 +55,7 @@ const AdminDashboard = () => {
             
             {/* Users Tab Content */}
             <TabsContent value="users">
-              <div className="space-y-6">
-                {/* Filters */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-white p-4 rounded-lg border">
-                  <div className="relative w-full sm:w-auto">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input placeholder="Search users..." className="pl-10 w-full sm:w-[300px]" />
-                  </div>
-                  <div className="flex gap-2 w-full sm:w-auto">
-                    <Select>
-                      <SelectTrigger className="w-full sm:w-[150px]">
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All</SelectItem>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="trial">Trial</SelectItem>
-                        <SelectItem value="suspended">Suspended</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select>
-                      <SelectTrigger className="w-full sm:w-[150px]">
-                        <SelectValue placeholder="Plan" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Plans</SelectItem>
-                        <SelectItem value="free">Free Trial</SelectItem>
-                        <SelectItem value="pro">Pro</SelectItem>
-                        <SelectItem value="elite">Elite</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button variant="outline" size="icon">
-                      <Filter size={16} />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Users Table */}
-                <div className="bg-white rounded-lg border overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Plan</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Posts</TableHead>
-                        <TableHead>Joined</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {users.map((user) => (
-                        <TableRow key={user.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-semibold">
-                                {user.name.charAt(0)}
-                              </div>
-                              <div>
-                                <div className="font-medium">{user.name}</div>
-                                <div className="text-sm text-gray-500">{user.email}</div>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={user.plan === "Elite" ? "default" : "outline"} className={user.plan === "Elite" ? "bg-glidr-purple" : ""}>
-                              {user.plan}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={
-                              user.status === "active" ? "text-green-600 bg-green-50" : 
-                              user.status === "trial" ? "text-blue-600 bg-blue-50" : 
-                              "text-red-600 bg-red-50"
-                            }>
-                              {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{user.posts}</TableCell>
-                          <TableCell>{user.joined}</TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex gap-2 justify-end">
-                              <Button variant="outline" size="sm">View</Button>
-                              <Button variant="ghost" size="sm">Edit</Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
+              <UsersTable />
             </TabsContent>
             
             {/* Analytics Tab Content */}
@@ -447,7 +259,9 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                     <div className="pt-2">
-                      <Button className="w-full">Adjust AI Resource Allocation</Button>
+                      <Button className="w-full" onClick={() => toast.success("AI Resources adjusted!")}>
+                        Adjust AI Resource Allocation
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -559,7 +373,12 @@ const AdminDashboard = () => {
                     </div>
                     
                     <div className="pt-4">
-                      <Button className="w-full">Save System Settings</Button>
+                      <Button 
+                        className="w-full"
+                        onClick={() => toast.success("System settings saved successfully!")}
+                      >
+                        Save System Settings
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

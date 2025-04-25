@@ -1,0 +1,94 @@
+
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+  LayoutDashboard, Settings, File, CalendarDays, BarChart, 
+  Share, User, LogOut
+} from "lucide-react";
+
+const DashboardSidebar = ({ activePage }: { activePage: string }) => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    navigate("/");
+  };
+
+  return (
+    <div className="hidden md:flex w-64 flex-col bg-white border-r">
+      <div className="p-4 flex items-center gap-2 border-b">
+        <h1 className="text-xl font-bold gradient-text">Glidrclick</h1>
+      </div>
+      <div className="flex flex-col flex-grow p-4 space-y-6">
+        <div className="space-y-1">
+          <h3 className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Dashboard</h3>
+          <Button 
+            variant="ghost" 
+            className={`w-full justify-start gap-2 ${activePage === "overview" ? "bg-gray-100" : ""}`}
+            onClick={() => navigate("/dashboard")}
+          >
+            <LayoutDashboard size={18} className="text-glidr-purple" /> Overview
+          </Button>
+          <Button 
+            variant="ghost" 
+            className={`w-full justify-start gap-2 ${activePage === "content" ? "bg-gray-100" : ""}`}
+            onClick={() => navigate("/dashboard/content")}
+          >
+            <File size={18} /> Content
+          </Button>
+          <Button 
+            variant="ghost" 
+            className={`w-full justify-start gap-2 ${activePage === "schedule" ? "bg-gray-100" : ""}`}
+            onClick={() => navigate("/dashboard/schedule")}
+          >
+            <CalendarDays size={18} /> Schedule
+          </Button>
+          <Button 
+            variant="ghost" 
+            className={`w-full justify-start gap-2 ${activePage === "analytics" ? "bg-gray-100" : ""}`}
+            onClick={() => navigate("/dashboard/analytics")}
+          >
+            <BarChart size={18} /> Analytics
+          </Button>
+          <Button 
+            variant="ghost" 
+            className={`w-full justify-start gap-2 ${activePage === "social" ? "bg-gray-100" : ""}`}
+            onClick={() => navigate("/dashboard/social")}
+          >
+            <Share size={18} /> Social
+          </Button>
+        </div>
+
+        <div className="space-y-1">
+          <h3 className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Settings</h3>
+          <Button 
+            variant="ghost" 
+            className={`w-full justify-start gap-2 ${activePage === "profile" ? "bg-gray-100" : ""}`}
+            onClick={() => navigate("/dashboard/profile")}
+          >
+            <User size={18} /> Profile
+          </Button>
+          <Button 
+            variant="ghost" 
+            className={`w-full justify-start gap-2 ${activePage === "settings" ? "bg-gray-100" : ""}`}
+            onClick={() => navigate("/dashboard/settings")}
+          >
+            <Settings size={18} /> Settings
+          </Button>
+        </div>
+
+        <div className="mt-auto space-y-1">
+          <Button 
+            variant="outline" 
+            className="w-full justify-start gap-2" 
+            onClick={handleLogout}
+          >
+            <LogOut size={18} /> Logout
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DashboardSidebar;
