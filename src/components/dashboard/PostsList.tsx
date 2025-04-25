@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,10 @@ interface PostsListProps {
   onCancel?: (id: number) => void;
   onViewStats?: (id: number) => void;
   onRepublish?: (id: number) => void;
+  onViewAll?: () => void;
+  searchQuery?: string;
+  statusFilter?: string;
+  platformFilter?: string;
 }
 
 const PostsList = ({ 
@@ -34,14 +38,15 @@ const PostsList = ({
   onEdit,
   onCancel,
   onViewStats,
-  onRepublish 
+  onRepublish,
+  onViewAll,
+  searchQuery = "",
+  statusFilter = "all",
+  platformFilter = "all"
 }: PostsListProps) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [platformFilter, setPlatformFilter] = useState("all");
-
+  // Filter posts based on search, status, and platform
   const filteredPosts = posts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = !searchQuery || post.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "all" || !post.status || post.status === statusFilter;
     const matchesPlatform = platformFilter === "all" || !post.platform || post.platform.toLowerCase().includes(platformFilter.toLowerCase());
     
@@ -81,61 +86,15 @@ const PostsList = ({
   };
 
   const handleViewAll = () => {
-    toast.info(`Viewing all ${type} posts`);
+    if (onViewAll) {
+      onViewAll();
+    } else {
+      toast.info(`Viewing all ${type} posts`);
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-white p-4 rounded-lg border">
-        <div className="relative w-full sm:w-auto">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input 
-            placeholder="Search posts..." 
-            className="pl-10 w-full sm:w-[300px]" 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-[150px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="scheduled">Scheduled</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="published">Published</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={platformFilter} onValueChange={setPlatformFilter}>
-            <SelectTrigger className="w-full sm:w-[150px]">
-              <SelectValue placeholder="Platform" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Platforms</SelectItem>
-              <SelectItem value="blog">Blog</SelectItem>
-              <SelectItem value="facebook">Facebook</SelectItem>
-              <SelectItem value="twitter">Twitter</SelectItem>
-              <SelectItem value="instagram">Instagram</SelectItem>
-              <SelectItem value="linkedin">LinkedIn</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button 
-            variant="outline" 
-            size="icon"
-            onClick={() => {
-              setSearchQuery("");
-              setStatusFilter("all");
-              setPlatformFilter("all");
-            }}
-          >
-            <Filter size={16} />
-          </Button>
-        </div>
-      </div>
-
       {/* Posts List */}
       <div className="bg-white rounded-lg border">
         <div className="p-4 border-b">

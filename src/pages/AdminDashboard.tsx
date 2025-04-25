@@ -1,19 +1,30 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import DashboardStats from "@/components/admin/DashboardStats";
+import { toast } from "sonner";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminTabContent from "@/components/admin/dashboard/AdminTabContent";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("users");
-  const [activePage, setActivePage] = useState("admin-dashboard"); // Added activePage state
+  const [activePage, setActivePage] = useState("admin-dashboard");
 
+  // Update activePage based on route
+  useEffect(() => {
+    const path = location.pathname.split('/').pop();
+    if (path && path !== 'admin-dashboard') {
+      setActivePage(path);
+    } else {
+      setActivePage("admin-dashboard");
+    }
+  }, [location.pathname]);
+
+  // Set active tab from URL params or default to "users"
   useEffect(() => {
     const tabFromUrl = searchParams.get("tab");
     if (tabFromUrl && ["users", "analytics", "system", "settings"].includes(tabFromUrl)) {
@@ -24,11 +35,12 @@ const AdminDashboard = () => {
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     setSearchParams({ tab: value });
+    toast.info(`Switched to ${value} tab`);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <AdminSidebar />
+      <AdminSidebar activePage={activePage} />
       <div className="flex-1 flex flex-col">
         <AdminHeader />
         <main className="flex-1 p-4 md:p-8 overflow-y-auto">
@@ -38,8 +50,6 @@ const AdminDashboard = () => {
               <p className="text-gray-600">System overview and user management</p>
             </div>
           </div>
-
-          <DashboardStats />
 
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="mb-6">

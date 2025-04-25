@@ -1,6 +1,6 @@
 
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
@@ -11,12 +11,29 @@ import DashboardTabContent from "@/components/dashboard/content/DashboardTabCont
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState("posts");
   const [activePage, setActivePage] = useState("dashboard");
+
+  // Update active page based on current route
+  useEffect(() => {
+    const path = location.pathname.split('/').pop();
+    if (path && path !== 'dashboard') {
+      setActivePage(path);
+    } else {
+      setActivePage("dashboard");
+    }
+  }, [location.pathname]);
 
   const createPost = () => {
     toast.success("Creating new post...");
     navigate("/dashboard/new-post");
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    // You could also update URL with query parameter if desired
+    // navigate(`/dashboard?tab=${value}`);
   };
 
   return (
@@ -35,7 +52,7 @@ const Dashboard = () => {
             </Button>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger value="posts">Posts</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -52,4 +69,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

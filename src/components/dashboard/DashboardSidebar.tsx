@@ -2,6 +2,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   LayoutDashboard, Settings, File, CalendarDays, BarChart, 
   Share, User, LogOut
@@ -14,7 +15,12 @@ interface DashboardSidebarProps {
 const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
   const navigate = useNavigate();
 
+  const handleNavigation = (path: string) => {
+    navigate(path);
+  };
+
   const handleLogout = () => {
+    toast.success("Logging out...");
     navigate("/");
   };
 
@@ -29,35 +35,35 @@ const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
           <Button 
             variant="ghost" 
             className={`w-full justify-start gap-2 ${activePage === "dashboard" ? "bg-gray-100" : ""}`}
-            onClick={() => navigate("/dashboard")}
+            onClick={() => handleNavigation("/dashboard")}
           >
             <LayoutDashboard size={18} className="text-glidr-purple" /> Overview
           </Button>
           <Button 
             variant="ghost" 
             className={`w-full justify-start gap-2 ${activePage === "content" ? "bg-gray-100" : ""}`}
-            onClick={() => navigate("/dashboard/content")}
+            onClick={() => handleNavigation("/dashboard/content")}
           >
             <File size={18} /> Content
           </Button>
           <Button 
             variant="ghost" 
             className={`w-full justify-start gap-2 ${activePage === "schedule" ? "bg-gray-100" : ""}`}
-            onClick={() => navigate("/dashboard/schedule")}
+            onClick={() => handleNavigation("/dashboard/schedule")}
           >
             <CalendarDays size={18} /> Schedule
           </Button>
           <Button 
             variant="ghost" 
             className={`w-full justify-start gap-2 ${activePage === "analytics" ? "bg-gray-100" : ""}`}
-            onClick={() => navigate("/dashboard/analytics")}
+            onClick={() => handleNavigation("/dashboard/analytics")}
           >
             <BarChart size={18} /> Analytics
           </Button>
           <Button 
             variant="ghost" 
             className={`w-full justify-start gap-2 ${activePage === "social" ? "bg-gray-100" : ""}`}
-            onClick={() => navigate("/dashboard/social")}
+            onClick={() => handleNavigation("/dashboard/social")}
           >
             <Share size={18} /> Social
           </Button>
@@ -68,14 +74,14 @@ const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
           <Button 
             variant="ghost" 
             className={`w-full justify-start gap-2 ${activePage === "profile" ? "bg-gray-100" : ""}`}
-            onClick={() => navigate("/dashboard/profile")}
+            onClick={() => handleNavigation("/dashboard/profile")}
           >
             <User size={18} /> Profile
           </Button>
           <Button 
             variant="ghost" 
             className={`w-full justify-start gap-2 ${activePage === "settings" ? "bg-gray-100" : ""}`}
-            onClick={() => navigate("/dashboard/settings")}
+            onClick={() => handleNavigation("/dashboard/settings")}
           >
             <Settings size={18} /> Settings
           </Button>
@@ -96,4 +102,3 @@ const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
 };
 
 export default DashboardSidebar;
-

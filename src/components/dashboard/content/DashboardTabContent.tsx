@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { TabsContent } from "@/components/ui/tabs";
 import PostsList from "@/components/dashboard/PostsList";
 import PostFilters from "./PostFilters";
@@ -10,8 +10,30 @@ interface DashboardTabContentProps {
 }
 
 const DashboardTabContent = ({ activeTab }: DashboardTabContentProps) => {
-  const handleAction = (action: string) => {
-    toast.success(`${action} action triggered!`);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [platformFilter, setPlatformFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    toast.info(`Filtered by status: ${value}`);
+  };
+
+  const handlePlatformFilterChange = (value: string) => {
+    setPlatformFilter(value);
+    toast.info(`Filtered by platform: ${value}`);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+  };
+
+  const handleAction = (action: string, id: number) => {
+    toast.success(`${action} action triggered for post #${id}!`);
+  };
+
+  const handleViewAll = (type: string) => {
+    toast.info(`Viewing all ${type} posts`);
   };
 
   const scheduledPosts = [
@@ -28,21 +50,59 @@ const DashboardTabContent = ({ activeTab }: DashboardTabContentProps) => {
     <>
       <TabsContent value="posts">
         <div className="space-y-6">
-          <PostFilters />
+          <PostFilters 
+            onStatusChange={handleStatusFilterChange}
+            onPlatformChange={handlePlatformFilterChange}
+            onSearchChange={handleSearchChange}
+            statusValue={statusFilter}
+            platformValue={platformFilter}
+            searchValue={searchQuery}
+          />
+          
           <PostsList 
             title="Scheduled Posts" 
             posts={scheduledPosts} 
             type="scheduled"
-            onEdit={(id) => handleAction("Edit")}
-            onCancel={(id) => handleAction("Cancel")}
+            onEdit={(id) => handleAction("Edit", id)}
+            onCancel={(id) => handleAction("Cancel", id)}
+            onViewAll={() => handleViewAll("scheduled")}
+            searchQuery={searchQuery}
+            statusFilter={statusFilter}
+            platformFilter={platformFilter}
           />
+          
           <PostsList 
             title="Recently Published" 
             posts={recentPublishedPosts} 
             type="published"
-            onViewStats={(id) => handleAction("View Stats")}
-            onRepublish={(id) => handleAction("Republish")}
+            onViewStats={(id) => handleAction("View Stats", id)}
+            onRepublish={(id) => handleAction("Republish", id)}
+            onViewAll={() => handleViewAll("published")}
+            searchQuery={searchQuery}
+            statusFilter={statusFilter}
+            platformFilter={platformFilter}
           />
+        </div>
+      </TabsContent>
+      
+      <TabsContent value="analytics">
+        <div className="p-6 bg-white rounded-lg border">
+          <h3 className="text-lg font-medium mb-4">Analytics Dashboard</h3>
+          <p className="text-gray-500">Content performance metrics and insights will appear here.</p>
+        </div>
+      </TabsContent>
+      
+      <TabsContent value="platforms">
+        <div className="p-6 bg-white rounded-lg border">
+          <h3 className="text-lg font-medium mb-4">Connected Platforms</h3>
+          <p className="text-gray-500">Connect and manage your social media accounts and publishing platforms.</p>
+        </div>
+      </TabsContent>
+      
+      <TabsContent value="settings">
+        <div className="p-6 bg-white rounded-lg border">
+          <h3 className="text-lg font-medium mb-4">Content Settings</h3>
+          <p className="text-gray-500">Configure your content publishing preferences and defaults.</p>
         </div>
       </TabsContent>
     </>
