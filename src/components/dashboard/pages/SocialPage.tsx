@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,8 @@ import {
   Twitter, 
   Linkedin, 
   Link2,
-  CheckCircle
+  CheckCircle,
+  LucideIcon
 } from "lucide-react";
 
 const SocialPage = () => {
@@ -176,7 +176,7 @@ const SocialPage = () => {
 
 interface ConnectedPlatformProps {
   name: string;
-  icon: React.FC<{ size?: number; className?: string }>;
+  icon: LucideIcon;
   status: "connected" | "disconnected" | "error";
   accountName: string;
   lastSync?: string;
@@ -243,7 +243,6 @@ const ConnectedPlatform = ({ name, icon: Icon, status, accountName, lastSync }: 
   );
 };
 
-// Helper function to get platform icon
 const getPlatformIcon = (platform: string, size: number = 16) => {
   switch (platform.toLowerCase()) {
     case 'facebook':
@@ -259,7 +258,6 @@ const getPlatformIcon = (platform: string, size: number = 16) => {
   }
 };
 
-// Mock data
 const mentions = [
   {
     id: 1,
