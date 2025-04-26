@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -36,7 +35,6 @@ const SchedulePage = () => {
     }
   ]);
   
-  // Calendar navigation functions
   const goToPreviousMonth = () => {
     setCurrentDate(prevDate => subMonths(prevDate, 1));
     toast.info(`Viewing ${format(subMonths(currentDate, 1), 'MMMM yyyy')}`);
@@ -73,12 +71,10 @@ const SchedulePage = () => {
     setEditPostId(null);
   };
   
-  // Find the post being edited
   const editingPost = scheduledPosts.find(post => post.id === editPostId);
   const [editTitle, setEditTitle] = useState("");
   const [editDate, setEditDate] = useState<Date | null>(null);
   
-  // Update edit form when selected post changes
   React.useEffect(() => {
     if (editingPost) {
       setEditTitle(editingPost.title);
@@ -86,12 +82,10 @@ const SchedulePage = () => {
     }
   }, [editingPost]);
   
-  // Helper function to format a date to string
   const formatDate = (date: Date) => {
     return format(date, "MMM d, yyyy, h:mm a");
   };
   
-  // Helper function to group posts by date
   const getPostsByDate = (date: Date) => {
     return scheduledPosts.filter(post => 
       post.date.getDate() === date.getDate() && 
@@ -100,7 +94,6 @@ const SchedulePage = () => {
     );
   };
   
-  // When a day in calendar has posts
   const hasPostsOnDay = (date: Date) => {
     return scheduledPosts.some(post => 
       post.date.getDate() === date.getDate() && 
@@ -109,8 +102,7 @@ const SchedulePage = () => {
     );
   };
   
-  // Render a calendar day cell
-  const renderDay = (date: Date) => {
+  const renderDay = ({ date }: { date: Date }) => {
     const hasContent = hasPostsOnDay(date);
     
     return (
@@ -171,7 +163,7 @@ const SchedulePage = () => {
                   month={currentDate}
                   className="rounded-md border"
                   components={{
-                    Day: ({ day }) => renderDay(day.date)
+                    Day: renderDay
                   }}
                 />
               </div>
@@ -254,7 +246,6 @@ const SchedulePage = () => {
         </TabsContent>
       </Tabs>
       
-      {/* Edit Post Dialog */}
       <Dialog open={editPostId !== null} onOpenChange={(open) => !open && setEditPostId(null)}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
