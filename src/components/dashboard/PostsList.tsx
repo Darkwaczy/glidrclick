@@ -3,7 +3,7 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CalendarDays, Share, BarChart, Search, Filter } from "lucide-react";
+import { CalendarDays, Share, BarChart, Search, Filter, Eye, Edit2, Trash } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 
@@ -140,13 +140,21 @@ const PostsList = ({
               <div className="flex gap-2 self-end sm:self-center">
                 {type === 'scheduled' ? (
                   <>
-                    <Button variant="outline" size="sm" onClick={() => handleEdit(post.id)}>Edit</Button>
-                    <Button variant="ghost" size="sm" className="text-red-500" onClick={() => handleCancel(post.id)}>Cancel</Button>
+                    <Button variant="outline" size="sm" onClick={() => handleEdit(post.id)}>
+                      <Edit2 size={14} className="mr-1" /> Edit
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-red-500" onClick={() => handleCancel(post.id)}>
+                      <Trash size={14} className="mr-1" /> Cancel
+                    </Button>
                   </>
                 ) : (
                   <>
-                    <Button variant="outline" size="sm" onClick={() => handleViewStats(post.id)}>View Stats</Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleRepublish(post.id)}>Republish</Button>
+                    <Button variant="outline" size="sm" onClick={() => handleViewStats(post.id)}>
+                      <BarChart size={14} className="mr-1" /> View Stats
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleRepublish(post.id)}>
+                      <Share size={14} className="mr-1" /> Republish
+                    </Button>
                   </>
                 )}
               </div>

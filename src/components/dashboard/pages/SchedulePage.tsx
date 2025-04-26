@@ -3,13 +3,74 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { CalendarDays, FileText, Clock, Edit, X } from "lucide-react";
+import { CalendarDays, FileText, Clock, Edit, Trash } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 const SchedulePage = () => {
   const [view, setView] = useState<"calendar" | "list">("calendar");
+  const [selectedPost, setSelectedPost] = useState<ScheduledPost | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [posts, setPosts] = useState<ScheduledPost[]>(scheduledPosts);
   
   const handleActionClick = (action: string, id: number) => {
-    toast.success(`${action} post ${id}`);
+    const post = posts.find(p => p.id === id);
+    if (!post) return;
+    
+    if (action === "edit") {
+      setSelectedPost(post);
+      setIsEditing(true);
+    } else if (action === "cancel") {
+      setSelectedPost(post);
+      setIsDeleting(true);
+    }
+  };
+  
+  const handleSaveEdit = () => {
+    if (selectedPost) {
+      setPosts(posts.map(p => p.id === selectedPost.id ? selectedPost : p));
+      toast.success(`Post "${selectedPost.title}" updated`);
+      setSelectedPost(null);
+      setIsEditing(false);
+    }
+  };
+  
+  const handleConfirmDelete = () => {
+    if (selectedPost) {
+      setPosts(posts.filter(p => p.id !== selectedPost.id));
+      toast.success(`Post "${selectedPost.title}" has been cancelled`);
+      setSelectedPost(null);
+      setIsDeleting(false);
+    }
+  };
+
+  // Helper function to get date for a specific day in current month
+  const getDateForDay = (day: number) => {
+    const currentDate = new Date();
+    return new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+  };
+  
+  // Function to handle calendar date click
+  const handleDateClick = (day: number) => {
+    const clickedDate = getDateForDay(day);
+    const postsForDay = posts.filter(post => {
+      const postDate = new Date(post.dateTime);
+      return (
+        postDate.getDate() === day && 
+        postDate.getMonth() === clickedDate.getMonth() && 
+        postDate.getFullYear() === clickedDate.getFullYear()
+      );
+    });
+    
+    if (postsForDay.length > 0) {
+      toast.info(`${postsForDay.length} post(s) scheduled for this day`);
+      
+      // If only one post, select it for editing
+      if (postsForDay.length === 1) {
+        setSelectedPost(postsForDay[0]);
+        setIsEditing(true);
+      }
+    }
   };
 
   return (
@@ -37,19 +98,124 @@ const SchedulePage = () => {
       </div>
       
       {view === "calendar" ? (
-        <CalendarView />
+        <CalendarView 
+          posts={posts} 
+          onDateClick={handleDateClick} 
+        />
       ) : (
         <ListView 
-          items={scheduledPosts}
-          onEdit={(id) => handleActionClick("Editing", id)}
-          onCancel={(id) => handleActionClick("Cancelling", id)}
+          items={posts}
+          onEdit={(id) => handleActionClick("edit", id)}
+          onCancel={(id) => handleActionClick("cancel", id)}
         />
+      )}
+      
+      {/* Edit Dialog */}
+      {selectedPost && (
+        <Dialog open={isEditing} onOpenChange={setIsEditing}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Edit Scheduled Post</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Title</label>
+                <input
+                  className="w-full p-2 border rounded-md"
+                  value={selectedPost.title}
+                  onChange={(e) => setSelectedPost({...selectedPost, title: e.target.value})}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Date & Time</label>
+                <input
+                  type="datetime-local"
+                  className="w-full p-2 border rounded-md"
+                  value={selectedPost.dateTime.slice(0, 16)}
+                  onChange={(e) => setSelectedPost({...selectedPost, dateTime: e.target.value})}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Platforms</label>
+                <div className="flex flex-wrap gap-2">
+                  {['Facebook', 'Twitter', 'LinkedIn', 'Instagram', 'Blog'].map(platform => (
+                    <label key={platform} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedPost.platforms.includes(platform)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedPost({
+                              ...selectedPost, 
+                              platforms: [...selectedPost.platforms, platform]
+                            });
+                          } else {
+                            setSelectedPost({
+                              ...selectedPost, 
+                              platforms: selectedPost.platforms.filter(p => p !== platform)
+                            });
+                          }
+                        }}
+                      />
+                      <span>{platform}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsEditing(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveEdit}>
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+      
+      {/* Delete Confirmation Dialog */}
+      {selectedPost && (
+        <Dialog open={isDeleting} onOpenChange={setIsDeleting}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Cancel Scheduled Post</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to cancel this scheduled post? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="py-4">
+              <p className="font-medium">{selectedPost.title}</p>
+              <p className="text-sm text-gray-500">Scheduled for: {formatDate(selectedPost.dateTime)}</p>
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDeleting(false)}>
+                Keep
+              </Button>
+              <Button variant="destructive" onClick={handleConfirmDelete}>
+                Cancel Post
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
 };
 
-const CalendarView = () => {
+interface CalendarViewProps {
+  posts: ScheduledPost[];
+  onDateClick: (day: number) => void;
+}
+
+const CalendarView = ({ posts, onDateClick }: CalendarViewProps) => {
   const currentDate = new Date();
   const currentMonth = currentDate.toLocaleString('default', { month: 'long' });
   const currentYear = currentDate.getFullYear();
@@ -68,7 +234,14 @@ const CalendarView = () => {
   // Add days of the month
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    const hasEvent = scheduledPosts.some(post => {
+    const hasEvents = posts.some(post => {
+      const postDate = new Date(post.dateTime);
+      return postDate.getDate() === day && 
+             postDate.getMonth() === currentDate.getMonth() &&
+             postDate.getFullYear() === currentDate.getFullYear();
+    });
+    
+    const postsForDay = posts.filter(post => {
       const postDate = new Date(post.dateTime);
       return postDate.getDate() === day && 
              postDate.getMonth() === currentDate.getMonth() &&
@@ -76,13 +249,21 @@ const CalendarView = () => {
     });
     
     days.push(
-      <div key={day} className="h-32 border p-2 hover:bg-gray-50">
+      <div 
+        key={day} 
+        className={`h-32 border p-2 ${hasEvents ? 'hover:bg-blue-50 cursor-pointer' : 'hover:bg-gray-50'}`}
+        onClick={hasEvents ? () => onDateClick(day) : undefined}
+      >
         <div className="font-medium">{day}</div>
-        {hasEvent && (
-          <div className="mt-1 p-1 text-xs bg-blue-100 text-blue-800 rounded">
-            Scheduled Content
+        {postsForDay.map((post, index) => (
+          <div 
+            key={index}
+            className="mt-1 p-1 text-xs bg-blue-100 text-blue-800 rounded truncate"
+            title={post.title}
+          >
+            {post.title.length > 20 ? post.title.substring(0, 20) + '...' : post.title}
           </div>
-        )}
+        ))}
       </div>
     );
   }
@@ -110,15 +291,17 @@ const CalendarView = () => {
   );
 };
 
+interface ListViewProps { 
+  items: ScheduledPost[]; 
+  onEdit: (id: number) => void;
+  onCancel: (id: number) => void;
+}
+
 const ListView = ({ 
   items, 
   onEdit, 
   onCancel 
-}: { 
-  items: ScheduledPost[]; 
-  onEdit: (id: number) => void;
-  onCancel: (id: number) => void;
-}) => {
+}: ListViewProps) => {
   return (
     <Card>
       <CardHeader>
@@ -151,7 +334,7 @@ const ListView = ({
                     <Edit size={14} className="mr-2" /> Edit
                   </Button>
                   <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700" onClick={() => onCancel(post.id)}>
-                    <X size={14} className="mr-2" /> Cancel
+                    <Trash size={14} className="mr-2" /> Cancel
                   </Button>
                 </div>
               </div>
@@ -201,6 +384,18 @@ const scheduledPosts: ScheduledPost[] = [
     title: "Email Marketing Best Practices",
     dateTime: "2025-05-01T08:00:00", 
     platforms: ["Newsletter"]
+  },
+  {
+    id: 4,
+    title: "Content Marketing Trends for 2025",
+    dateTime: "2025-05-05T14:00:00", 
+    platforms: ["Facebook", "Twitter", "LinkedIn"]
+  },
+  {
+    id: 5,
+    title: "How to Create Engaging Social Media Content",
+    dateTime: "2025-05-10T11:00:00", 
+    platforms: ["Instagram", "Facebook"]
   }
 ];
 

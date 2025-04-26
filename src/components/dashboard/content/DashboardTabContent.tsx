@@ -1,283 +1,257 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { TabsContent } from "@/components/ui/tabs";
-import PostsList from "@/components/dashboard/PostsList";
-import PostFilters from "./PostFilters";
-import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BarChart3, Share2, CalendarDays, File, Settings, Plus } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart3, ArrowUpRight, LineChart, Users, Calendar } from "lucide-react";
+import PostsList from "@/components/dashboard/PostsList";
 
 interface DashboardTabContentProps {
   activeTab: string;
+  onEdit?: (id: number) => void;
+  onCancel?: (id: number) => void;
+  onViewAllScheduled?: () => void;
+  onViewStats?: (id: number) => void;
+  onRepublish?: (id: number) => void;
+  onViewAllPublished?: () => void;
+  onViewAllDrafts?: () => void;
 }
 
-const DashboardTabContent = ({ activeTab }: DashboardTabContentProps) => {
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [platformFilter, setPlatformFilter] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const handleStatusFilterChange = (value: string) => {
-    setStatusFilter(value);
-    toast.info(`Filtered by status: ${value}`);
-  };
-
-  const handlePlatformFilterChange = (value: string) => {
-    setPlatformFilter(value);
-    toast.info(`Filtered by platform: ${value}`);
-  };
-
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-  };
-
-  const handleAction = (action: string, id: number) => {
-    toast.success(`${action} action triggered for post #${id}!`);
-  };
-
-  const handleViewAll = (type: string) => {
-    toast.info(`Viewing all ${type} posts`);
-  };
-
+const DashboardTabContent: React.FC<DashboardTabContentProps> = ({ 
+  activeTab, 
+  onEdit,
+  onCancel,
+  onViewAllScheduled,
+  onViewStats,
+  onRepublish,
+  onViewAllPublished,
+  onViewAllDrafts
+}) => {
+  // Mock data for scheduled posts
   const scheduledPosts = [
-    { id: 1, title: "10 Ways to Improve Your Social Media Strategy", date: "Tomorrow, 09:00 AM", platform: "Blog, Facebook, Twitter", status: "scheduled" },
-    { id: 2, title: "How to Increase Website Traffic in 2025", date: "Apr 28, 10:30 AM", platform: "Blog, LinkedIn", status: "scheduled" },
-    { id: 3, title: "Email Marketing Best Practices", date: "May 1, 08:00 AM", platform: "Newsletter", status: "scheduled" },
+    { id: 1, title: "10 Ways to Improve Your Social Media Strategy", date: "Tomorrow, 09:00 AM", platform: "Multiple" },
+    { id: 2, title: "How to Increase Website Traffic in 2025", date: "Apr 28, 2025, 10:30 AM", platform: "Blog, LinkedIn" },
+    { id: 3, title: "Email Marketing Best Practices", date: "May 1, 2025, 08:00 AM", platform: "Newsletter" }
   ];
-
-  const recentPublishedPosts = [
-    { id: 4, title: "Email Marketing Best Practices for 2025", date: "Apr 23", views: 432, engagement: 76 },
-    { id: 5, title: "How to Create Engaging Blog Content", date: "Apr 20", views: 1253, engagement: 247 },
-    { id: 6, title: "Social Media Trends to Watch", date: "Apr 18", views: 867, engagement: 152 },
+  
+  // Mock data for published posts
+  const publishedPosts = [
+    { id: 4, title: "Understanding Social Media Algorithms", date: "Apr 22, 2025", views: 1203, engagement: 157 },
+    { id: 5, title: "Best Tools for Content Creation", date: "Apr 18, 2025", views: 853, engagement: 92 },
+    { id: 6, title: "SEO Strategies for 2025", date: "Apr 15, 2025", views: 1546, engagement: 214 }
   ];
-
+  
+  // Mock data for draft posts
   const draftPosts = [
-    { id: 7, title: "The Future of Content Marketing", date: "Updated Apr 24", platform: "Draft", status: "draft" },
-    { id: 8, title: "SEO Strategies for 2025", date: "Updated Apr 22", platform: "Draft", status: "draft" },
+    { id: 7, title: "Content Calendar Template (Draft)", date: "Updated Apr 20, 2025" },
+    { id: 8, title: "Website Redesign Announcement (Draft)", date: "Updated Apr 15, 2025" },
+    { id: 9, title: "Customer Testimonials Collection (Draft)", date: "Updated Apr 10, 2025" }
   ];
-
+  
+  // Mock analytics data
+  const totalViews = 12483;
+  const viewsChange = "+18%";
+  const engagement = 2145;
+  const engagementChange = "+23%";
+  const bestPerforming = "SEO Strategies for 2025";
+  
   return (
     <>
-      <TabsContent value="posts">
-        <div className="space-y-6">
-          <PostFilters 
-            onStatusChange={handleStatusFilterChange}
-            onPlatformChange={handlePlatformFilterChange}
-            onSearchChange={handleSearchChange}
-            statusValue={statusFilter}
-            platformValue={platformFilter}
-            searchValue={searchQuery}
-          />
-          
+      <TabsContent value="posts" className="space-y-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Scheduled Posts</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{scheduledPosts.length}</div>
+              <p className="text-xs text-muted-foreground">
+                Next post: {scheduledPosts[0].date}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Published Posts</CardTitle>
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{publishedPosts.length}</div>
+              <p className="text-xs text-muted-foreground">
+                Last 30 days
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Draft Posts</CardTitle>
+              <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{draftPosts.length}</div>
+              <p className="text-xs text-muted-foreground">
+                Ready to be scheduled
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {/* Scheduled Posts */}
           <PostsList 
-            title="Scheduled Posts" 
+            title="Upcoming Posts" 
             posts={scheduledPosts} 
-            type="scheduled"
-            onEdit={(id) => handleAction("Edit", id)}
-            onCancel={(id) => handleAction("Cancel", id)}
-            onViewAll={() => handleViewAll("scheduled")}
-            searchQuery={searchQuery}
-            statusFilter={statusFilter}
-            platformFilter={platformFilter}
+            type="scheduled" 
+            onEdit={onEdit}
+            onCancel={onCancel}
+            onViewAll={onViewAllScheduled}
           />
           
+          {/* Published Posts */}
           <PostsList 
             title="Recently Published" 
-            posts={recentPublishedPosts} 
-            type="published"
-            onViewStats={(id) => handleAction("View Stats", id)}
-            onRepublish={(id) => handleAction("Republish", id)}
-            onViewAll={() => handleViewAll("published")}
-            searchQuery={searchQuery}
-            statusFilter={statusFilter}
-            platformFilter={platformFilter}
+            posts={publishedPosts} 
+            type="published" 
+            onViewStats={onViewStats}
+            onRepublish={onRepublish}
+            onViewAll={onViewAllPublished}
           />
-
-          {statusFilter === "draft" || statusFilter === "all" ? (
-            <PostsList 
-              title="Drafts" 
-              posts={draftPosts} 
-              type="scheduled"
-              onEdit={(id) => handleAction("Edit Draft", id)}
-              onCancel={(id) => handleAction("Delete Draft", id)}
-              onViewAll={() => handleViewAll("drafts")}
-              searchQuery={searchQuery}
-              statusFilter={statusFilter === "all" ? "draft" : statusFilter}
-              platformFilter={platformFilter}
-            />
-          ) : null}
         </div>
+        
+        {/* Draft Posts */}
+        <PostsList 
+          title="Draft Posts" 
+          posts={draftPosts} 
+          type="scheduled"
+          onEdit={onEdit}
+          onCancel={onCancel} 
+          onViewAll={onViewAllDrafts}
+        />
       </TabsContent>
       
-      <TabsContent value="analytics">
-        <div className="space-y-6">
+      <TabsContent value="analytics" className="space-y-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Content Performance</CardTitle>
-              <CardDescription>Track the performance of your content across platforms</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="h-72 flex flex-col items-center justify-center bg-gray-50 rounded-md">
-                <p className="text-gray-500">Performance analytics will be displayed here</p>
-                <Button 
-                  variant="outline" 
-                  className="mt-4"
-                  onClick={() => toast.info("Generating analytics report...")}
-                >
-                  <BarChart3 size={16} className="mr-2" /> Generate Report
-                </Button>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-                <div className="bg-blue-50 p-4 rounded-md">
-                  <h3 className="font-medium text-blue-700">Total Views</h3>
-                  <p className="text-2xl font-bold mt-2">24,521</p>
-                  <p className="text-sm text-blue-600 mt-1">↑ 12% from last month</p>
-                </div>
-                <div className="bg-green-50 p-4 rounded-md">
-                  <h3 className="font-medium text-green-700">Engagement Rate</h3>
-                  <p className="text-2xl font-bold mt-2">8.3%</p>
-                  <p className="text-sm text-green-600 mt-1">↑ 2.1% from last month</p>
-                </div>
-                <div className="bg-purple-50 p-4 rounded-md">
-                  <h3 className="font-medium text-purple-700">Conversions</h3>
-                  <p className="text-2xl font-bold mt-2">512</p>
-                  <p className="text-sm text-purple-600 mt-1">↑ 8% from last month</p>
-                </div>
-              </div>
+              <div className="text-2xl font-bold">{totalViews.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-green-600">{viewsChange}</span> from last month
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Engagement</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{engagement.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-green-600">{engagementChange}</span> from last month
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Best Performing</CardTitle>
+              <LineChart className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-medium text-sm line-clamp-1">{bestPerforming}</div>
+              <p className="text-xs text-muted-foreground">
+                1,546 views
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{publishedPosts.length + scheduledPosts.length}</div>
+              <p className="text-xs text-muted-foreground">
+                Across all platforms
+              </p>
             </CardContent>
           </Card>
         </div>
-      </TabsContent>
-      
-      <TabsContent value="platforms">
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Connected Platforms</CardTitle>
-              <CardDescription>Manage your social media and publishing platforms</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mr-3">
-                      <Share2 size={20} />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Facebook</h3>
-                      <p className="text-sm text-gray-500">Connected as Glidrclick</p>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={() => toast.info("Facebook settings opened")}>
-                    Settings
-                  </Button>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mr-3">
-                      <Share2 size={20} />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Twitter</h3>
-                      <p className="text-sm text-gray-500">Connected as @glidrclick</p>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={() => toast.info("Twitter settings opened")}>
-                    Settings
-                  </Button>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mr-3">
-                      <Share2 size={20} />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Instagram</h3>
-                      <p className="text-sm text-gray-500">Connected as @glidrclick</p>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={() => toast.info("Instagram settings opened")}>
-                    Settings
-                  </Button>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mr-3">
-                      <Share2 size={20} />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">LinkedIn</h3>
-                      <p className="text-sm text-gray-500">Connected as Glidrclick</p>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={() => toast.info("LinkedIn settings opened")}>
-                    Settings
-                  </Button>
-                </div>
-              </div>
-              
-              <Button 
-                className="w-full mt-6" 
-                variant="outline"
-                onClick={() => toast.info("Adding new platform...")}
-              >
-                <Plus size={16} className="mr-2" /> Connect New Platform
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </TabsContent>
-      
-      <TabsContent value="settings">
+        
         <Card>
           <CardHeader>
-            <CardTitle>Content Settings</CardTitle>
-            <CardDescription>Configure your content publishing preferences</CardDescription>
+            <CardTitle>Analytics Overview</CardTitle>
+            <CardDescription>View detailed performance metrics for all your content</CardDescription>
+            <Button variant="outline" className="mt-2" onClick={() => navigate("/dashboard/analytics")}>
+              View Full Analytics
+            </Button>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent>
+            <div className="h-[200px] flex items-center justify-center bg-gray-100 rounded-md">
+              <p className="text-gray-500">Analytics chart preview</p>
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+      
+      <TabsContent value="platforms" className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Connected Platforms</CardTitle>
+            <CardDescription>Manage your social media accounts</CardDescription>
+            <Button variant="outline" className="mt-2" onClick={() => navigate("/dashboard/social")}>
+              Manage Social Accounts
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {["Facebook", "Twitter", "Instagram", "LinkedIn"].map((platform) => (
+                <div 
+                  key={platform} 
+                  className="border rounded-lg p-4 text-center hover:bg-gray-50"
+                >
+                  <div className="font-medium">{platform}</div>
+                  <p className="text-xs text-green-600">Connected</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+      
+      <TabsContent value="settings" className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Settings</CardTitle>
+            <CardDescription>Common settings and preferences</CardDescription>
+            <Button variant="outline" className="mt-2" onClick={() => navigate("/dashboard/settings")}>
+              View All Settings
+            </Button>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <div>
-                  <h4 className="font-medium">Auto Publishing</h4>
-                  <p className="text-sm text-gray-500">Automatically publish scheduled content</p>
+                  <h3 className="font-medium">Auto-Publishing</h3>
+                  <p className="text-sm text-gray-500">Automatically publish scheduled posts</p>
                 </div>
-                <div className="flex items-center justify-end h-6 rounded-full bg-blue-500 w-12 px-1 cursor-pointer" onClick={() => toast.info("Auto Publishing toggled")}>
-                  <div className="h-4 w-4 rounded-full bg-white"></div>
-                </div>
+                <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/settings")}>
+                  Configure
+                </Button>
               </div>
-              
               <div className="flex justify-between items-center">
                 <div>
-                  <h4 className="font-medium">Email Notifications</h4>
-                  <p className="text-sm text-gray-500">Get notified when content is published</p>
+                  <h3 className="font-medium">Notifications</h3>
+                  <p className="text-sm text-gray-500">Email and push notification settings</p>
                 </div>
-                <div className="flex items-center justify-end h-6 rounded-full bg-blue-500 w-12 px-1 cursor-pointer" onClick={() => toast.info("Email Notifications toggled")}>
-                  <div className="h-4 w-4 rounded-full bg-white"></div>
-                </div>
+                <Button variant="outline" size="sm" onClick={() => navigate("/dashboard/settings")}>
+                  Configure
+                </Button>
               </div>
-              
-              <div className="flex justify-between items-center">
-                <div>
-                  <h4 className="font-medium">AI Content Suggestions</h4>
-                  <p className="text-sm text-gray-500">Get AI-powered content ideas</p>
-                </div>
-                <div className="flex items-center justify-end h-6 rounded-full bg-blue-500 w-12 px-1 cursor-pointer" onClick={() => toast.info("AI Content Suggestions toggled")}>
-                  <div className="h-4 w-4 rounded-full bg-white"></div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="pt-4">
-              <Button 
-                onClick={() => toast.success("Settings saved!")}
-                className="w-full"
-              >
-                <Settings size={16} className="mr-2" /> Save Settings
-              </Button>
             </div>
           </CardContent>
         </Card>

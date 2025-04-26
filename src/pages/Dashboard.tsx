@@ -16,6 +16,7 @@ import ProfilePage from "@/components/dashboard/pages/ProfilePage";
 import SettingsPage from "@/components/dashboard/pages/SettingsPage";
 import NewPostPage from "@/components/dashboard/pages/NewPostPage";
 import WatchDemoModal from "@/components/dashboard/WatchDemoModal";
+import EditPostPage from "@/components/dashboard/pages/EditPostPage";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("posts");
   const [activePage, setActivePage] = useState("dashboard");
   const [demoModalOpen, setDemoModalOpen] = useState(false);
+  const [editingPostId, setEditingPostId] = useState<number | null>(null);
 
   // Update active page based on current route
   useEffect(() => {
@@ -46,6 +48,36 @@ const Dashboard = () => {
   const createPost = () => {
     navigate("/dashboard/new-post");
   };
+  
+  const editPost = (id: number) => {
+    setEditingPostId(id);
+    navigate(`/dashboard/edit-post/${id}`);
+  };
+  
+  const cancelPost = (id: number) => {
+    toast.success(`Post ${id} has been cancelled`);
+  };
+  
+  const viewAllScheduled = () => {
+    navigate("/dashboard/schedule");
+  };
+  
+  const viewStats = (id: number) => {
+    navigate(`/dashboard/analytics?postId=${id}`);
+    toast.success(`Viewing statistics for post ${id}`);
+  };
+  
+  const republishPost = (id: number) => {
+    toast.success(`Post ${id} has been scheduled for republishing`);
+  };
+  
+  const viewAllPublished = () => {
+    navigate("/dashboard/content?filter=published");
+  };
+  
+  const viewAllDrafts = () => {
+    navigate("/dashboard/content?filter=drafts");
+  };
 
   const watchDemo = () => {
     setDemoModalOpen(true);
@@ -59,6 +91,7 @@ const Dashboard = () => {
 
   // Get the current path to determine what to render
   const path = location.pathname;
+  const isEditingPost = path.includes('/edit-post/');
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -86,7 +119,16 @@ const Dashboard = () => {
                   <TabsTrigger value="settings">Settings</TabsTrigger>
                 </TabsList>
                 
-                <DashboardTabContent activeTab={activeTab} />
+                <DashboardTabContent 
+                  activeTab={activeTab} 
+                  onEdit={editPost}
+                  onCancel={cancelPost}
+                  onViewAllScheduled={viewAllScheduled}
+                  onViewStats={viewStats}
+                  onRepublish={republishPost}
+                  onViewAllPublished={viewAllPublished}
+                  onViewAllDrafts={viewAllDrafts}
+                />
               </Tabs>
             </>
           )}
@@ -98,6 +140,7 @@ const Dashboard = () => {
           {path === "/dashboard/profile" && <ProfilePage />}
           {path === "/dashboard/settings" && <SettingsPage />}
           {path === "/dashboard/new-post" && <NewPostPage />}
+          {isEditingPost && <EditPostPage postId={editingPostId} />}
         </main>
       </div>
       

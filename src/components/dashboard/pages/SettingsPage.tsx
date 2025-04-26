@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const SettingsPage = () => {
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -15,6 +16,14 @@ const SettingsPage = () => {
   const [weekendsPublishing, setWeekendsPublishing] = useState(false);
   const [language, setLanguage] = useState("english");
   const [timezone, setTimezone] = useState("america-new-york");
+  const [darkMode, setDarkMode] = useState(false);
+  const [compactView, setCompactView] = useState(false);
+  const [dataCollection, setDataCollection] = useState(true);
+  const [personalization, setPersonalization] = useState(true);
+  const [aiSuggestions, setAiSuggestions] = useState(true);
+  const [autoHashtagging, setAutoHashtagging] = useState(true);
+  const [linkShortening, setLinkShortening] = useState(true);
+  const [showMarketplaceDialog, setShowMarketplaceDialog] = useState(false);
   
   const handleSaveGeneralSettings = () => {
     toast.success("General settings saved successfully!");
@@ -26,6 +35,14 @@ const SettingsPage = () => {
   
   const handleSavePublishingSettings = () => {
     toast.success("Publishing settings saved successfully!");
+  };
+  
+  const handleConnectIntegration = (integration: string, connected: boolean) => {
+    if (connected) {
+      toast.success(`Disconnected from ${integration}`);
+    } else {
+      toast.success(`Connected to ${integration}`);
+    }
   };
 
   return (
@@ -93,7 +110,11 @@ const SettingsPage = () => {
                     <div>Dark Mode</div>
                     <p className="text-sm font-normal text-gray-500">Enable dark mode for the dashboard</p>
                   </Label>
-                  <Switch id="dark-mode" />
+                  <Switch 
+                    id="dark-mode" 
+                    checked={darkMode}
+                    onCheckedChange={setDarkMode}
+                  />
                 </div>
                 
                 <div className="flex items-center justify-between space-x-2">
@@ -101,7 +122,11 @@ const SettingsPage = () => {
                     <div>Compact View</div>
                     <p className="text-sm font-normal text-gray-500">Use compact layout for lists and tables</p>
                   </Label>
-                  <Switch id="compact-view" />
+                  <Switch 
+                    id="compact-view"
+                    checked={compactView}
+                    onCheckedChange={setCompactView}
+                  />
                 </div>
                 
                 <div className="flex justify-end">
@@ -123,7 +148,11 @@ const SettingsPage = () => {
                     <div>Data Collection</div>
                     <p className="text-sm font-normal text-gray-500">Allow anonymous usage data collection to improve our service</p>
                   </Label>
-                  <Switch id="data-collection" defaultChecked />
+                  <Switch 
+                    id="data-collection" 
+                    checked={dataCollection}
+                    onCheckedChange={setDataCollection}
+                  />
                 </div>
                 
                 <div className="flex items-center justify-between space-x-2">
@@ -131,7 +160,11 @@ const SettingsPage = () => {
                     <div>Content Personalization</div>
                     <p className="text-sm font-normal text-gray-500">Allow us to personalize content and suggestions for you</p>
                   </Label>
-                  <Switch id="personalization" defaultChecked />
+                  <Switch 
+                    id="personalization" 
+                    checked={personalization}
+                    onCheckedChange={setPersonalization}
+                  />
                 </div>
                 
                 <div className="flex justify-end">
@@ -338,7 +371,11 @@ const SettingsPage = () => {
                       <div>AI Content Suggestions</div>
                       <p className="text-sm font-normal text-gray-500">Get AI-powered content recommendations</p>
                     </Label>
-                    <Switch id="ai-suggestions" defaultChecked />
+                    <Switch 
+                      id="ai-suggestions" 
+                      checked={aiSuggestions}
+                      onCheckedChange={setAiSuggestions}
+                    />
                   </div>
                   
                   <div className="flex items-center justify-between space-x-2">
@@ -346,7 +383,11 @@ const SettingsPage = () => {
                       <div>Auto Hashtagging</div>
                       <p className="text-sm font-normal text-gray-500">Automatically add relevant hashtags to posts</p>
                     </Label>
-                    <Switch id="auto-hashtagging" defaultChecked />
+                    <Switch 
+                      id="auto-hashtagging" 
+                      checked={autoHashtagging}
+                      onCheckedChange={setAutoHashtagging}
+                    />
                   </div>
                   
                   <div className="flex items-center justify-between space-x-2">
@@ -354,7 +395,11 @@ const SettingsPage = () => {
                       <div>Automatic Link Shortening</div>
                       <p className="text-sm font-normal text-gray-500">Shorten links in posts automatically</p>
                     </Label>
-                    <Switch id="link-shortening" defaultChecked />
+                    <Switch 
+                      id="link-shortening" 
+                      checked={linkShortening}
+                      onCheckedChange={setLinkShortening}
+                    />
                   </div>
                 </div>
                 
@@ -390,13 +435,7 @@ const SettingsPage = () => {
                       </div>
                       <Button 
                         variant={integration.connected ? "outline" : "default"}
-                        onClick={() => {
-                          if (integration.connected) {
-                            toast.success(`Disconnected from ${integration.name}`);
-                          } else {
-                            toast.success(`Connected to ${integration.name}`);
-                          }
-                        }}
+                        onClick={() => handleConnectIntegration(integration.name, integration.connected)}
                       >
                         {integration.connected ? "Disconnect" : "Connect"}
                       </Button>
@@ -405,13 +444,59 @@ const SettingsPage = () => {
                 </div>
                 
                 <div className="text-center">
-                  <Button variant="outline" onClick={() => toast.info("Browsing integration marketplace...")}>
+                  <Button variant="outline" onClick={() => setShowMarketplaceDialog(true)}>
                     Browse Integration Marketplace
                   </Button>
                 </div>
               </div>
             </CardContent>
           </Card>
+          
+          <Dialog open={showMarketplaceDialog} onOpenChange={setShowMarketplaceDialog}>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Integration Marketplace</DialogTitle>
+                <DialogDescription>
+                  Browse available integrations for your account
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+                {marketplaceIntegrations.map((integration, index) => (
+                  <div key={index} className="border rounded-lg p-4 hover:bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full ${integration.bgColor} flex items-center justify-center`}>
+                        <span className={`text-lg font-bold ${integration.textColor}`}>
+                          {integration.name.charAt(0)}
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="font-medium">{integration.name}</h4>
+                        <p className="text-xs text-gray-500">{integration.description}</p>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-3 w-full"
+                      onClick={() => {
+                        toast.success(`Connected to ${integration.name}`);
+                        setShowMarketplaceDialog(false);
+                      }}
+                    >
+                      Connect
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowMarketplaceDialog(false)}>
+                  Close
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
       </Tabs>
     </div>
@@ -454,6 +539,46 @@ const integrations = [
     connected: true,
     bgColor: "bg-blue-100",
     textColor: "text-blue-600" 
+  }
+];
+
+// Mock data for marketplace integrations
+const marketplaceIntegrations = [
+  {
+    name: "HubSpot",
+    description: "CRM and marketing automation",
+    bgColor: "bg-orange-100",
+    textColor: "text-orange-600"
+  },
+  {
+    name: "Slack",
+    description: "Team communication tool",
+    bgColor: "bg-purple-100",
+    textColor: "text-purple-600"
+  },
+  {
+    name: "Canva",
+    description: "Graphic design platform",
+    bgColor: "bg-blue-100",
+    textColor: "text-blue-600"
+  },
+  {
+    name: "Asana",
+    description: "Project management tool",
+    bgColor: "bg-red-100",
+    textColor: "text-red-600"
+  },
+  {
+    name: "Buffer",
+    description: "Social media scheduling",
+    bgColor: "bg-blue-100",
+    textColor: "text-blue-600"
+  },
+  {
+    name: "Google Drive",
+    description: "File storage and sharing",
+    bgColor: "bg-green-100",
+    textColor: "text-green-600"
   }
 ];
 

@@ -8,17 +8,73 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { User, Mail, Calendar, Phone, Globe, Lock, Key, Upload } from "lucide-react";
+import { User, Mail, Calendar, Phone, Globe, Lock, Key, Upload, CheckCircle } from "lucide-react";
 
 const ProfilePage = () => {
   const [profileImage, setProfileImage] = useState("/placeholder.svg");
+  const [firstName, setFirstName] = useState("John");
+  const [lastName, setLastName] = useState("Smith");
+  const [email, setEmail] = useState("john.smith@example.com");
+  const [phone, setPhone] = useState("+1 234 567 8900");
+  const [bio, setBio] = useState("Marketing specialist with 5+ years of experience in digital content creation.");
+  const [website, setWebsite] = useState("https://example.com");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [twoFactorSetupOpen, setTwoFactorSetupOpen] = useState(false);
+  
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Create a temporary URL for the image
+    const imageUrl = URL.createObjectURL(file);
+    setProfileImage(imageUrl);
+    toast.success("Profile picture updated!");
+  };
   
   const handleSaveProfile = () => {
+    if (!firstName.trim() || !lastName.trim() || !email.trim()) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    
     toast.success("Profile updated successfully!");
   };
   
   const handleChangePassword = () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error("Please fill in all password fields");
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+    
+    if (newPassword.length < 8) {
+      toast.error("Password should be at least 8 characters long");
+      return;
+    }
+    
+    // Reset form and show success message
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
     toast.success("Password changed successfully!");
+  };
+  
+  const handleSetupTwoFactor = () => {
+    // In a real app, this would open a setup flow for 2FA
+    setTwoFactorSetupOpen(true);
+  };
+  
+  const handleCompleteTwoFactorSetup = () => {
+    setTwoFactorEnabled(true);
+    setTwoFactorSetupOpen(false);
+    toast.success("Two-factor authentication enabled successfully!");
   };
 
   return (
@@ -48,21 +104,44 @@ const ProfilePage = () => {
                     <img src={profileImage} alt="Profile" className="object-cover" />
                   </Avatar>
                   
-                  <Button variant="outline" size="sm" onClick={() => toast.info("Upload functionality would be implemented here")}>
-                    <Upload size={16} className="mr-2" /> Change Photo
-                  </Button>
+                  <div>
+                    <input
+                      id="profile-image-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                    />
+                    <Button
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => document.getElementById('profile-image-upload')?.click()}
+                    >
+                      <Upload size={16} className="mr-2" /> Change Photo
+                    </Button>
+                  </div>
                 </div>
                 
                 <div className="space-y-6 flex-1">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" placeholder="First Name" defaultValue="John" />
+                      <Input 
+                        id="firstName" 
+                        placeholder="First Name" 
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                      />
                     </div>
                     
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" placeholder="Last Name" defaultValue="Smith" />
+                      <Input 
+                        id="lastName" 
+                        placeholder="Last Name" 
+                        value={lastName} 
+                        onChange={(e) => setLastName(e.target.value)}
+                      />
                     </div>
                   </div>
                   
@@ -71,7 +150,13 @@ const ProfilePage = () => {
                       <Label htmlFor="email">Email</Label>
                       <div className="flex">
                         <Mail size={16} className="mr-2 mt-2.5 text-gray-500" />
-                        <Input id="email" type="email" placeholder="Email" defaultValue="john.smith@example.com" />
+                        <Input 
+                          id="email" 
+                          type="email" 
+                          placeholder="Email" 
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                        />
                       </div>
                     </div>
                     
@@ -79,7 +164,12 @@ const ProfilePage = () => {
                       <Label htmlFor="phone">Phone Number</Label>
                       <div className="flex">
                         <Phone size={16} className="mr-2 mt-2.5 text-gray-500" />
-                        <Input id="phone" placeholder="Phone Number" defaultValue="+1 234 567 8900" />
+                        <Input 
+                          id="phone" 
+                          placeholder="Phone Number" 
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                        />
                       </div>
                     </div>
                   </div>
@@ -89,7 +179,8 @@ const ProfilePage = () => {
                     <Textarea 
                       id="bio" 
                       placeholder="Tell us about yourself" 
-                      defaultValue="Marketing specialist with 5+ years of experience in digital content creation." 
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value)}
                       rows={4} 
                     />
                   </div>
@@ -98,7 +189,12 @@ const ProfilePage = () => {
                     <Label htmlFor="website">Website</Label>
                     <div className="flex">
                       <Globe size={16} className="mr-2 mt-2.5 text-gray-500" />
-                      <Input id="website" placeholder="Your website" defaultValue="https://example.com" />
+                      <Input 
+                        id="website" 
+                        placeholder="Your website" 
+                        value={website}
+                        onChange={(e) => setWebsite(e.target.value)}
+                      />
                     </div>
                   </div>
                   
@@ -122,7 +218,13 @@ const ProfilePage = () => {
                 <Label htmlFor="currentPassword">Current Password</Label>
                 <div className="flex">
                   <Lock size={16} className="mr-2 mt-2.5 text-gray-500" />
-                  <Input id="currentPassword" type="password" placeholder="Current Password" />
+                  <Input 
+                    id="currentPassword" 
+                    type="password" 
+                    placeholder="Current Password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                  />
                 </div>
               </div>
               
@@ -131,7 +233,13 @@ const ProfilePage = () => {
                   <Label htmlFor="newPassword">New Password</Label>
                   <div className="flex">
                     <Key size={16} className="mr-2 mt-2.5 text-gray-500" />
-                    <Input id="newPassword" type="password" placeholder="New Password" />
+                    <Input 
+                      id="newPassword" 
+                      type="password" 
+                      placeholder="New Password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
                   </div>
                 </div>
                 
@@ -139,7 +247,13 @@ const ProfilePage = () => {
                   <Label htmlFor="confirmPassword">Confirm New Password</Label>
                   <div className="flex">
                     <Key size={16} className="mr-2 mt-2.5 text-gray-500" />
-                    <Input id="confirmPassword" type="password" placeholder="Confirm New Password" />
+                    <Input 
+                      id="confirmPassword" 
+                      type="password" 
+                      placeholder="Confirm New Password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
                   </div>
                 </div>
               </div>
@@ -156,13 +270,51 @@ const ProfilePage = () => {
               <CardDescription>Add an extra layer of security to your account</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="font-medium">Two-factor authentication is disabled</h3>
-                  <p className="text-sm text-gray-500">Protect your account with 2FA</p>
+              {twoFactorSetupOpen ? (
+                <div className="space-y-4">
+                  <div className="bg-gray-100 p-4 rounded-lg flex items-center justify-center">
+                    <div className="w-40 h-40 bg-gray-200 flex items-center justify-center">
+                      <p className="text-sm text-gray-500">QR Code Placeholder</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="verification-code">Enter Verification Code</Label>
+                    <Input id="verification-code" placeholder="123456" />
+                  </div>
+                  
+                  <div className="flex gap-2 justify-end">
+                    <Button variant="outline" onClick={() => setTwoFactorSetupOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleCompleteTwoFactorSetup}>
+                      Verify and Enable
+                    </Button>
+                  </div>
                 </div>
-                <Button onClick={() => toast.success("Setting up 2FA...")}>Enable</Button>
-              </div>
+              ) : (
+                <div className="flex justify-between items-center">
+                  <div>
+                    {twoFactorEnabled ? (
+                      <>
+                        <h3 className="font-medium flex items-center">
+                          <CheckCircle size={16} className="text-green-500 mr-2" />
+                          Two-factor authentication is enabled
+                        </h3>
+                        <p className="text-sm text-gray-500">Your account is protected by 2FA</p>
+                      </>
+                    ) : (
+                      <>
+                        <h3 className="font-medium">Two-factor authentication is disabled</h3>
+                        <p className="text-sm text-gray-500">Protect your account with 2FA</p>
+                      </>
+                    )}
+                  </div>
+                  <Button onClick={handleSetupTwoFactor}>
+                    {twoFactorEnabled ? "Reconfigure" : "Enable"}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
