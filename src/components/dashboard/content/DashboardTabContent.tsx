@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { TabsContent } from "@/components/ui/tabs";
@@ -5,6 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, ArrowUpRight, LineChart, Users, Calendar } from "lucide-react";
 import PostsList from "@/components/dashboard/PostsList";
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  LineChart as RechartsLineChart,
+  Line
+} from "recharts";
 
 interface DashboardTabContentProps {
   activeTab: string;
@@ -56,6 +68,16 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
   const engagement = 2145;
   const engagementChange = "+23%";
   const bestPerforming = "SEO Strategies for 2025";
+  
+  // Chart data
+  const analyticsData = [
+    { name: "Jan", views: 4000, engagement: 1400 },
+    { name: "Feb", views: 5000, engagement: 1600 },
+    { name: "Mar", views: 7000, engagement: 2200 },
+    { name: "Apr", views: 8500, engagement: 2400 },
+    { name: "May", views: 10000, engagement: 2800 },
+    { name: "Jun", views: 12483, engagement: 3200 }
+  ];
   
   return (
     <>
@@ -125,7 +147,7 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
         <PostsList 
           title="Draft Posts" 
           posts={draftPosts} 
-          type="scheduled"
+          type="draft"
           onEdit={onEdit}
           onCancel={onCancel} 
           onViewAll={onViewAllDrafts}
@@ -193,8 +215,25 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="h-[200px] flex items-center justify-center bg-gray-100 rounded-md">
-              <p className="text-gray-500">Analytics chart preview</p>
+            <div className="h-[200px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartsLineChart
+                  data={analyticsData}
+                  margin={{
+                    top: 5,
+                    right: 30,
+                    left: 20,
+                    bottom: 5,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="views" stroke="#8884d8" activeDot={{ r: 8 }} />
+                  <Line type="monotone" dataKey="engagement" stroke="#82ca9d" />
+                </RechartsLineChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>

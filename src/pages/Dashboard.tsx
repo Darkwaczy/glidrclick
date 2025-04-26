@@ -52,10 +52,13 @@ const Dashboard = () => {
   const editPost = (id: number) => {
     setEditingPostId(id);
     navigate(`/dashboard/edit-post/${id}`);
+    toast.info(`Editing post ${id}`);
   };
   
   const cancelPost = (id: number) => {
-    toast.success(`Post ${id} has been cancelled`);
+    if (confirm(`Are you sure you want to cancel post ${id}?`)) {
+      toast.success(`Post ${id} has been cancelled`);
+    }
   };
   
   const viewAllScheduled = () => {
