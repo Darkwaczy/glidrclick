@@ -1,5 +1,5 @@
-
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +27,8 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
   onViewAllPublished,
   onViewAllDrafts
 }) => {
+  const navigate = useNavigate();
+  
   // Mock data for scheduled posts
   const scheduledPosts = [
     { id: 1, title: "10 Ways to Improve Your Social Media Strategy", date: "Tomorrow, 09:00 AM", platform: "Multiple" },

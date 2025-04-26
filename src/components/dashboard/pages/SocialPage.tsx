@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -495,7 +494,7 @@ const ConnectedPlatform = ({ name, icon: Icon, status, accountName, lastSync }: 
                   <Label htmlFor="notify-mentions">Mentions & Comments</Label>
                 </div>
                 <div className="flex items-center">
-                  <input type="checkbox" id="notify-messages" className="mr-2" defaultChecke />
+                  <input type="checkbox" id="notify-messages" className="mr-2" defaultChecked />
                   <Label htmlFor="notify-messages">Direct Messages</Label>
                 </div>
               </div>
