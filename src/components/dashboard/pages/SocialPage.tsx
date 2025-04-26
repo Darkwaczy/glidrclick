@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -35,6 +34,12 @@ const SocialPage = () => {
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [currentPlatform, setCurrentPlatform] = useState("");
   const [confirmDisconnect, setConfirmDisconnect] = useState<string | null>(null);
+  const [connectedPlatforms, setConnectedPlatforms] = useState({
+    Facebook: true,
+    Twitter: true,
+    Instagram: true,
+    LinkedIn: true
+  });
 
   const handleRefreshConnections = () => {
     setIsRefreshing(true);
@@ -143,7 +148,20 @@ const SocialPage = () => {
   };
 
   const handleDisconnectPlatform = (platformName: string) => {
-    setConfirmDisconnect(platformName);
+    setConnectedPlatforms(prev => ({
+      ...prev,
+      [platformName]: false
+    }));
+    toast.success(`${platformName} disconnected successfully`);
+    setConfirmDisconnect(null);
+  };
+
+  const handleConnectPlatform = (platformName: string) => {
+    setConnectedPlatforms(prev => ({
+      ...prev,
+      [platformName]: true
+    }));
+    toast.success(`${platformName} connected successfully`);
   };
 
   const confirmPlatformDisconnect = () => {
@@ -186,11 +204,18 @@ const SocialPage = () => {
                 key={platform}
                 name={platform}
                 icon={getPlatformIconComponent(platform)}
-                status="connected"
+                status={connectedPlatforms[platform as keyof typeof connectedPlatforms] ? "connected" : "disconnected"}
                 accountName={platform === "LinkedIn" ? "Glidrclick" : (platform === "Facebook" ? "Glidrclick" : "@glidrclick")}
                 lastSync={platform === "Instagram" ? "1 day ago" : (platform === "Twitter" ? "4 hours ago" : "2 hours ago")}
                 onSettings={() => handleOpenPlatformSettings(platform)}
-                onDisconnect={() => handleDisconnectPlatform(platform)}
+                onDisconnect={() => {
+                  if (connectedPlatforms[platform as keyof typeof connectedPlatforms]) {
+                    setConfirmDisconnect(platform);
+                  } else {
+                    handleConnectPlatform(platform);
+                  }
+                }}
+                isConnected={connectedPlatforms[platform as keyof typeof connectedPlatforms]}
               />
             ))}
             
@@ -532,6 +557,7 @@ interface ConnectedPlatformProps {
   lastSync?: string;
   onSettings: () => void;
   onDisconnect: () => void;
+  isConnected: boolean;
 }
 
 const ConnectedPlatform = ({ 
@@ -541,7 +567,8 @@ const ConnectedPlatform = ({
   accountName, 
   lastSync, 
   onSettings, 
-  onDisconnect 
+  onDisconnect,
+  isConnected 
 }: ConnectedPlatformProps) => {
   const getStatusClass = () => {
     switch (status) {
@@ -594,8 +621,13 @@ const ConnectedPlatform = ({
           <Button variant="outline" size="sm" onClick={onSettings}>
             Settings
           </Button>
-          <Button variant="outline" size="sm" className="text-red-600" onClick={onDisconnect}>
-            Disconnect
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className={isConnected ? "text-red-600" : "text-green-600"}
+            onClick={onDisconnect}
+          >
+            {isConnected ? "Disconnect" : "Connect"}
           </Button>
         </div>
       </CardContent>
