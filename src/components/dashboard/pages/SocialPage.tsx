@@ -266,7 +266,7 @@ const mentions = [
     platform: 'twitter',
     username: '@customer123',
     timeAgo: '30 minutes ago',
-    content: 'Just tried @glidrclick for the first time and I'm impressed! #contentmarketing'
+    content: 'Just tried @glidrclick for the first time and I\'m impressed! #contentmarketing'
   },
   {
     id: 2,
@@ -295,7 +295,7 @@ const scheduledPosts = [
   {
     id: 2,
     title: 'New Product Announcement',
-    content: 'We're excited to announce our latest feature: AI-powered content suggestions!',
+    content: 'We\'re excited to announce our latest feature: AI-powered content suggestions!',
     platforms: ['Facebook', 'Instagram', 'LinkedIn'],
     scheduledFor: 'Apr 28, 2025, 10:30 AM'
   },
