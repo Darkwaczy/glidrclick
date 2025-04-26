@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation, useSearchParams, Routes, Route } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams, Routes, Route, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
@@ -57,8 +57,8 @@ const Dashboard = () => {
     toast.info(`Switched to ${value} tab`);
   };
 
-  // Determine if we need to show the dashboard content or a specific page
-  const showDashboardContent = location.pathname === "/dashboard" || location.pathname === "/dashboard/";
+  // Get the current path to determine what to render
+  const path = location.pathname;
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -66,7 +66,7 @@ const Dashboard = () => {
       <div className="flex-1 flex flex-col">
         <DashboardHeader onWatchDemo={watchDemo} />
         <main className="flex-1 p-4 md:p-8 overflow-y-auto">
-          {showDashboardContent ? (
+          {path === "/dashboard" && (
             <>
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <div>
@@ -89,17 +89,15 @@ const Dashboard = () => {
                 <DashboardTabContent activeTab={activeTab} />
               </Tabs>
             </>
-          ) : (
-            <Routes>
-              <Route path="content" element={<ContentPage />} />
-              <Route path="schedule" element={<SchedulePage />} />
-              <Route path="analytics" element={<AnalyticsPage />} />
-              <Route path="social" element={<SocialPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="new-post" element={<NewPostPage />} />
-            </Routes>
           )}
+          
+          {path === "/dashboard/content" && <ContentPage />}
+          {path === "/dashboard/schedule" && <SchedulePage />}
+          {path === "/dashboard/analytics" && <AnalyticsPage />}
+          {path === "/dashboard/social" && <SocialPage />}
+          {path === "/dashboard/profile" && <ProfilePage />}
+          {path === "/dashboard/settings" && <SettingsPage />}
+          {path === "/dashboard/new-post" && <NewPostPage />}
         </main>
       </div>
       

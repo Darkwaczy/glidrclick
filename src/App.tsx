@@ -31,14 +31,7 @@ const App = () => (
           <Route path="/register" element={<Register />} />
           
           {/* Dashboard routes */}
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/dashboard/new-post" element={<Dashboard />} />
-          <Route path="/dashboard/content" element={<Dashboard />} />
-          <Route path="/dashboard/schedule" element={<Dashboard />} />
-          <Route path="/dashboard/analytics" element={<Dashboard />} />
-          <Route path="/dashboard/social" element={<Dashboard />} />
-          <Route path="/dashboard/profile" element={<Dashboard />} />
-          <Route path="/dashboard/settings" element={<Dashboard />} />
+          <Route path="/dashboard/*" element={<Dashboard />} />
           
           {/* Admin dashboard routes */}
           <Route path="/admin-dashboard/*" element={<AdminDashboard />} />
