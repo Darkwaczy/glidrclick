@@ -29,7 +29,9 @@ const App = () => (
           <Route path="/features/social-sharing" element={<SocialSharing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/dashboard/*" element={<Dashboard />} />
+          
+          {/* Dashboard routes */}
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/new-post" element={<Dashboard />} />
           <Route path="/dashboard/content" element={<Dashboard />} />
           <Route path="/dashboard/schedule" element={<Dashboard />} />
@@ -37,7 +39,10 @@ const App = () => (
           <Route path="/dashboard/social" element={<Dashboard />} />
           <Route path="/dashboard/profile" element={<Dashboard />} />
           <Route path="/dashboard/settings" element={<Dashboard />} />
+          
+          {/* Admin dashboard routes */}
           <Route path="/admin-dashboard/*" element={<AdminDashboard />} />
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -1,113 +1,50 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { 
-  Bell, ChevronDown, LayoutDashboard, 
-  Settings, LogOut, User
-} from "lucide-react";
-import { toast } from "sonner";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Bell, User, Search, Play } from "lucide-react";
 
-const DashboardHeader = ({ title = "Dashboard" }: { title?: string }) => {
+interface DashboardHeaderProps {
+  onWatchDemo: () => void;
+}
+
+const DashboardHeader = ({ onWatchDemo }: DashboardHeaderProps) => {
   const navigate = useNavigate();
-  const [notificationsCount, setNotificationsCount] = useState(2);
-  
-  const handleLogout = () => {
-    toast.success("Logged out successfully!");
-    setTimeout(() => navigate("/"), 1500);
-  };
-
-  const handleNotificationClick = () => {
-    toast.info("Viewing notifications");
-    setNotificationsCount(0);
-  };
 
   return (
-    <header className="bg-white border-b sticky top-0 z-10">
-      <div className="flex justify-between items-center p-4">
-        <div className="flex gap-2 items-center">
-          <Button variant="ghost" className="md:hidden">
-            <LayoutDashboard size={20} />
-          </Button>
-          <h1 className="text-lg font-semibold">{title}</h1>
+    <header className="bg-white p-4 border-b flex justify-between items-center sticky top-0 z-10">
+      <div className="flex items-center md:hidden">
+        <h1 className="text-xl font-bold gradient-text">Glidrclick</h1>
+      </div>
+      
+      <div className="hidden md:flex items-center space-x-4">
+        <Button 
+          variant="outline" 
+          className="flex items-center gap-2" 
+          onClick={onWatchDemo}
+        >
+          <Play size={16} /> Watch Demo
+        </Button>
+        
+        <div className="relative w-64">
+          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+          <input 
+            type="text" 
+            placeholder="Search..." 
+            className="pl-8 pr-4 py-2 border rounded-md w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                {notificationsCount > 0 && (
-                  <div className="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center text-white text-xs">
-                    {notificationsCount}
-                  </div>
-                )}
-                <Bell size={20} />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80">
-              <div className="p-2 font-medium">Notifications</div>
-              <DropdownMenuSeparator />
-              <div className="max-h-96 overflow-auto">
-                <DropdownMenuItem className="p-3 cursor-pointer">
-                  <div>
-                    <p className="font-medium">Post Scheduled</p>
-                    <p className="text-sm text-gray-500">Your post "10 Ways to Improve Your Social Media Strategy" has been scheduled for tomorrow.</p>
-                    <p className="text-xs text-gray-400 mt-1">5 minutes ago</p>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="p-3 cursor-pointer">
-                  <div>
-                    <p className="font-medium">Post Published</p>
-                    <p className="text-sm text-gray-500">Your post "Email Marketing Best Practices for 2025" has been published.</p>
-                    <p className="text-xs text-gray-400 mt-1">Yesterday</p>
-                  </div>
-                </DropdownMenuItem>
-              </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="p-2 text-center cursor-pointer">
-                <Button variant="ghost" className="w-full" onClick={handleNotificationClick}>
-                  Mark all as read
-                </Button>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          <Separator orientation="vertical" className="h-6" />
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <div className="flex items-center gap-2 cursor-pointer">
-                <div className="h-8 w-8 rounded-full bg-glidr-purple flex items-center justify-center text-white font-semibold">
-                  U
-                </div>
-                <span className="hidden sm:inline">User</span>
-                <ChevronDown size={16} />
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/dashboard/profile")}>
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/dashboard/settings")}>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+      </div>
+      
+      <div className="flex items-center space-x-2">
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell size={20} />
+          <span className="absolute top-1 right-1 bg-red-500 rounded-full w-2 h-2"></span>
+        </Button>
+        
+        <Button variant="ghost" size="icon">
+          <User size={20} />
+        </Button>
       </div>
     </header>
   );

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams, Routes, Route } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import AdminSidebar from "@/components/admin/AdminSidebar";
@@ -40,30 +40,45 @@ const AdminDashboard = () => {
     toast.info(`Switched to ${value} tab`);
   };
 
+  // Determine if we need to show the dashboard content or a specific page
+  const showDashboardContent = location.pathname === "/admin-dashboard" || location.pathname === "/admin-dashboard/";
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <AdminSidebar activePage={activePage} />
       <div className="flex-1 flex flex-col">
         <AdminHeader />
         <main className="flex-1 p-4 md:p-8 overflow-y-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-            <div>
-              <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-              <p className="text-gray-600">System overview and user management</p>
-            </div>
-          </div>
+          {showDashboardContent ? (
+            <>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div>
+                  <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+                  <p className="text-gray-600">System overview and user management</p>
+                </div>
+              </div>
 
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="mb-6">
-              <TabsTrigger value="users">Users</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="system">System</TabsTrigger>
-              <TabsTrigger value="security">Security</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
-            </TabsList>
-            
-            <AdminTabContent activeTab={activeTab} />
-          </Tabs>
+              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                <TabsList className="mb-6">
+                  <TabsTrigger value="users">Users</TabsTrigger>
+                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                  <TabsTrigger value="system">System</TabsTrigger>
+                  <TabsTrigger value="security">Security</TabsTrigger>
+                  <TabsTrigger value="settings">Settings</TabsTrigger>
+                </TabsList>
+                
+                <AdminTabContent activeTab={activeTab} />
+              </Tabs>
+            </>
+          ) : (
+            <Routes>
+              {/* Add routes for admin-specific pages here if needed */}
+              <Route path="users" element={<div>User Management Page</div>} />
+              <Route path="system" element={<div>System Management Page</div>} />
+              <Route path="security" element={<div>Security Management Page</div>} />
+              {/* Add more routes as needed */}
+            </Routes>
+          )}
         </main>
       </div>
     </div>

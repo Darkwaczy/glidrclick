@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams, Routes, Route } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
@@ -8,6 +8,14 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import DashboardTabContent from "@/components/dashboard/content/DashboardTabContent";
+import ContentPage from "@/components/dashboard/pages/ContentPage";
+import SchedulePage from "@/components/dashboard/pages/SchedulePage";
+import AnalyticsPage from "@/components/dashboard/pages/AnalyticsPage";
+import SocialPage from "@/components/dashboard/pages/SocialPage";
+import ProfilePage from "@/components/dashboard/pages/ProfilePage";
+import SettingsPage from "@/components/dashboard/pages/SettingsPage";
+import NewPostPage from "@/components/dashboard/pages/NewPostPage";
+import WatchDemoModal from "@/components/dashboard/WatchDemoModal";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -15,6 +23,7 @@ const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("posts");
   const [activePage, setActivePage] = useState("dashboard");
+  const [demoModalOpen, setDemoModalOpen] = useState(false);
 
   // Update active page based on current route
   useEffect(() => {
@@ -35,8 +44,11 @@ const Dashboard = () => {
   }, [searchParams]);
 
   const createPost = () => {
-    toast.success("Creating new post...");
     navigate("/dashboard/new-post");
+  };
+
+  const watchDemo = () => {
+    setDemoModalOpen(true);
   };
 
   const handleTabChange = (value: string) => {
@@ -45,34 +57,53 @@ const Dashboard = () => {
     toast.info(`Switched to ${value} tab`);
   };
 
+  // Determine if we need to show the dashboard content or a specific page
+  const showDashboardContent = location.pathname === "/dashboard" || location.pathname === "/dashboard/";
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <DashboardSidebar activePage={activePage} />
       <div className="flex-1 flex flex-col">
-        <DashboardHeader />
+        <DashboardHeader onWatchDemo={watchDemo} />
         <main className="flex-1 p-4 md:p-8 overflow-y-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-            <div>
-              <h1 className="text-2xl font-bold">Welcome back, User!</h1>
-              <p className="text-gray-600">Here's what's happening with your content</p>
-            </div>
-            <Button className="gradient-button text-white" onClick={createPost}>
-              <Plus size={18} className="mr-2" /> Create New Post
-            </Button>
-          </div>
+          {showDashboardContent ? (
+            <>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div>
+                  <h1 className="text-2xl font-bold">Welcome back, User!</h1>
+                  <p className="text-gray-600">Here's what's happening with your content</p>
+                </div>
+                <Button className="gradient-button text-white" onClick={createPost}>
+                  <Plus size={18} className="mr-2" /> Create New Post
+                </Button>
+              </div>
 
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="mb-6">
-              <TabsTrigger value="posts">Posts</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="platforms">Platforms</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
-            </TabsList>
-            
-            <DashboardTabContent activeTab={activeTab} />
-          </Tabs>
+              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                <TabsList className="mb-6">
+                  <TabsTrigger value="posts">Posts</TabsTrigger>
+                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                  <TabsTrigger value="platforms">Platforms</TabsTrigger>
+                  <TabsTrigger value="settings">Settings</TabsTrigger>
+                </TabsList>
+                
+                <DashboardTabContent activeTab={activeTab} />
+              </Tabs>
+            </>
+          ) : (
+            <Routes>
+              <Route path="content" element={<ContentPage />} />
+              <Route path="schedule" element={<SchedulePage />} />
+              <Route path="analytics" element={<AnalyticsPage />} />
+              <Route path="social" element={<SocialPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="new-post" element={<NewPostPage />} />
+            </Routes>
+          )}
         </main>
       </div>
+      
+      <WatchDemoModal open={demoModalOpen} onOpenChange={setDemoModalOpen} />
     </div>
   );
 };
