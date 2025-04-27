@@ -1,57 +1,96 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  CardTitle, 
+  CardDescription 
+} from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { Share2, RefreshCw, Plus, X, Instagram, Facebook, Twitter, Linkedin, Link2, CheckCircle } from "lucide-react";
+import type { SocialPlatform } from "@/utils/socialConnections";
 import { 
-  Share2, 
-  RefreshCw, 
-  Plus, 
-  X, 
-  Instagram, 
-  Facebook, 
-  Twitter, 
-  Linkedin, 
-  Link2,
-  CheckCircle
-} from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import type { LucideIcon } from "lucide-react";
+  getSocialPlatforms, 
+  connectPlatform, 
+  disconnectPlatform, 
+  updatePlatformSettings 
+} from "@/utils/socialConnections";
 
 const SocialPage = () => {
-  const navigate = useNavigate();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [platforms, setPlatforms] = useState<SocialPlatform[]>([]);
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [currentPlatform, setCurrentPlatform] = useState<string | null>(null);
   const [replyingToMention, setReplyingToMention] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [showCreatePostDialog, setShowCreatePostDialog] = useState(false);
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
   const [mentionsList, setMentionsList] = useState(mentions);
   const [scheduledPostsList, setScheduledPostsList] = useState(scheduledPosts);
-  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
-  const [currentPlatform, setCurrentPlatform] = useState("");
-  const [confirmDisconnect, setConfirmDisconnect] = useState<string | null>(null);
-  const [connectedPlatforms, setConnectedPlatforms] = useState({
-    Facebook: true,
-    Twitter: true,
-    Instagram: true,
-    LinkedIn: true
-  });
+
+  useEffect(() => {
+    loadPlatforms();
+  }, []);
+
+  const loadPlatforms = () => {
+    const loadedPlatforms = getSocialPlatforms();
+    setPlatforms(loadedPlatforms);
+  };
 
   const handleRefreshConnections = () => {
     setIsRefreshing(true);
-    toast.info("Refreshing connection status...");
+    loadPlatforms();
     
-    // Simulate refresh with timeout
     setTimeout(() => {
       setIsRefreshing(false);
       toast.success("Connections refreshed successfully!");
     }, 1000);
   };
-  
+
+  const handleConnectPlatform = async (platformId: string) => {
+    toast.loading("Connecting to platform...");
+    const success = await connectPlatform(platformId);
+    
+    if (success) {
+      loadPlatforms();
+      toast.success("Platform connected successfully!");
+    } else {
+      toast.error("Failed to connect platform. Please try again.");
+    }
+  };
+
+  const handleDisconnectPlatform = (platformId: string) => {
+    const success = disconnectPlatform(platformId);
+    if (success) {
+      loadPlatforms();
+      toast.success("Platform disconnected successfully!");
+    } else {
+      toast.error("Failed to disconnect platform.");
+    }
+  };
+
+  const handleOpenPlatformSettings = (platformId: string) => {
+    setCurrentPlatform(platformId);
+    setShowSettingsDialog(true);
+  };
+
+  const handleSavePlatformSettings = (platformId: string, settings: Partial<SocialPlatform>) => {
+    const success = updatePlatformSettings(platformId, settings);
+    if (success) {
+      loadPlatforms();
+      setShowSettingsDialog(false);
+      toast.success("Settings updated successfully!");
+    } else {
+      toast.error("Failed to update settings.");
+    }
+  };
+
   const handleOpenReplyDialog = (mentionId: number) => {
     setReplyingToMention(mentionId);
     setReplyContent("");
@@ -80,7 +119,7 @@ const SocialPage = () => {
   };
   
   const handleEditScheduledPost = (postId: number) => {
-    setEditingPostId(postId);
+    // setEditingPostId(postId);
   };
   
   const handleCancelScheduledPost = (postId: number) => {
@@ -120,60 +159,26 @@ const SocialPage = () => {
   
   const handleUpdatePost = (e: React.FormEvent) => {
     e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const title = (form.elements.namedItem("edit-post-title") as HTMLInputElement).value;
-    const content = (form.elements.namedItem("edit-post-content") as HTMLTextAreaElement).value;
-    const date = (form.elements.namedItem("edit-schedule-date") as HTMLInputElement).value;
+    // const form = e.target as HTMLFormElement;
+    // const title = (form.elements.namedItem("edit-post-title") as HTMLInputElement).value;
+    // const content = (form.elements.namedItem("edit-post-content") as HTMLTextAreaElement).value;
+    // const date = (form.elements.namedItem("edit-schedule-date") as HTMLInputElement).value;
     
-    setScheduledPostsList(posts => 
-      posts.map(post => 
-        post.id === editingPostId 
-          ? { 
-              ...post, 
-              title, 
-              content, 
-              scheduledFor: new Date(date).toLocaleString()
-            } 
-          : post
-      )
-    );
+    // setScheduledPostsList(posts => 
+    //   posts.map(post => 
+    //     post.id === editingPostId 
+    //       ? { 
+    //           ...post, 
+    //           title, 
+    //           content, 
+    //           scheduledFor: new Date(date).toLocaleString()
+    //         } 
+    //       : post
+    //   )
+    // );
     
     setEditingPostId(null);
     toast.success("Post updated successfully!");
-  };
-  
-  const handleOpenPlatformSettings = (platformName: string) => {
-    setCurrentPlatform(platformName);
-    setShowSettingsDialog(true);
-  };
-
-  const handleDisconnectPlatform = (platformName: string) => {
-    setConnectedPlatforms(prev => ({
-      ...prev,
-      [platformName]: false
-    }));
-    toast.success(`${platformName} disconnected successfully`);
-    setConfirmDisconnect(null);
-  };
-
-  const handleConnectPlatform = (platformName: string) => {
-    setConnectedPlatforms(prev => ({
-      ...prev,
-      [platformName]: true
-    }));
-    toast.success(`${platformName} connected successfully`);
-  };
-
-  const confirmPlatformDisconnect = () => {
-    if (confirmDisconnect) {
-      toast.success(`${confirmDisconnect} disconnected successfully`);
-      setConfirmDisconnect(null);
-    }
-  };
-  
-  const handleSavePlatformSettings = () => {
-    toast.success(`${currentPlatform} settings updated!`);
-    setShowSettingsDialog(false);
   };
 
   return (
@@ -199,23 +204,12 @@ const SocialPage = () => {
         
         <TabsContent value="connected" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {["Facebook", "Twitter", "Instagram", "LinkedIn"].map((platform) => (
-              <ConnectedPlatform 
-                key={platform}
-                name={platform}
-                icon={getPlatformIconComponent(platform)}
-                status={connectedPlatforms[platform as keyof typeof connectedPlatforms] ? "connected" : "disconnected"}
-                accountName={platform === "LinkedIn" ? "Glidrclick" : (platform === "Facebook" ? "Glidrclick" : "@glidrclick")}
-                lastSync={platform === "Instagram" ? "1 day ago" : (platform === "Twitter" ? "4 hours ago" : "2 hours ago")}
-                onSettings={() => handleOpenPlatformSettings(platform)}
-                onDisconnect={() => {
-                  if (connectedPlatforms[platform as keyof typeof connectedPlatforms]) {
-                    setConfirmDisconnect(platform);
-                  } else {
-                    handleConnectPlatform(platform);
-                  }
-                }}
-                isConnected={connectedPlatforms[platform as keyof typeof connectedPlatforms]}
+            {platforms.filter(platform => platform.isConnected).map(platform => (
+              <ConnectedPlatform
+                key={platform.id}
+                platform={platform}
+                onSettings={() => handleOpenPlatformSettings(platform.id)}
+                onDisconnect={() => handleDisconnectPlatform(platform.id)}
               />
             ))}
             
@@ -225,10 +219,20 @@ const SocialPage = () => {
                   <Plus size={24} className="text-gray-500" />
                 </div>
                 <h3 className="font-medium text-lg mb-2">Connect New Platform</h3>
-                <p className="text-sm text-gray-500 text-center mb-4">Add more social media accounts to manage</p>
-                <Button onClick={() => toast.success("Opening connection wizard...")}>
-                  Connect Account
-                </Button>
+                <p className="text-sm text-gray-500 text-center mb-4">
+                  Add more social media accounts to manage
+                </p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {platforms.filter(p => !p.isConnected).map(platform => (
+                    <Button
+                      key={platform.id}
+                      variant="outline"
+                      onClick={() => handleConnectPlatform(platform.id)}
+                    >
+                      Connect {platform.name}
+                    </Button>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -326,6 +330,79 @@ const SocialPage = () => {
         </TabsContent>
       </Tabs>
       
+      {/* Platform Settings Dialog */}
+      <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {platforms.find(p => p.id === currentPlatform)?.name} Settings
+            </DialogTitle>
+          </DialogHeader>
+          {currentPlatform && (
+            <>
+              <div className="py-4 space-y-4">
+                <div className="space-y-2">
+                  <Label>Sync Frequency</Label>
+                  <Select
+                    defaultValue={platforms.find(p => p.id === currentPlatform)?.syncFrequency || "daily"}
+                    onValueChange={(value) => {
+                      handleSavePlatformSettings(currentPlatform, {
+                        syncFrequency: value as "realtime" | "hourly" | "daily"
+                      });
+                    }}
+                  >
+                    <option value="realtime">Real-time</option>
+                    <option value="hourly">Hourly</option>
+                    <option value="daily">Daily</option>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Notification Preferences</Label>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="notify-mentions">Mentions & Comments</Label>
+                      <Switch
+                        id="notify-mentions"
+                        defaultChecked={platforms.find(p => p.id === currentPlatform)?.notifications?.mentions}
+                        onCheckedChange={(checked) => {
+                          handleSavePlatformSettings(currentPlatform, {
+                            notifications: {
+                              ...platforms.find(p => p.id === currentPlatform)?.notifications,
+                              mentions: checked
+                            }
+                          });
+                        }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="notify-messages">Direct Messages</Label>
+                      <Switch
+                        id="notify-messages"
+                        defaultChecked={platforms.find(p => p.id === currentPlatform)?.notifications?.messages}
+                        onCheckedChange={(checked) => {
+                          handleSavePlatformSettings(currentPlatform, {
+                            notifications: {
+                              ...platforms.find(p => p.id === currentPlatform)?.notifications,
+                              messages: checked
+                            }
+                          });
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowSettingsDialog(false)}>
+                  Close
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+      
       {/* Reply Dialog */}
       <Dialog open={replyingToMention !== null} onOpenChange={(open) => !open && setReplyingToMention(null)}>
         <DialogContent className="sm:max-w-[500px]">
@@ -349,12 +426,13 @@ const SocialPage = () => {
             
             <div className="space-y-2">
               <Label htmlFor="reply">Your Reply</Label>
-              <Textarea 
+              <textarea 
                 id="reply" 
                 placeholder="Write your reply..." 
                 value={replyContent}
                 onChange={(e) => setReplyContent(e.target.value)}
                 rows={3}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
           </div>
@@ -384,12 +462,13 @@ const SocialPage = () => {
               
               <div className="space-y-2">
                 <Label htmlFor="post-content">Content</Label>
-                <Textarea 
+                <textarea 
                   id="post-content" 
                   name="post-content"
                   placeholder="Write your post content here..." 
                   rows={4}
                   required
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
               
@@ -449,12 +528,13 @@ const SocialPage = () => {
                 
                 <div className="space-y-2">
                   <Label htmlFor="edit-post-content">Content</Label>
-                  <Textarea 
+                  <textarea 
                     id="edit-post-content" 
                     name="edit-post-content"
                     defaultValue={scheduledPostsList.find(p => p.id === editingPostId)?.content}
                     rows={4}
                     required
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
                 
@@ -481,125 +561,28 @@ const SocialPage = () => {
           </DialogContent>
         </Dialog>
       )}
-      
-      {/* Platform Settings Dialog */}
-      <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{currentPlatform} Settings</DialogTitle>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div className="space-y-2">
-              <Label>Sync Frequency</Label>
-              <select className="w-full p-2 border rounded-md">
-                <option value="realtime">Real-time</option>
-                <option value="hourly">Hourly</option>
-                <option value="daily">Daily</option>
-              </select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Notification Preferences</Label>
-              <div className="space-y-2">
-                <div className="flex items-center">
-                  <input type="checkbox" id="notify-mentions" className="mr-2" defaultChecked />
-                  <Label htmlFor="notify-mentions">Mentions & Comments</Label>
-                </div>
-                <div className="flex items-center">
-                  <input type="checkbox" id="notify-messages" className="mr-2" defaultChecked />
-                  <Label htmlFor="notify-messages">Direct Messages</Label>
-                </div>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowSettingsDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSavePlatformSettings}>
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Disconnect Confirmation Dialog */}
-      <Dialog open={confirmDisconnect !== null} onOpenChange={() => setConfirmDisconnect(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Disconnect {confirmDisconnect}</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p>Are you sure you want to disconnect your {confirmDisconnect} account?</p>
-            <p className="text-sm text-gray-500 mt-1">
-              Your scheduled posts for this platform will not be published.
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmDisconnect(null)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={confirmPlatformDisconnect}>
-              Disconnect
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
 
 interface ConnectedPlatformProps {
-  name: string;
-  icon: React.ElementType;
-  status: "connected" | "disconnected" | "error";
-  accountName: string;
-  lastSync?: string;
+  platform: SocialPlatform;
   onSettings: () => void;
   onDisconnect: () => void;
-  isConnected: boolean;
 }
 
-const ConnectedPlatform = ({ 
-  name, 
-  icon: Icon, 
-  status, 
-  accountName, 
-  lastSync, 
-  onSettings, 
-  onDisconnect,
-  isConnected 
-}: ConnectedPlatformProps) => {
-  const getStatusClass = () => {
-    switch (status) {
-      case "connected": return "text-green-600";
-      case "disconnected": return "text-gray-600";
-      case "error": return "text-red-600";
-      default: return "text-gray-600";
-    }
-  };
-  
-  const getStatusIcon = () => {
-    switch (status) {
-      case "connected": return <CheckCircle size={14} className="text-green-600 mr-1" />;
-      case "disconnected": return <X size={14} className="text-gray-600 mr-1" />;
-      case "error": return <X size={14} className="text-red-600 mr-1" />;
-      default: return null;
-    }
-  };
-  
+const ConnectedPlatform = ({ platform, onSettings, onDisconnect }: ConnectedPlatformProps) => {
   return (
     <Card>
       <CardContent className="p-6">
         <div className="flex items-center mb-4">
           <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
-            <Icon size={24} className="text-blue-600" />
+            <Share2 size={24} className="text-blue-600" />
           </div>
           <div>
-            <h3 className="font-medium text-lg">{name}</h3>
-            <div className={`flex items-center text-sm ${getStatusClass()}`}>
-              {getStatusIcon()}
-              <span className="capitalize">{status}</span>
+            <h3 className="font-medium text-lg">{platform.name}</h3>
+            <div className="flex items-center text-sm text-green-600">
+              <span>Connected</span>
             </div>
           </div>
         </div>
@@ -607,12 +590,12 @@ const ConnectedPlatform = ({
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Account</span>
-            <span className="font-medium">{accountName}</span>
+            <span className="font-medium">{platform.accountName}</span>
           </div>
-          {lastSync && (
+          {platform.lastSync && (
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Last synced</span>
-              <span>{lastSync}</span>
+              <span>{new Date(platform.lastSync).toLocaleString()}</span>
             </div>
           )}
         </div>
@@ -623,11 +606,11 @@ const ConnectedPlatform = ({
           </Button>
           <Button 
             variant="outline" 
-            size="sm" 
-            className={isConnected ? "text-red-600" : "text-green-600"}
+            size="sm"
+            className="text-red-600"
             onClick={onDisconnect}
           >
-            {isConnected ? "Disconnect" : "Connect"}
+            Disconnect
           </Button>
         </div>
       </CardContent>
