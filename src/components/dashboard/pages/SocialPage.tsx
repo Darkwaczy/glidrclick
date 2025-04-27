@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -15,19 +14,21 @@ import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Share2, RefreshCw, Plus, X, Instagram, Facebook, Twitter, Linkedin, Link2, CheckCircle } from "lucide-react";
+import { Share2, RefreshCw, Plus, X, Instagram, Facebook, Twitter, Linkedin, Link2, FileText } from "lucide-react";
 import type { SocialPlatform } from "@/utils/socialConnections";
 import { 
   getSocialPlatforms, 
   connectPlatform, 
   disconnectPlatform, 
-  updatePlatformSettings 
+  updatePlatformSettings,
+  publishToSocialMedia
 } from "@/utils/socialConnections";
 
 const SocialPage = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [platforms, setPlatforms] = useState<SocialPlatform[]>([]);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [showConnectDialog, setShowConnectDialog] = useState(false);
   const [currentPlatform, setCurrentPlatform] = useState<string | null>(null);
   const [replyingToMention, setReplyingToMention] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState("");
@@ -35,45 +36,56 @@ const SocialPage = () => {
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
   const [mentionsList, setMentionsList] = useState(mentions);
   const [scheduledPostsList, setScheduledPostsList] = useState(scheduledPosts);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadPlatforms();
+
+    // Check if we were redirected back after OAuth
+    const urlParams = new URLSearchParams(window.location.search);
+    const connectedPlatform = urlParams.get('connected');
+    const error = urlParams.get('error');
+    
+    if (connectedPlatform) {
+      toast.success(`Connected to ${connectedPlatform} successfully!`);
+      // Clean up the URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (error) {
+      toast.error(`Connection failed: ${error}`);
+      // Clean up the URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   }, []);
 
-  const loadPlatforms = () => {
-    const loadedPlatforms = getSocialPlatforms();
-    setPlatforms(loadedPlatforms);
+  const loadPlatforms = async () => {
+    setIsLoading(true);
+    try {
+      const loadedPlatforms = await getSocialPlatforms();
+      setPlatforms(loadedPlatforms);
+    } catch (error) {
+      console.error("Failed to load platforms:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRefreshConnections = () => {
     setIsRefreshing(true);
-    loadPlatforms();
-    
-    setTimeout(() => {
+    loadPlatforms().then(() => {
       setIsRefreshing(false);
       toast.success("Connections refreshed successfully!");
-    }, 1000);
+    });
   };
 
-  const handleConnectPlatform = async (platformId: string) => {
-    toast.loading("Connecting to platform...");
-    const success = await connectPlatform(platformId);
-    
-    if (success) {
-      loadPlatforms();
-      toast.success("Platform connected successfully!");
-    } else {
-      toast.error("Failed to connect platform. Please try again.");
-    }
+  const handleConnectPlatform = (platformId: string) => {
+    connectPlatform(platformId);
+    setShowConnectDialog(false);
   };
 
-  const handleDisconnectPlatform = (platformId: string) => {
-    const success = disconnectPlatform(platformId);
+  const handleDisconnectPlatform = async (platformId: string) => {
+    const success = await disconnectPlatform(platformId);
     if (success) {
       loadPlatforms();
-      toast.success("Platform disconnected successfully!");
-    } else {
-      toast.error("Failed to disconnect platform.");
     }
   };
 
@@ -82,8 +94,8 @@ const SocialPage = () => {
     setShowSettingsDialog(true);
   };
 
-  const handleSavePlatformSettings = (platformId: string, settings: Partial<SocialPlatform>) => {
-    const success = updatePlatformSettings(platformId, settings);
+  const handleSavePlatformSettings = async (platformId: string, settings: Partial<SocialPlatform>) => {
+    const success = await updatePlatformSettings(platformId, settings);
     if (success) {
       loadPlatforms();
       setShowSettingsDialog(false);
@@ -91,6 +103,10 @@ const SocialPage = () => {
     } else {
       toast.error("Failed to update settings.");
     }
+  };
+
+  const handleOpenConnectDialog = () => {
+    setShowConnectDialog(true);
   };
 
   const handleOpenReplyDialog = (mentionId: number) => {
@@ -120,23 +136,11 @@ const SocialPage = () => {
     setMentionsList(mentionsList.filter(mention => mention.id !== mentionId));
   };
   
-  const handleEditScheduledPost = (postId: number) => {
-    // setEditingPostId(postId);
-  };
-  
-  const handleCancelScheduledPost = (postId: number) => {
-    toast.info("Cancelling scheduled post...");
-    
-    // Remove the post from the list
-    setScheduledPostsList(scheduledPostsList.filter(post => post.id !== postId));
-    toast.success("Post has been cancelled");
-  };
-  
   const handleCreatePost = () => {
     setShowCreatePostDialog(true);
   };
   
-  const handleSubmitNewPost = (e: React.FormEvent) => {
+  const handleSubmitNewPost = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Get form data
@@ -145,44 +149,57 @@ const SocialPage = () => {
     const content = (form.elements.namedItem("post-content") as HTMLTextAreaElement).value;
     const date = (form.elements.namedItem("schedule-date") as HTMLInputElement).value;
     
-    // Add to scheduled posts
-    const newPost = {
-      id: scheduledPostsList.length + 1,
-      title,
-      content,
-      platforms: ["Facebook", "Twitter"],  // Example platforms
-      scheduledFor: new Date(date).toLocaleString()
-    };
+    // Get selected platforms
+    const selectedPlatforms: string[] = [];
+    platforms.forEach(platform => {
+      const checkbox = form.elements.namedItem(`platform-${platform.id}`) as HTMLInputElement;
+      if (checkbox && checkbox.checked) {
+        selectedPlatforms.push(platform.id);
+      }
+    });
     
-    setScheduledPostsList([...scheduledPostsList, newPost]);
+    if (selectedPlatforms.length === 0) {
+      toast.error("Please select at least one platform");
+      return;
+    }
+    
+    // Check if date is in the past
+    if (new Date(date) < new Date()) {
+      toast.error("Please select a future date for scheduling");
+      return;
+    }
+    
+    // For immediate posting
+    const isImmediate = form.elements.namedItem("post-immediate") as HTMLInputElement;
+    
+    if (isImmediate && isImmediate.checked) {
+      // Post immediately to each selected platform
+      for (const platformId of selectedPlatforms) {
+        try {
+          await publishToSocialMedia(platformId, content, title);
+        } catch (error) {
+          console.error(`Failed to post to ${platformId}:`, error);
+        }
+      }
+      
+      toast.success("Content posted successfully!");
+    } else {
+      // Add to scheduled posts for future publishing
+      const newPost = {
+        id: scheduledPostsList.length + 1,
+        title,
+        content,
+        platforms: selectedPlatforms.map(id => platforms.find(p => p.id === id)?.name || id),
+        scheduledFor: new Date(date).toLocaleString()
+      };
+      
+      setScheduledPostsList([...scheduledPostsList, newPost]);
+      toast.success("Post scheduled successfully!");
+    }
+    
     setShowCreatePostDialog(false);
-    toast.success("Post scheduled successfully!");
   };
   
-  const handleUpdatePost = (e: React.FormEvent) => {
-    e.preventDefault();
-    // const form = e.target as HTMLFormElement;
-    // const title = (form.elements.namedItem("edit-post-title") as HTMLInputElement).value;
-    // const content = (form.elements.namedItem("edit-post-content") as HTMLTextAreaElement).value;
-    // const date = (form.elements.namedItem("edit-schedule-date") as HTMLInputElement).value;
-    
-    // setScheduledPostsList(posts => 
-    //   posts.map(post => 
-    //     post.id === editingPostId 
-    //       ? { 
-    //           ...post, 
-    //           title, 
-    //           content, 
-    //           scheduledFor: new Date(date).toLocaleString()
-    //         } 
-    //       : post
-    //   )
-    // );
-    
-    setEditingPostId(null);
-    toast.success("Post updated successfully!");
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -191,7 +208,7 @@ const SocialPage = () => {
           <p className="text-gray-600">Connect and manage your social media accounts</p>
         </div>
         
-        <Button onClick={handleRefreshConnections} disabled={isRefreshing}>
+        <Button onClick={handleRefreshConnections} disabled={isRefreshing || isLoading}>
           <RefreshCw size={16} className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} /> 
           {isRefreshing ? 'Refreshing...' : 'Refresh Connections'}
         </Button>
@@ -205,39 +222,37 @@ const SocialPage = () => {
         </TabsList>
         
         <TabsContent value="connected" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {platforms.filter(platform => platform.isConnected).map(platform => (
-              <ConnectedPlatform
-                key={platform.id}
-                platform={platform}
-                onSettings={() => handleOpenPlatformSettings(platform.id)}
-                onDisconnect={() => handleDisconnectPlatform(platform.id)}
-              />
-            ))}
-            
-            <Card className="border-dashed border-2">
-              <CardContent className="p-6 flex flex-col items-center justify-center min-h-[200px]">
-                <div className="rounded-full bg-gray-100 p-4 mb-4">
-                  <Plus size={24} className="text-gray-500" />
-                </div>
-                <h3 className="font-medium text-lg mb-2">Connect New Platform</h3>
-                <p className="text-sm text-gray-500 text-center mb-4">
-                  Add more social media accounts to manage
-                </p>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {platforms.filter(p => !p.isConnected).map(platform => (
-                    <Button
-                      key={platform.id}
-                      variant="outline"
-                      onClick={() => handleConnectPlatform(platform.id)}
-                    >
-                      Connect {platform.name}
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <RefreshCw size={24} className="animate-spin text-gray-400" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {platforms.filter(platform => platform.isConnected).map(platform => (
+                <ConnectedPlatform
+                  key={platform.id}
+                  platform={platform}
+                  onSettings={() => handleOpenPlatformSettings(platform.id)}
+                  onDisconnect={() => handleDisconnectPlatform(platform.id)}
+                />
+              ))}
+              
+              <Card className="border-dashed border-2">
+                <CardContent className="p-6 flex flex-col items-center justify-center min-h-[200px]">
+                  <div className="rounded-full bg-gray-100 p-4 mb-4">
+                    <Plus size={24} className="text-gray-500" />
+                  </div>
+                  <h3 className="font-medium text-lg mb-2">Connect New Platform</h3>
+                  <p className="text-sm text-gray-500 text-center mb-4">
+                    Add more social media accounts to manage
+                  </p>
+                  <Button variant="outline" onClick={handleOpenConnectDialog}>
+                    Connect Platform
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </TabsContent>
         
         <TabsContent value="mentions" className="mt-6">
@@ -300,10 +315,13 @@ const SocialPage = () => {
                       <div className="flex justify-between items-start">
                         <h3 className="font-medium">{post.title}</h3>
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline" onClick={() => handleEditScheduledPost(post.id)}>
+                          <Button size="sm" variant="outline" onClick={() => setEditingPostId(post.id)}>
                             Edit
                           </Button>
-                          <Button size="sm" variant="outline" className="text-red-600" onClick={() => handleCancelScheduledPost(post.id)}>
+                          <Button size="sm" variant="outline" className="text-red-600" onClick={() => {
+                            setScheduledPostsList(scheduledPostsList.filter(p => p.id !== post.id));
+                            toast.success("Post has been cancelled");
+                          }}>
                             Cancel
                           </Button>
                         </div>
@@ -405,6 +423,71 @@ const SocialPage = () => {
         </DialogContent>
       </Dialog>
       
+      {/* Connect Platform Dialog */}
+      <Dialog open={showConnectDialog} onOpenChange={setShowConnectDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Connect Platform</DialogTitle>
+          </DialogHeader>
+          <div className="py-6 space-y-4">
+            <p className="text-sm text-gray-600">
+              Select a platform to connect to your social media dashboard:
+            </p>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <Button 
+                variant="outline" 
+                className="flex flex-col items-center justify-center h-24 space-y-2"
+                onClick={() => handleConnectPlatform('facebook')}
+              >
+                <Facebook size={24} className="text-blue-600" />
+                <span>Facebook</span>
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="flex flex-col items-center justify-center h-24 space-y-2"
+                onClick={() => handleConnectPlatform('twitter')}
+                disabled
+              >
+                <Twitter size={24} className="text-blue-400" />
+                <span>Twitter</span>
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="flex flex-col items-center justify-center h-24 space-y-2"
+                onClick={() => handleConnectPlatform('instagram')}
+                disabled
+              >
+                <Instagram size={24} className="text-pink-600" />
+                <span>Instagram</span>
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="flex flex-col items-center justify-center h-24 space-y-2"
+                onClick={() => handleConnectPlatform('wordpress')}
+                disabled
+              >
+                <FileText size={24} className="text-gray-700" />
+                <span>WordPress Blog</span>
+              </Button>
+            </div>
+            
+            <p className="text-xs text-gray-500 mt-4">
+              Note: Only Facebook integration is currently available. 
+              Other platforms will be added in future updates.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowConnectDialog(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       {/* Reply Dialog */}
       <Dialog open={replyingToMention !== null} onOpenChange={(open) => !open && setReplyingToMention(null)}>
         <DialogContent className="sm:max-w-[500px]">
@@ -477,13 +560,34 @@ const SocialPage = () => {
               <div className="space-y-2">
                 <Label>Select Platforms</Label>
                 <div className="flex flex-wrap gap-4 py-2">
-                  {["Facebook", "Twitter", "Instagram", "LinkedIn"].map(platform => (
-                    <div key={platform} className="flex items-center space-x-2">
-                      <input type="checkbox" id={`platform-${platform}`} className="rounded" defaultChecked={platform === "Facebook" || platform === "Twitter"} />
-                      <Label htmlFor={`platform-${platform}`}>{platform}</Label>
+                  {platforms.filter(platform => platform.isConnected).map(platform => (
+                    <div key={platform.id} className="flex items-center space-x-2">
+                      <input 
+                        type="checkbox" 
+                        id={`platform-${platform.id}`} 
+                        name={`platform-${platform.id}`} 
+                        className="rounded" 
+                        defaultChecked
+                      />
+                      <Label htmlFor={`platform-${platform.id}`}>{platform.name}</Label>
                     </div>
                   ))}
                 </div>
+                {platforms.filter(platform => platform.isConnected).length === 0 && (
+                  <p className="text-sm text-yellow-600">
+                    No platforms connected. Please connect at least one platform to post content.
+                  </p>
+                )}
+              </div>
+              
+              <div className="flex items-center space-x-2 py-2">
+                <input 
+                  type="checkbox" 
+                  id="post-immediate" 
+                  name="post-immediate" 
+                  className="rounded" 
+                />
+                <Label htmlFor="post-immediate">Post immediately</Label>
               </div>
               
               <div className="space-y-2">
@@ -501,8 +605,9 @@ const SocialPage = () => {
               <Button type="button" variant="outline" onClick={() => setShowCreatePostDialog(false)}>
                 Cancel
               </Button>
-              <Button type="submit">
-                Schedule Post
+              <Button type="submit" disabled={platforms.filter(platform => platform.isConnected).length === 0}>
+                {platforms.filter(platform => platform.isConnected).length === 0 ? 
+                  'No Platforms Connected' : 'Schedule Post'}
               </Button>
             </DialogFooter>
           </form>
@@ -579,7 +684,7 @@ const ConnectedPlatform = ({ platform, onSettings, onDisconnect }: ConnectedPlat
       <CardContent className="p-6">
         <div className="flex items-center mb-4">
           <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
-            <Share2 size={24} className="text-blue-600" />
+            {getPlatformIcon(platform.id, 24)}
           </div>
           <div>
             <h3 className="font-medium text-lg">{platform.name}</h3>
@@ -620,16 +725,6 @@ const ConnectedPlatform = ({ platform, onSettings, onDisconnect }: ConnectedPlat
   );
 };
 
-const getPlatformIconComponent = (platform: string): React.ElementType => {
-  switch (platform.toLowerCase()) {
-    case 'facebook': return Facebook;
-    case 'twitter': return Twitter;
-    case 'instagram': return Instagram;
-    case 'linkedin': return Linkedin;
-    default: return Link2;
-  }
-};
-
 const getPlatformIcon = (platform: string, size: number = 16) => {
   switch (platform.toLowerCase()) {
     case 'facebook':
@@ -640,6 +735,8 @@ const getPlatformIcon = (platform: string, size: number = 16) => {
       return <Instagram size={size} className="text-pink-600" />;
     case 'linkedin':
       return <Linkedin size={size} className="text-blue-700" />;
+    case 'wordpress':
+      return <FileText size={size} className="text-gray-700" />;
     default:
       return <Link2 size={size} />;
   }
