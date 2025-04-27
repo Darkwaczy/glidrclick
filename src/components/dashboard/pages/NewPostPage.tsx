@@ -5,10 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ArrowLeft, Bold, Italic, Link, Youtube } from "lucide-react";
+import { ArrowLeft, Loader } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import AIContentGenerator from "@/components/dashboard/content/AIContentGenerator";
 import PlatformSelector from "@/components/dashboard/content/PlatformSelector";
@@ -17,6 +15,7 @@ import ToneSelector from "@/components/dashboard/content/ToneSelector";
 import ContentEditor from "@/components/dashboard/content/ContentEditor";
 import ImageGenerator from "@/components/dashboard/content/ImageGenerator";
 import RssFeedSelector from "@/components/dashboard/content/RssFeedSelector";
+import { generateContent, generateTitle } from "@/services/aiService";
 
 const NewPostPage = () => {
   const navigate = useNavigate();
@@ -27,8 +26,9 @@ const NewPostPage = () => {
   const [scheduledDate, setScheduledDate] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedTone, setSelectedTone] = useState("professional");
-  const [aiModel, setAiModel] = useState("chatgpt");
+  const [aiModel, setAiModel] = useState("llama");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
 
   const handleGenerateContent = async () => {
     if (!selectedCategory || !selectedTone) {
@@ -40,19 +40,36 @@ const NewPostPage = () => {
     toast.info("Generating content with AI...");
     
     try {
-      // Simulate AI generation with a timeout
-      setTimeout(() => {
-        const generatedTitle = `${selectedTone.charAt(0).toUpperCase() + selectedTone.slice(1)} Guide: ${selectedCategory} Tips for 2025`;
-        const generatedContent = `This is an AI-generated ${selectedTone} article about ${selectedCategory}. The content would be tailored to your specific needs and preferences using the ${aiModel} model.`;
-        
-        setTitle(generatedTitle);
-        setContent(generatedContent);
-        setIsGenerating(false);
-        toast.success("Content generated successfully!");
-      }, 1500);
+      const generated = await generateContent(selectedCategory, selectedTone);
+      setTitle(generated.title);
+      setContent(generated.content);
+      toast.success("Content generated successfully!");
     } catch (error) {
+      console.error("Content generation error:", error);
+      toast.error("Failed to generate content. You can still write content manually.");
+    } finally {
       setIsGenerating(false);
-      toast.error("Failed to generate content");
+    }
+  };
+
+  const handleGenerateTitle = async () => {
+    if (!content) {
+      toast.error("Please write or generate content first");
+      return;
+    }
+
+    setIsGeneratingTitle(true);
+    toast.info("Generating title based on content...");
+    
+    try {
+      const newTitle = await generateTitle(content);
+      setTitle(newTitle);
+      toast.success("Title generated successfully!");
+    } catch (error) {
+      console.error("Title generation error:", error);
+      toast.error("Failed to generate title. You can still write a title manually.");
+    } finally {
+      setIsGeneratingTitle(false);
     }
   };
 
@@ -102,10 +119,16 @@ const NewPostPage = () => {
                     <Button 
                       type="button" 
                       variant="outline" 
-                      onClick={() => toast.success("Title has been generated based on content!")}
-                      disabled={!content}
+                      onClick={handleGenerateTitle}
+                      disabled={isGeneratingTitle || !content}
                     >
-                      Generate Title
+                      {isGeneratingTitle ? (
+                        <>
+                          <Loader size={16} className="mr-2 animate-spin" /> Generating...
+                        </>
+                      ) : (
+                        "Generate Title"
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -143,7 +166,13 @@ const NewPostPage = () => {
                           disabled={isGenerating || !selectedCategory || !selectedTone}
                           className="w-full"
                         >
-                          {isGenerating ? "Generating..." : "Generate Content"}
+                          {isGenerating ? (
+                            <>
+                              <Loader size={16} className="mr-2 animate-spin" /> Generating...
+                            </>
+                          ) : (
+                            "Generate Content"
+                          )}
                         </Button>
                       </div>
                     </TabsContent>
@@ -228,9 +257,21 @@ const NewPostPage = () => {
                 
                 <div className="prose max-w-none">
                   {content ? (
-                    <div dangerouslySetInnerHTML={{ __html: content.replace(/\n/g, '<br/>') }} />
+                    <div dangerouslySetInnerHTML={{ 
+                      __html: content
+                        .split('\n')
+                        .slice(0, Math.ceil(content.split('\n').length / 2)) // Only show 50% of the content
+                        .join('\n')
+                        .replace(/\n/g, '<br/>') 
+                    }} />
                   ) : (
                     <p className="text-gray-400 italic">Your content will appear here...</p>
+                  )}
+                  
+                  {content && (
+                    <p className="text-blue-600 mt-2">
+                      ... [Preview shows first 50% of content]
+                    </p>
                   )}
                 </div>
                 

@@ -13,9 +13,9 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({
   onSelectModel 
 }) => {
   const aiModels = [
-    { id: "chatgpt", name: "ChatGPT", description: "OpenAI's powerful language model" },
-    { id: "grok", name: "Grok", description: "Conversational AI by xAI" },
-    { id: "deepseek", name: "Deepseek", description: "Advanced reasoning capabilities" },
+    { id: "llama", name: "LLaMA 3", description: "Meta's powerful 70B language model" },
+    { id: "claude", name: "Claude", description: "Anthropic's advanced AI assistant" },
+    { id: "groq", name: "Groq", description: "Ultra-fast inference engine" },
     { id: "gemini", name: "Gemini", description: "Google's multimodal AI model" }
   ];
 
