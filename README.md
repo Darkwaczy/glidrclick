@@ -8,7 +8,22 @@ This project demonstrates a social media OAuth integration with a React frontend
 - `/src` - React frontend application
 - `/server` - Node.js Express backend for OAuth and API handling
 
-## Backend Setup
+## Running the Application
+
+This app can be run in two modes:
+
+### Mock Mode (Default)
+
+The application currently defaults to "Mock Mode" since connecting to a real backend server requires setup. In this mode:
+
+- No actual backend server is required
+- Social platform connections are simulated
+- Posts are stored in-memory during the session
+- All functionality works but doesn't persist between page refreshes
+
+### Backend Server Mode (Optional)
+
+To use a real backend server:
 
 1. Navigate to the server directory:
    ```
@@ -34,18 +49,9 @@ This project demonstrates a social media OAuth integration with a React frontend
    npm run dev
    ```
 
+5. Update the `USE_MOCK_API` constant in `src/utils/socialConnections.ts` to `false`
+
 The server will run on `http://localhost:5000`.
-
-## Frontend Setup
-
-The frontend is already configured to communicate with the backend API. Make sure to:
-
-1. Run the frontend development server:
-   ```
-   npm run dev
-   ```
-
-2. Access the application at `http://localhost:3000`
 
 ## Using the Application
 

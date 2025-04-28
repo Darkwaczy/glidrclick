@@ -21,7 +21,10 @@ import {
   connectPlatform, 
   disconnectPlatform, 
   updatePlatformSettings,
-  publishToSocialMedia
+  publishToSocialMedia,
+  schedulePost,
+  getScheduledPosts,
+  getPublishedPosts
 } from "@/utils/socialConnections";
 
 const SocialPage = () => {
@@ -35,24 +38,22 @@ const SocialPage = () => {
   const [showCreatePostDialog, setShowCreatePostDialog] = useState(false);
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
   const [mentionsList, setMentionsList] = useState(mentions);
-  const [scheduledPostsList, setScheduledPostsList] = useState(scheduledPosts);
+  const [scheduledPostsList, setScheduledPostsList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadPlatforms();
+    setScheduledPostsList(getScheduledPosts());
 
-    // Check if we were redirected back after OAuth
     const urlParams = new URLSearchParams(window.location.search);
     const connectedPlatform = urlParams.get('connected');
     const error = urlParams.get('error');
     
     if (connectedPlatform) {
       toast.success(`Connected to ${connectedPlatform} successfully!`);
-      // Clean up the URL
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (error) {
       toast.error(`Connection failed: ${error}`);
-      // Clean up the URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
@@ -74,12 +75,16 @@ const SocialPage = () => {
     loadPlatforms().then(() => {
       setIsRefreshing(false);
       toast.success("Connections refreshed successfully!");
+      setScheduledPostsList(getScheduledPosts());
     });
   };
 
   const handleConnectPlatform = (platformId: string) => {
     connectPlatform(platformId);
     setShowConnectDialog(false);
+    setTimeout(() => {
+      loadPlatforms();
+    }, 1000);
   };
 
   const handleDisconnectPlatform = async (platformId: string) => {
@@ -122,7 +127,6 @@ const SocialPage = () => {
     
     toast.success("Reply sent successfully!");
     
-    // Remove the mention from the list to simulate "read" status
     setMentionsList(mentionsList.filter(mention => mention.id !== replyingToMention));
     
     setReplyingToMention(null);
@@ -130,9 +134,7 @@ const SocialPage = () => {
   };
   
   const handleMarkAsRead = (mentionId: number) => {
-    // Mark the mention as read in a real app by updating its status
     toast.success("Mention marked as read");
-    // For demo purposes, just remove it from the list
     setMentionsList(mentionsList.filter(mention => mention.id !== mentionId));
   };
   
@@ -143,13 +145,11 @@ const SocialPage = () => {
   const handleSubmitNewPost = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Get form data
     const form = e.target as HTMLFormElement;
     const title = (form.elements.namedItem("post-title") as HTMLInputElement).value;
     const content = (form.elements.namedItem("post-content") as HTMLTextAreaElement).value;
     const date = (form.elements.namedItem("schedule-date") as HTMLInputElement).value;
     
-    // Get selected platforms
     const selectedPlatforms: string[] = [];
     platforms.forEach(platform => {
       const checkbox = form.elements.namedItem(`platform-${platform.id}`) as HTMLInputElement;
@@ -163,17 +163,14 @@ const SocialPage = () => {
       return;
     }
     
-    // Check if date is in the past
     if (new Date(date) < new Date()) {
       toast.error("Please select a future date for scheduling");
       return;
     }
     
-    // For immediate posting
     const isImmediate = form.elements.namedItem("post-immediate") as HTMLInputElement;
     
     if (isImmediate && isImmediate.checked) {
-      // Post immediately to each selected platform
       for (const platformId of selectedPlatforms) {
         try {
           await publishToSocialMedia(platformId, content, title);
@@ -184,16 +181,8 @@ const SocialPage = () => {
       
       toast.success("Content posted successfully!");
     } else {
-      // Add to scheduled posts for future publishing
-      const newPost = {
-        id: scheduledPostsList.length + 1,
-        title,
-        content,
-        platforms: selectedPlatforms.map(id => platforms.find(p => p.id === id)?.name || id),
-        scheduledFor: new Date(date).toLocaleString()
-      };
-      
-      setScheduledPostsList([...scheduledPostsList, newPost]);
+      schedulePost(title, content, selectedPlatforms, new Date(date));
+      setScheduledPostsList(getScheduledPosts());
       toast.success("Post scheduled successfully!");
     }
     
@@ -203,13 +192,11 @@ const SocialPage = () => {
   const handleUpdatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Get form data
     const form = e.target as HTMLFormElement;
     const title = (form.elements.namedItem("edit-post-title") as HTMLInputElement).value;
     const content = (form.elements.namedItem("edit-post-content") as HTMLTextAreaElement).value;
     const date = (form.elements.namedItem("edit-schedule-date") as HTMLInputElement).value;
     
-    // Update the post in the list
     setScheduledPostsList(scheduledPostsList.map(post => {
       if (post.id === editingPostId) {
         return {
@@ -356,7 +343,7 @@ const SocialPage = () => {
                       <p className="text-sm text-gray-600 mt-2">{post.content}</p>
                       
                       <div className="flex flex-wrap gap-2 mt-3">
-                        {post.platforms.map((platform) => (
+                        {post.platforms.map((platform: string) => (
                           <div key={platform} className="flex items-center bg-gray-100 rounded px-2 py-1 text-xs">
                             {getPlatformIcon(platform, 12)}
                             <span className="ml-1">{platform}</span>
@@ -376,7 +363,6 @@ const SocialPage = () => {
         </TabsContent>
       </Tabs>
       
-      {/* Platform Settings Dialog */}
       <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
         <DialogContent>
           <DialogHeader>
@@ -449,7 +435,6 @@ const SocialPage = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Connect Platform Dialog */}
       <Dialog open={showConnectDialog} onOpenChange={setShowConnectDialog}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -474,7 +459,6 @@ const SocialPage = () => {
                 variant="outline" 
                 className="flex flex-col items-center justify-center h-24 space-y-2"
                 onClick={() => handleConnectPlatform('twitter')}
-                disabled
               >
                 <Twitter size={24} className="text-blue-400" />
                 <span>Twitter</span>
@@ -484,7 +468,6 @@ const SocialPage = () => {
                 variant="outline" 
                 className="flex flex-col items-center justify-center h-24 space-y-2"
                 onClick={() => handleConnectPlatform('instagram')}
-                disabled
               >
                 <Instagram size={24} className="text-pink-600" />
                 <span>Instagram</span>
@@ -494,7 +477,6 @@ const SocialPage = () => {
                 variant="outline" 
                 className="flex flex-col items-center justify-center h-24 space-y-2"
                 onClick={() => handleConnectPlatform('wordpress')}
-                disabled
               >
                 <FileText size={24} className="text-gray-700" />
                 <span>WordPress Blog</span>
@@ -502,8 +484,7 @@ const SocialPage = () => {
             </div>
             
             <p className="text-xs text-gray-500 mt-4">
-              Note: Only Facebook integration is currently available. 
-              Other platforms will be added in future updates.
+              Note: In the demo mode, all platforms can be connected without requiring a real server.
             </p>
           </div>
           <DialogFooter>
@@ -514,7 +495,6 @@ const SocialPage = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Reply Dialog */}
       <Dialog open={replyingToMention !== null} onOpenChange={(open) => !open && setReplyingToMention(null)}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -558,7 +538,6 @@ const SocialPage = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Create Post Dialog */}
       <Dialog open={showCreatePostDialog} onOpenChange={setShowCreatePostDialog}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
@@ -640,7 +619,6 @@ const SocialPage = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Edit Post Dialog */}
       {editingPostId !== null && (
         <Dialog open={true} onOpenChange={() => setEditingPostId(null)}>
           <DialogContent className="sm:max-w-[600px]">
@@ -768,7 +746,6 @@ const getPlatformIcon = (platform: string, size: number = 16) => {
   }
 };
 
-// Mock data
 const mentions = [
   {
     id: 1,
@@ -790,30 +767,6 @@ const mentions = [
     username: 'Marketing Group',
     timeAgo: '1 day ago',
     content: 'Has anyone used Glidrclick for managing their social media? Looking for reviews.'
-  }
-];
-
-const scheduledPosts = [
-  {
-    id: 1,
-    title: '10 Ways to Improve Your Social Media Strategy',
-    content: 'Check out our latest blog post on improving your social media presence in 2025!',
-    platforms: ['Facebook', 'Twitter', 'LinkedIn'],
-    scheduledFor: '04/27/2025, 09:00 AM'
-  },
-  {
-    id: 2,
-    title: 'New Product Announcement',
-    content: "We're excited to announce our latest feature: AI-powered content suggestions!",
-    platforms: ['Facebook', 'Instagram', 'LinkedIn'],
-    scheduledFor: '04/28/2025, 10:30 AM'
-  },
-  {
-    id: 3,
-    title: 'Monthly Newsletter',
-    content: 'Our April newsletter is ready! Discover the latest trends in digital marketing.',
-    platforms: ['Twitter', 'LinkedIn'],
-    scheduledFor: '05/01/2025, 08:00 AM'
   }
 ];
 
