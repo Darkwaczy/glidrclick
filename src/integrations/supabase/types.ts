@@ -161,6 +161,233 @@ export type Database = {
           },
         ]
       }
+      mentions: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          original_id: string | null
+          platform_id: string | null
+          username: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          original_id?: string | null
+          platform_id?: string | null
+          username: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          original_id?: string | null
+          platform_id?: string | null
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentions_platform_id_fkey"
+            columns: ["platform_id"]
+            isOneToOne: false
+            referencedRelation: "social_platforms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_analytics: {
+        Row: {
+          clicks: number | null
+          comments: number | null
+          created_at: string | null
+          id: string
+          likes: number | null
+          platform_id: string | null
+          post_id: string | null
+          shares: number | null
+          updated_at: string | null
+          views: number | null
+        }
+        Insert: {
+          clicks?: number | null
+          comments?: number | null
+          created_at?: string | null
+          id?: string
+          likes?: number | null
+          platform_id?: string | null
+          post_id?: string | null
+          shares?: number | null
+          updated_at?: string | null
+          views?: number | null
+        }
+        Update: {
+          clicks?: number | null
+          comments?: number | null
+          created_at?: string | null
+          id?: string
+          likes?: number | null
+          platform_id?: string | null
+          post_id?: string | null
+          shares?: number | null
+          updated_at?: string | null
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_analytics_platform_id_fkey"
+            columns: ["platform_id"]
+            isOneToOne: false
+            referencedRelation: "social_platforms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_analytics_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_platforms: {
+        Row: {
+          created_at: string | null
+          external_post_id: string | null
+          id: string
+          platform_id: string | null
+          post_id: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          external_post_id?: string | null
+          id?: string
+          platform_id?: string | null
+          post_id?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string | null
+          external_post_id?: string | null
+          id?: string
+          platform_id?: string | null
+          post_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_platforms_platform_id_fkey"
+            columns: ["platform_id"]
+            isOneToOne: false
+            referencedRelation: "social_platforms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_platforms_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          id: string
+          published_at: string | null
+          scheduled_for: string | null
+          status: string
+          title: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          published_at?: string | null
+          scheduled_for?: string | null
+          status: string
+          title: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          published_at?: string | null
+          scheduled_for?: string | null
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      social_platforms: {
+        Row: {
+          access_token: string | null
+          account_name: string | null
+          created_at: string | null
+          icon: string
+          id: string
+          is_connected: boolean | null
+          last_sync: string | null
+          name: string
+          notifications: Json | null
+          platform_id: string
+          refresh_token: string | null
+          sync_frequency: string | null
+          token_expires_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          account_name?: string | null
+          created_at?: string | null
+          icon: string
+          id?: string
+          is_connected?: boolean | null
+          last_sync?: string | null
+          name: string
+          notifications?: Json | null
+          platform_id: string
+          refresh_token?: string | null
+          sync_frequency?: string | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          account_name?: string | null
+          created_at?: string | null
+          icon?: string
+          id?: string
+          is_connected?: boolean | null
+          last_sync?: string | null
+          name?: string
+          notifications?: Json | null
+          platform_id?: string
+          refresh_token?: string | null
+          sync_frequency?: string | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       whatsapp_connections: {
         Row: {
           created_at: string

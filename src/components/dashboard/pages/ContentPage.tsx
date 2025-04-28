@@ -5,42 +5,37 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { FileText, Plus, Eye, Edit, Trash2 } from "lucide-react";
+import { FileText, Plus, Eye, Edit, Trash2, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { usePosts, type Post } from "@/hooks/usePosts";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const ContentPage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
-  const [viewContent, setViewContent] = useState<{ id: number; title: string; content?: string } | null>(null);
-  const [editContent, setEditContent] = useState<{ id: number; title: string; content?: string } | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
-  const [items, setItems] = useState([
-    { id: 1, title: "10 Social Media Tips for 2025", type: "blog", status: "published", date: "Apr 25, 2025", content: "This is the content for the social media tips article..." },
-    { id: 2, title: "Email Marketing Strategies", type: "newsletter", status: "draft", date: "Apr 24, 2025", content: "Draft content for email marketing strategies..." },
-    { id: 3, title: "Instagram Growth Tactics", type: "social", status: "scheduled", date: "Apr 28, 2025", content: "Content about Instagram growth tactics..." },
-    { id: 4, title: "SEO Best Practices", type: "blog", status: "published", date: "Apr 22, 2025", content: "SEO best practices content..." },
-    { id: 5, title: "Content Calendar Template", type: "resource", status: "archived", date: "Apr 10, 2025", content: "Content calendar template details..." }
-  ]);
+  const [viewContent, setViewContent] = useState<Post | null>(null);
+  const [editContent, setEditContent] = useState<Post | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  
+  const { posts, isLoading, deletePost, updatePost } = usePosts(activeTab === 'all' ? undefined : activeTab);
   
   const handleCreateContent = () => {
     navigate("/dashboard/new-post");
   };
 
-  const handleAction = (action: string, id: number) => {
-    const contentItem = items.find(item => item.id === id);
-    if (!contentItem) return;
-    
+  const handleAction = (action: string, post: Post) => {
     switch (action) {
       case "view":
-        setViewContent(contentItem);
+        setViewContent(post);
         break;
       case "edit":
-        setEditContent(contentItem);
+        setEditContent(post);
         break;
       case "delete":
-        setDeleteConfirm(id);
+        setDeleteConfirm(post.id);
         break;
       default:
         break;
@@ -50,29 +45,24 @@ const ContentPage = () => {
   const handleSaveEdit = () => {
     if (!editContent) return;
     
-    setItems(prevItems => 
-      prevItems.map(item => 
-        item.id === editContent.id ? { ...item, ...editContent } : item
-      )
-    );
+    updatePost({
+      id: editContent.id,
+      data: {
+        title: editContent.title,
+        content: editContent.content
+      }
+    });
     
-    toast.success(`Content "${editContent.title}" updated successfully`);
     setEditContent(null);
   };
   
   const handleDeleteConfirm = () => {
-    if (deleteConfirm === null) return;
+    if (!deleteConfirm) return;
     
-    setItems(prevItems => prevItems.filter(item => item.id !== deleteConfirm));
-    toast.success("Content deleted successfully");
+    deletePost(deleteConfirm);
     setDeleteConfirm(null);
   };
   
-  const getFilteredItems = (status: string) => {
-    if (status === "all") return items;
-    return items.filter(item => item.status === status);
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -90,53 +80,58 @@ const ContentPage = () => {
         <TabsList>
           <TabsTrigger value="all">All Content</TabsTrigger>
           <TabsTrigger value="published">Published</TabsTrigger>
-          <TabsTrigger value="drafts">Drafts</TabsTrigger>
+          <TabsTrigger value="draft">Drafts</TabsTrigger>
           <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
           <TabsTrigger value="archived">Archived</TabsTrigger>
         </TabsList>
         
         <TabsContent value="all" className="mt-6">
           <ContentList 
-            items={getFilteredItems("all")}
-            onView={(id) => handleAction("view", id)}
-            onEdit={(id) => handleAction("edit", id)}
-            onDelete={(id) => handleAction("delete", id)}
+            items={posts}
+            isLoading={isLoading}
+            onView={(post) => handleAction("view", post)}
+            onEdit={(post) => handleAction("edit", post)}
+            onDelete={(post) => handleAction("delete", post)}
           />
         </TabsContent>
         
         <TabsContent value="published" className="mt-6">
           <ContentList 
-            items={getFilteredItems("published")}
-            onView={(id) => handleAction("view", id)}
-            onEdit={(id) => handleAction("edit", id)}
-            onDelete={(id) => handleAction("delete", id)}
+            items={posts}
+            isLoading={isLoading}
+            onView={(post) => handleAction("view", post)}
+            onEdit={(post) => handleAction("edit", post)}
+            onDelete={(post) => handleAction("delete", post)}
           />
         </TabsContent>
         
-        <TabsContent value="drafts" className="mt-6">
+        <TabsContent value="draft" className="mt-6">
           <ContentList 
-            items={getFilteredItems("draft")}
-            onView={(id) => handleAction("view", id)}
-            onEdit={(id) => handleAction("edit", id)}
-            onDelete={(id) => handleAction("delete", id)}
+            items={posts}
+            isLoading={isLoading}
+            onView={(post) => handleAction("view", post)}
+            onEdit={(post) => handleAction("edit", post)}
+            onDelete={(post) => handleAction("delete", post)}
           />
         </TabsContent>
         
         <TabsContent value="scheduled" className="mt-6">
           <ContentList 
-            items={getFilteredItems("scheduled")}
-            onView={(id) => handleAction("view", id)}
-            onEdit={(id) => handleAction("edit", id)}
-            onDelete={(id) => handleAction("delete", id)}
+            items={posts}
+            isLoading={isLoading}
+            onView={(post) => handleAction("view", post)}
+            onEdit={(post) => handleAction("edit", post)}
+            onDelete={(post) => handleAction("delete", post)}
           />
         </TabsContent>
         
         <TabsContent value="archived" className="mt-6">
           <ContentList 
-            items={getFilteredItems("archived")}
-            onView={(id) => handleAction("view", id)}
-            onEdit={(id) => handleAction("edit", id)}
-            onDelete={(id) => handleAction("delete", id)}
+            items={posts}
+            isLoading={isLoading}
+            onView={(post) => handleAction("view", post)}
+            onEdit={(post) => handleAction("edit", post)}
+            onDelete={(post) => handleAction("delete", post)}
           />
         </TabsContent>
       </Tabs>
@@ -205,23 +200,27 @@ const ContentPage = () => {
   );
 };
 
-interface ContentItem {
-  id: number;
-  title: string;
-  type: string;
-  status: string;
-  date: string;
-}
-
 interface ContentListProps {
-  items: ContentItem[];
-  onView: (id: number) => void;
-  onEdit: (id: number) => void;
-  onDelete: (id: number) => void;
+  items?: Post[];
+  isLoading: boolean;
+  onView: (post: Post) => void;
+  onEdit: (post: Post) => void;
+  onDelete: (post: Post) => void;
 }
 
-const ContentList = ({ items, onView, onEdit, onDelete }: ContentListProps) => {
-  if (items.length === 0) {
+const ContentList = ({ items, isLoading, onView, onEdit, onDelete }: ContentListProps) => {
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-gray-400" />
+          <p className="text-gray-500 mt-2">Loading content...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!items?.length) {
     return (
       <Card>
         <CardContent className="p-6 text-center">
@@ -260,16 +259,18 @@ const ContentList = ({ items, onView, onEdit, onDelete }: ContentListProps) => {
                   <td className="p-4">
                     <StatusBadge status={item.status} />
                   </td>
-                  <td className="p-4">{item.date}</td>
+                  <td className="p-4">
+                    {new Date(item.created_at).toLocaleDateString()}
+                  </td>
                   <td className="p-4">
                     <div className="flex justify-end gap-2">
-                      <Button size="icon" variant="ghost" onClick={() => onView(item.id)}>
+                      <Button size="icon" variant="ghost" onClick={() => onView(item)}>
                         <Eye size={16} />
                       </Button>
-                      <Button size="icon" variant="ghost" onClick={() => onEdit(item.id)}>
+                      <Button size="icon" variant="ghost" onClick={() => onEdit(item)}>
                         <Edit size={16} />
                       </Button>
-                      <Button size="icon" variant="ghost" onClick={() => onDelete(item.id)}>
+                      <Button size="icon" variant="ghost" onClick={() => onDelete(item)}>
                         <Trash2 size={16} />
                       </Button>
                     </div>
