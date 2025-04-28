@@ -38,9 +38,47 @@ export const useAuth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  const signIn = async ({ email, password }: { email: string, password: string }) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error signing in:', error);
+      throw error;
+    }
+  };
+
+  const signUp = async ({ email, password }: { email: string, password: string }) => {
+    try {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) throw error;
+      toast.success('Check your email for the confirmation link!');
+    } catch (error) {
+      console.error('Error signing up:', error);
+      throw error;
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/auth');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return {
     user,
     session,
     loading,
+    signIn,
+    signUp,
+    signOut,
   };
 };
+
+function toast(arg0: { success: (arg0: string) => void; }) {
+  throw new Error('Function not implemented.');
+}

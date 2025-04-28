@@ -41,7 +41,7 @@ export const usePosts = (status?: string) => {
   });
 
   const deletePost = useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('posts')
         .delete()
@@ -60,7 +60,7 @@ export const usePosts = (status?: string) => {
   });
 
   const updatePost = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: Partial<Post> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Post> }) => {
       const { error } = await supabase
         .from('posts')
         .update(data)
