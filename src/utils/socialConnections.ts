@@ -1,6 +1,7 @@
 
 import { toast } from "sonner";
 import axios from "axios";
+import { supabase } from "@/integrations/supabase/client";
 
 export type SocialPlatform = {
   id: string;
@@ -16,39 +17,32 @@ export type SocialPlatform = {
   };
 };
 
-// API base URL - changed to use mock data instead of a real server
-// since the actual server isn't running
-const USE_MOCK_API = true;
+// API base URL - changed to use Supabase for real authentication
 const API_BASE_URL = "http://localhost:5000/api";
 
 // Store platforms in memory so they persist during the session
-let mockConnectedPlatforms: SocialPlatform[] = [];
 let mockScheduledPosts: any[] = [];
 let mockPublishedPosts: any[] = [];
 
 export const getSocialPlatforms = async (): Promise<SocialPlatform[]> => {
   try {
-    if (USE_MOCK_API) {
-      return mockConnectedPlatforms.length > 0 ? mockConnectedPlatforms : [
-        { id: "facebook", name: "Facebook", icon: "facebook", isConnected: false },
-        { id: "twitter", name: "Twitter", icon: "twitter", isConnected: false },
-        { id: "instagram", name: "Instagram", icon: "instagram", isConnected: false },
-        { id: "wordpress", name: "WordPress Blog", icon: "instagram", isConnected: false }
-      ];
-    }
+    // Try to get platforms from Supabase first
+    const { data: socialPlatforms, error } = await supabase
+      .from('social_platforms')
+      .select('*')
+      .eq('user_id', supabase.auth.getSession().then(res => res.data.session?.user.id));
     
-    // Real API call (not used currently)
-    const response = await axios.get(`${API_BASE_URL}/platforms`, { withCredentials: true });
-    if (response.data && response.data.length > 0) {
-      return response.data;
+    if (error) throw error;
+    
+    if (socialPlatforms && socialPlatforms.length > 0) {
+      return socialPlatforms;
     }
     
     // If no platforms are returned, return default platforms list
     return [
       { id: "facebook", name: "Facebook", icon: "facebook", isConnected: false },
-      { id: "twitter", name: "Twitter", icon: "twitter", isConnected: false },
       { id: "instagram", name: "Instagram", icon: "instagram", isConnected: false },
-      { id: "wordpress", name: "WordPress Blog", icon: "instagram", isConnected: false }
+      { id: "wordpress", name: "WordPress Blog", icon: "wordpress", isConnected: false }
     ];
   } catch (error) {
     console.error("Error fetching social platforms:", error);
@@ -56,78 +50,56 @@ export const getSocialPlatforms = async (): Promise<SocialPlatform[]> => {
     // Return default platforms on error
     return [
       { id: "facebook", name: "Facebook", icon: "facebook", isConnected: false },
-      { id: "twitter", name: "Twitter", icon: "twitter", isConnected: false },
       { id: "instagram", name: "Instagram", icon: "instagram", isConnected: false },
-      { id: "wordpress", name: "WordPress Blog", icon: "instagram", isConnected: false }
+      { id: "wordpress", name: "WordPress Blog", icon: "wordpress", isConnected: false }
     ];
   }
 };
 
 export const connectPlatform = (platformId: string): void => {
-  if (USE_MOCK_API) {
-    // Simulate successful connection
-    const platform = {
-      id: platformId,
-      name: getPlatformName(platformId),
-      icon: platformId as any,
-      isConnected: true,
-      accountName: `@user_${platformId}`,
-      lastSync: new Date().toISOString(),
-      syncFrequency: "daily" as const,
-      notifications: { mentions: true, messages: true }
-    };
-    
-    mockConnectedPlatforms = [
-      ...mockConnectedPlatforms.filter(p => p.id !== platformId),
-      platform
-    ];
-    
-    // Simulate a redirect and callback
-    setTimeout(() => {
-      // Update URL to simulate redirect back
-      window.history.pushState(
-        {}, 
-        document.title, 
-        `${window.location.pathname}?connected=${platformId}`
-      );
-      
-      // Simulate the successful connection toast
-      toast.success(`Connected to ${getPlatformName(platformId)} successfully!`);
-      
-      // Clean up URL after delay
-      setTimeout(() => {
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }, 1000);
-    }, 500);
-    
-    return;
-  }
+  // Configure OAuth providers based on platform
+  const authProviders: Record<string, string> = {
+    facebook: 'facebook',
+    instagram: 'instagram',
+    wordpress: 'github' // Using GitHub as a proxy for WordPress OAuth
+  };
   
-  try {
-    // Real OAuth flow (not used currently)
-    const returnUrl = encodeURIComponent(window.location.pathname);
-    const authUrl = `${API_BASE_URL}/auth/${platformId}?returnTo=${returnUrl}`;
-    
-    // Redirect the browser to start the OAuth flow
-    window.location.href = authUrl;
-  } catch (error) {
-    console.error("Error connecting platform:", error);
-    toast.error(`Failed to connect to ${platformId}`);
+  if (!authProviders[platformId]) {
+    toast.error(`${getPlatformName(platformId)} authentication is not available yet`);
     return;
   }
+
+  // Use Supabase OAuth for authentication
+  supabase.auth.signInWithOAuth({
+    provider: authProviders[platformId] as any,
+    options: {
+      redirectTo: `${window.location.origin}/dashboard/social?connected=${platformId}`,
+      // Store the social platform connection in the session
+      queryParams: {
+        platform: platformId
+      }
+    }
+  })
+  .then(({ error }) => {
+    if (error) {
+      console.error('Error connecting platform:', error);
+      toast.error(`Failed to connect to ${platformId}`);
+    }
+  });
 };
 
 export const disconnectPlatform = async (platformId: string): Promise<boolean> => {
-  if (USE_MOCK_API) {
-    // Remove from local mock storage
-    mockConnectedPlatforms = mockConnectedPlatforms.filter(p => p.id !== platformId);
-    toast.success(`Disconnected from ${getPlatformName(platformId)}`);
-    return true;
-  }
-  
   try {
-    await axios.delete(`${API_BASE_URL}/platforms/${platformId}`, { withCredentials: true });
-    toast.success(`Disconnected from ${platformId}`);
+    // Remove from Supabase
+    const { error } = await supabase
+      .from('social_platforms')
+      .delete()
+      .eq('platform_id', platformId)
+      .eq('user_id', supabase.auth.getSession().then(res => res.data.session?.user.id));
+    
+    if (error) throw error;
+    
+    toast.success(`Disconnected from ${getPlatformName(platformId)}`);
     return true;
   } catch (error) {
     console.error("Error disconnecting platform:", error);
@@ -140,19 +112,16 @@ export const updatePlatformSettings = async (
   platformId: string, 
   settings: Partial<SocialPlatform>
 ): Promise<boolean> => {
-  if (USE_MOCK_API) {
-    // Update settings in mock storage
-    mockConnectedPlatforms = mockConnectedPlatforms.map(platform => {
-      if (platform.id === platformId) {
-        return { ...platform, ...settings };
-      }
-      return platform;
-    });
-    return true;
-  }
-  
   try {
-    await axios.patch(`${API_BASE_URL}/platforms/${platformId}/settings`, settings, { withCredentials: true });
+    // Update settings in Supabase
+    const { error } = await supabase
+      .from('social_platforms')
+      .update(settings)
+      .eq('platform_id', platformId)
+      .eq('user_id', supabase.auth.getSession().then(res => res.data.session?.user.id));
+    
+    if (error) throw error;
+    
     return true;
   } catch (error) {
     console.error("Error updating platform settings:", error);
@@ -166,25 +135,42 @@ export const publishToSocialMedia = async (
   content: string,
   title?: string
 ): Promise<boolean> => {
-  if (USE_MOCK_API) {
-    // Add to published posts
-    mockPublishedPosts.push({
-      id: Date.now(),
-      title: title || 'Untitled Post',
-      content,
-      platform: platformId,
-      date: new Date().toLocaleDateString(),
-      views: Math.floor(Math.random() * 1000),
-      engagement: Math.floor(Math.random() * 100)
-    });
+  try {
+    // Create a post in Supabase
+    const user = await supabase.auth.getUser();
+    
+    if (!user.data?.user?.id) {
+      toast.error('You must be logged in to publish content');
+      return false;
+    }
+    
+    const { data: post, error: postError } = await supabase
+      .from('posts')
+      .insert({
+        title: title || 'Untitled Post',
+        content,
+        status: 'published',
+        published_at: new Date().toISOString(),
+        user_id: user.data.user.id,
+        type: 'social'
+      })
+      .select()
+      .single();
+      
+    if (postError) throw postError;
+    
+    // Create post_platform relation
+    const { error: platformError } = await supabase
+      .from('post_platforms')
+      .insert({
+        post_id: post.id,
+        platform_id: platformId,
+        status: 'published'
+      });
+      
+    if (platformError) throw platformError;
     
     toast.success(`Published to ${getPlatformName(platformId)}`);
-    return true;
-  }
-  
-  try {
-    await axios.post(`${API_BASE_URL}/publish/${platformId}`, { content, title }, { withCredentials: true });
-    toast.success(`Published to ${platformId}`);
     return true;
   } catch (error) {
     console.error(`Error publishing to ${platformId}:`, error);
@@ -193,29 +179,103 @@ export const publishToSocialMedia = async (
   }
 };
 
-export const schedulePost = (
+export const schedulePost = async (
   title: string,
   content: string,
   platforms: string[],
   scheduledDate: Date
-): void => {
-  const newPost = {
-    id: mockScheduledPosts.length + 1,
-    title,
-    content,
-    platforms: platforms.map(id => getPlatformName(id)),
-    scheduledFor: scheduledDate.toLocaleString()
-  };
-  
-  mockScheduledPosts.push(newPost);
+): Promise<boolean> => {
+  try {
+    // Insert into posts table
+    const user = await supabase.auth.getUser();
+    
+    if (!user.data?.user?.id) {
+      toast.error('You must be logged in to schedule posts');
+      return false;
+    }
+    
+    const { data: post, error: postError } = await supabase
+      .from('posts')
+      .insert({
+        title,
+        content,
+        status: 'scheduled',
+        scheduled_for: scheduledDate.toISOString(),
+        user_id: user.data.user.id,
+        type: 'social'
+      })
+      .select()
+      .single();
+      
+    if (postError) throw postError;
+    
+    // Create post_platform relations for each platform
+    for (const platformId of platforms) {
+      const { error: platformError } = await supabase
+        .from('post_platforms')
+        .insert({
+          post_id: post.id,
+          platform_id: platformId,
+          status: 'scheduled'
+        });
+        
+      if (platformError) throw platformError;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error scheduling post:', error);
+    toast.error('Failed to schedule post');
+    return false;
+  }
 };
 
-export const getScheduledPosts = () => {
-  return mockScheduledPosts;
+export const getScheduledPosts = async () => {
+  try {
+    const user = await supabase.auth.getUser();
+    
+    if (!user.data?.user?.id) {
+      return [];
+    }
+    
+    const { data: posts, error } = await supabase
+      .from('posts')
+      .select('*, post_platforms(*, platforms:platform_id(name))')
+      .eq('user_id', user.data.user.id)
+      .eq('status', 'scheduled')
+      .order('scheduled_for', { ascending: true });
+      
+    if (error) throw error;
+    
+    return posts || [];
+  } catch (error) {
+    console.error('Error getting scheduled posts:', error);
+    return [];
+  }
 };
 
-export const getPublishedPosts = () => {
-  return mockPublishedPosts;
+export const getPublishedPosts = async () => {
+  try {
+    const user = await supabase.auth.getUser();
+    
+    if (!user.data?.user?.id) {
+      return [];
+    }
+    
+    const { data: posts, error } = await supabase
+      .from('posts')
+      .select('*, post_platforms(*, platforms:platform_id(name))')
+      .eq('user_id', user.data.user.id)
+      .eq('status', 'published')
+      .order('published_at', { ascending: false });
+      
+    if (error) throw error;
+    
+    return posts || [];
+  } catch (error) {
+    console.error('Error getting published posts:', error);
+    return [];
+  }
 };
 
 // Helper function to get platform name

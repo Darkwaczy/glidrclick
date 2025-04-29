@@ -14,7 +14,7 @@ import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Share2, RefreshCw, Plus, X, Instagram, Facebook, Twitter, Linkedin, Link2, FileText } from "lucide-react";
+import { Share2, RefreshCw, Plus, X, Instagram, Facebook, Twitter, Linkedin, Link2, FileText, AlertCircle } from "lucide-react";
 import type { SocialPlatform } from "@/utils/socialConnections";
 import { 
   getSocialPlatforms, 
@@ -26,6 +26,7 @@ import {
   getScheduledPosts,
   getPublishedPosts
 } from "@/utils/socialConnections";
+import { supabase } from "@/integrations/supabase/client";
 
 const SocialPage = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -43,13 +44,14 @@ const SocialPage = () => {
 
   useEffect(() => {
     loadPlatforms();
-    setScheduledPostsList(getScheduledPosts());
+    loadScheduledPosts();
 
     const urlParams = new URLSearchParams(window.location.search);
     const connectedPlatform = urlParams.get('connected');
     const error = urlParams.get('error');
     
     if (connectedPlatform) {
+      savePlatformConnection(connectedPlatform);
       toast.success(`Connected to ${connectedPlatform} successfully!`);
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (error) {
@@ -57,6 +59,38 @@ const SocialPage = () => {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
+
+  const savePlatformConnection = async (platformId: string) => {
+    try {
+      const user = await supabase.auth.getUser();
+      
+      if (!user.data?.user?.id) {
+        toast.error('You must be logged in to connect platforms');
+        return;
+      }
+      
+      const { error } = await supabase
+        .from('social_platforms')
+        .insert({
+          user_id: user.data.user.id,
+          platform_id: platformId,
+          name: getPlatformName(platformId),
+          icon: platformId,
+          is_connected: true,
+          account_name: `@user_${platformId}`,
+          last_sync: new Date().toISOString(),
+          sync_frequency: 'daily',
+          notifications: { mentions: true, messages: true }
+        });
+      
+      if (error) throw error;
+      
+      loadPlatforms();
+    } catch (error) {
+      console.error('Error saving platform connection:', error);
+      toast.error('Failed to save platform connection');
+    }
+  };
 
   const loadPlatforms = async () => {
     setIsLoading(true);
@@ -67,6 +101,15 @@ const SocialPage = () => {
       console.error("Failed to load platforms:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadScheduledPosts = async () => {
+    try {
+      const posts = await getScheduledPosts();
+      setScheduledPostsList(posts || []);
+    } catch (error) {
+      console.error("Failed to load scheduled posts:", error);
     }
   };
 
@@ -170,23 +213,26 @@ const SocialPage = () => {
     
     const isImmediate = form.elements.namedItem("post-immediate") as HTMLInputElement;
     
-    if (isImmediate && isImmediate.checked) {
-      for (const platformId of selectedPlatforms) {
-        try {
+    try {
+      if (isImmediate && isImmediate.checked) {
+        for (const platformId of selectedPlatforms) {
           await publishToSocialMedia(platformId, content, title);
-        } catch (error) {
-          console.error(`Failed to post to ${platformId}:`, error);
+        }
+        
+        toast.success("Content posted successfully!");
+      } else {
+        const success = await schedulePost(title, content, selectedPlatforms, new Date(date));
+        if (success) {
+          loadScheduledPosts();
+          toast.success("Post scheduled successfully!");
         }
       }
       
-      toast.success("Content posted successfully!");
-    } else {
-      schedulePost(title, content, selectedPlatforms, new Date(date));
-      setScheduledPostsList(getScheduledPosts());
-      toast.success("Post scheduled successfully!");
+      setShowCreatePostDialog(false);
+    } catch (error) {
+      console.error('Error creating post:', error);
+      toast.error('Failed to create post');
     }
-    
-    setShowCreatePostDialog(false);
   };
 
   const handleUpdatePost = async (e: React.FormEvent) => {
@@ -458,15 +504,6 @@ const SocialPage = () => {
               <Button 
                 variant="outline" 
                 className="flex flex-col items-center justify-center h-24 space-y-2"
-                onClick={() => handleConnectPlatform('twitter')}
-              >
-                <Twitter size={24} className="text-blue-400" />
-                <span>Twitter</span>
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="flex flex-col items-center justify-center h-24 space-y-2"
                 onClick={() => handleConnectPlatform('instagram')}
               >
                 <Instagram size={24} className="text-pink-600" />
@@ -481,10 +518,22 @@ const SocialPage = () => {
                 <FileText size={24} className="text-gray-700" />
                 <span>WordPress Blog</span>
               </Button>
+              
+              <Button 
+                variant="outline" 
+                className="flex flex-col items-center justify-center h-24 space-y-2 opacity-60"
+                disabled
+              >
+                <Twitter size={24} className="text-blue-400" />
+                <span className="flex items-center gap-1">
+                  Twitter <AlertCircle size={12} />
+                  <span className="text-xs bg-yellow-100 text-yellow-800 px-1 rounded">Coming Soon</span>
+                </span>
+              </Button>
             </div>
             
             <p className="text-xs text-gray-500 mt-4">
-              Note: In the demo mode, all platforms can be connected without requiring a real server.
+              Connect your social media accounts to manage them directly from your dashboard.
             </p>
           </div>
           <DialogFooter>
