@@ -17,6 +17,7 @@ import SettingsPage from "@/components/dashboard/pages/SettingsPage";
 import NewPostPage from "@/components/dashboard/pages/NewPostPage";
 import WatchDemoModal from "@/components/dashboard/WatchDemoModal";
 import EditPostPage from "@/components/dashboard/pages/EditPostPage";
+import { usePosts } from "@/hooks/usePosts";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ const Dashboard = () => {
   const [activePage, setActivePage] = useState("dashboard");
   const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
+  const { deletePost, updatePost } = usePosts();
 
   // Update active page based on current route
   useEffect(() => {
@@ -50,14 +52,16 @@ const Dashboard = () => {
   };
   
   const editPost = (id: number) => {
+    const stringId = String(id);
     setEditingPostId(id);
-    navigate(`/dashboard/edit-post/${id}`);
-    toast.info(`Editing post ${id}`);
+    navigate(`/dashboard/edit-post/${stringId}`);
+    toast.info(`Editing post ${stringId}`);
   };
   
   const cancelPost = (id: number) => {
-    if (confirm(`Are you sure you want to cancel post ${id}?`)) {
-      toast.success(`Post ${id} has been cancelled`);
+    const stringId = String(id);
+    if (confirm(`Are you sure you want to cancel post ${stringId}?`)) {
+      deletePost(stringId);
     }
   };
   
@@ -66,12 +70,21 @@ const Dashboard = () => {
   };
   
   const viewStats = (id: number) => {
-    navigate(`/dashboard/analytics?postId=${id}`);
-    toast.success(`Viewing statistics for post ${id}`);
+    const stringId = String(id);
+    navigate(`/dashboard/analytics?postId=${stringId}`);
+    toast.success(`Viewing statistics for post ${stringId}`);
   };
   
   const republishPost = (id: number) => {
-    toast.success(`Post ${id} has been scheduled for republishing`);
+    const stringId = String(id);
+    updatePost({ 
+      id: stringId, 
+      data: { 
+        status: 'scheduled',
+        scheduled_for: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      } 
+    });
+    toast.success(`Post ${stringId} has been scheduled for republishing`);
   };
   
   const viewAllPublished = () => {
@@ -106,7 +119,7 @@ const Dashboard = () => {
             <>
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <div>
-                  <h1 className="text-2xl font-bold">Welcome back, User!</h1>
+                  <h1 className="text-2xl font-bold">Welcome back!</h1>
                   <p className="text-gray-600">Here's what's happening with your content</p>
                 </div>
                 <Button className="gradient-button text-white" onClick={createPost}>
