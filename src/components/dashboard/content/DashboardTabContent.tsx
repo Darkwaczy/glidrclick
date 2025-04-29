@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, ArrowUpRight, LineChart, Users, Calendar } from "lucide-react";
+import { BarChart3, ArrowUpRight, LineChart, Users, Calendar, Loader } from "lucide-react";
 import PostsList from "@/components/dashboard/PostsList";
 import { 
   BarChart, 
