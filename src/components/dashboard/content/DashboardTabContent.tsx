@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, ArrowUpRight, LineChart, Users, Calendar, Loader } from "lucide-react";
+import { BarChart3, ArrowUpRight, LineChart, Users, Calendar, Loader2 } from "lucide-react";
 import PostsList from "@/components/dashboard/PostsList";
 import { 
   BarChart, 
@@ -48,6 +48,7 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
   const [publishedPosts, setPublishedPosts] = useState<any[]>([]);
   const [draftPosts, setDraftPosts] = useState<any[]>([]);
   const [analyticsData, setAnalyticsData] = useState<any[]>([]);
+  const [bestPerforming, setBestPerforming] = useState<{title: string, views?: number}>({title: "No content yet"});
   
   useEffect(() => {
     if (!isLoading && allPosts) {
@@ -82,6 +83,15 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
       setScheduledPosts(scheduled);
       setPublishedPosts(published);
       setDraftPosts(drafts);
+      
+      if (published.length > 0) {
+        const best = published.reduce((prev, current) => 
+          (prev.views || 0) > (current.views || 0) ? prev : current
+        );
+        setBestPerforming(best);
+      } else {
+        setBestPerforming({title: "No published content yet"});
+      }
       
       if (allPosts.length > 0) {
         const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
@@ -185,7 +195,7 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
       return (
         <TabsContent value="analytics" className="space-y-6">
           <div className="flex items-center justify-center py-12">
-            <Loader className="h-8 w-8 animate-spin text-gray-400" />
+            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
           </div>
         </TabsContent>
       );
