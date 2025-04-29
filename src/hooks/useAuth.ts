@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { toast } from "sonner";
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -78,7 +79,3 @@ export const useAuth = () => {
     signOut,
   };
 };
-
-function toast(arg0: { success: (arg0: string) => void; }) {
-  throw new Error('Function not implemented.');
-}
