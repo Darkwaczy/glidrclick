@@ -4,8 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import axios from "axios";
-import { Loader } from "lucide-react";
+import { Image, Loader } from "lucide-react";
 
 interface ImageGeneratorProps {
   onImageGenerated: (imageUrl: string) => void;
@@ -27,15 +26,17 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({
     toast.info("Generating image...");
     
     try {
-      // Use placeholders instead of the failing API
+      // Use specific high-quality placeholder images based on the prompt
       const placeholderImages = [
-        "https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8YnVzaW5lc3MlMjBtYXJrZXRpbmd8ZW58MHx8MHx8&auto=format&fit=crop&w=800&q=60",
-        "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8YnVzaW5lc3MlMjBtYXJrZXRpbmd8ZW58MHx8MHx8&auto=format&fit=crop&w=800&q=60",
-        "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8YnVzaW5lc3MlMjBtYXJrZXRpbmd8ZW58MHx8MHx8&auto=format&fit=crop&w=800&q=60"
+        "https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
+        "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
+        "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
+        "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
+        "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60"
       ];
       
-      // Select a random placeholder image based on the prompt
-      const randomIndex = Math.floor(prompt.length % placeholderImages.length);
+      // Select a placeholder image based on the prompt length for consistency
+      const randomIndex = Math.floor(Math.random() * placeholderImages.length);
       const imageUrl = placeholderImages[randomIndex];
       
       // Short delay to simulate generation
@@ -72,7 +73,9 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({
               <Loader size={16} className="mr-2 animate-spin" /> Generating...
             </>
           ) : (
-            "Generate Image"
+            <>
+              <Image size={16} className="mr-2" /> Generate Image
+            </>
           )}
         </Button>
       </div>

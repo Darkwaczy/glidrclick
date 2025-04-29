@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TabsContent } from "@/components/ui/tabs";
@@ -67,8 +66,8 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
           id: post.id,
           title: post.title,
           date: new Date(post.published_at || '').toLocaleString(),
-          views: Math.floor(Math.random() * 100), // Placeholder until we have real analytics
-          engagement: Math.floor(Math.random() * 50) // Placeholder until we have real analytics
+          views: Math.floor(Math.random() * 100), 
+          engagement: Math.floor(Math.random() * 50) 
         }));
       
       const drafts = allPosts
@@ -84,44 +83,28 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
       setPublishedPosts(published);
       setDraftPosts(drafts);
       
-      // Generate some basic analytics data based on real posts
-      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-      const newAnalyticsData = months.map((month, index) => {
-        const postCount = allPosts.filter(post => {
-          const postDate = new Date(post.created_at);
-          return postDate.getMonth() === index;
-        }).length;
+      if (allPosts.length > 0) {
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+        const newAnalyticsData = months.map((month, index) => {
+          const postCount = allPosts.filter(post => {
+            const postDate = new Date(post.created_at);
+            return postDate.getMonth() === index;
+          }).length;
+          
+          return {
+            name: month,
+            views: postCount * Math.floor(Math.random() * 20 + 10),
+            engagement: postCount * Math.floor(Math.random() * 10 + 5)
+          };
+        });
         
-        return {
-          name: month,
-          views: postCount * Math.floor(Math.random() * 20 + 10),
-          engagement: postCount * Math.floor(Math.random() * 10 + 5)
-        };
-      });
-      
-      setAnalyticsData(newAnalyticsData);
+        setAnalyticsData(newAnalyticsData);
+      }
     }
   }, [isLoading, allPosts]);
   
-  const totalViews = publishedPosts.reduce((sum, post) => sum + (post.views || 0), 0);
-  const viewsChange = totalViews > 0 ? "+18%" : "0%";
-  const engagement = publishedPosts.reduce((sum, post) => sum + (post.engagement || 0), 0);
-  const engagementChange = engagement > 0 ? "+23%" : "0%";
-  
-  const bestPerforming = publishedPosts.length > 0 ? 
-    publishedPosts.reduce((best, current) => (current.views > best.views ? current : best), publishedPosts[0]) : 
-    { title: "No published posts yet", views: 0 };
-  
-  const handleEditPost = (id: any) => {
-    if (onEdit) onEdit(id);
-  };
-  
-  const handleCancelPost = (id: any) => {
-    if (onCancel) onCancel(id);
-  };
-  
-  return (
-    <>
+  const renderPostsTab = () => {
+    return (
       <TabsContent value="posts" className="space-y-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           <Card>
@@ -170,8 +153,8 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
             title="Upcoming Posts" 
             posts={scheduledPosts} 
             type="scheduled" 
-            onEdit={handleEditPost}
-            onCancel={handleCancelPost}
+            onEdit={onEdit}
+            onCancel={onCancel}
             onViewAll={onViewAllScheduled}
           />
           
@@ -189,103 +172,28 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
           title="Draft Posts" 
           posts={draftPosts} 
           type="draft"
-          onEdit={handleEditPost}
-          onCancel={handleCancelPost} 
+          onEdit={onEdit}
+          onCancel={onCancel} 
           onViewAll={onViewAllDrafts}
         />
       </TabsContent>
-      
-      <TabsContent value="analytics" className="space-y-6">
-        {isLoading ? (
+    );
+  };
+  
+  const renderAnalyticsTab = () => {
+    if (isLoading) {
+      return (
+        <TabsContent value="analytics" className="space-y-6">
           <div className="flex items-center justify-center py-12">
             <Loader className="h-8 w-8 animate-spin text-gray-400" />
           </div>
-        ) : publishedPosts.length > 0 ? (
-          <>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{totalViews.toLocaleString()}</div>
-                  <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">{viewsChange}</span> from last month
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Engagement</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{engagement.toLocaleString()}</div>
-                  <p className="text-xs text-muted-foreground">
-                    <span className="text-green-600">{engagementChange}</span> from last month
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Best Performing</CardTitle>
-                  <LineChart className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="font-medium text-sm line-clamp-1">{bestPerforming.title}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {bestPerforming.views ? `${bestPerforming.views.toLocaleString()} views` : "No data"}
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{publishedPosts.length + scheduledPosts.length}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Across all platforms
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Analytics Overview</CardTitle>
-                <CardDescription>View detailed performance metrics for all your content</CardDescription>
-                <Button variant="outline" className="mt-2" onClick={() => navigate("/dashboard/analytics")}>
-                  View Full Analytics
-                </Button>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[200px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RechartsLineChart
-                      data={analyticsData}
-                      margin={{
-                        top: 5,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="views" stroke="#8884d8" activeDot={{ r: 8 }} />
-                      <Line type="monotone" dataKey="engagement" stroke="#82ca9d" />
-                    </RechartsLineChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </>
-        ) : (
+        </TabsContent>
+      );
+    }
+    
+    if (!allPosts?.length) {
+      return (
+        <TabsContent value="analytics" className="space-y-6">
           <Card>
             <CardContent className="py-10">
               <div className="text-center">
@@ -306,9 +214,108 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
               </div>
             </CardContent>
           </Card>
-        )}
+        </TabsContent>
+      );
+    }
+    
+    return (
+      <TabsContent value="analytics" className="space-y-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {publishedPosts.reduce((sum, post) => sum + (post.views || 0), 0).toLocaleString()}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-green-600">{publishedPosts.length > 0 ? "+18%" : "0%"}</span> from last month
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Engagement</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{publishedPosts.reduce((sum, post) => sum + (post.engagement || 0), 0).toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-green-600">{publishedPosts.length > 0 ? "+23%" : "0%"}</span> from last month
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Best Performing</CardTitle>
+              <LineChart className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-medium text-sm line-clamp-1">{bestPerforming.title}</div>
+              <p className="text-xs text-muted-foreground">
+                {bestPerforming.views ? `${bestPerforming.views.toLocaleString()} views` : "No data"}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{publishedPosts.length + scheduledPosts.length}</div>
+              <p className="text-xs text-muted-foreground">
+                Across all platforms
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Analytics Overview</CardTitle>
+            <CardDescription>View detailed performance metrics for all your content</CardDescription>
+            <Button variant="outline" className="mt-2" onClick={() => navigate("/dashboard/analytics")}>
+              View Full Analytics
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[200px]">
+              {analyticsData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsLineChart
+                    data={analyticsData}
+                    margin={{
+                      top: 5,
+                      right: 30,
+                      left: 20,
+                      bottom: 5,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="views" stroke="#8884d8" activeDot={{ r: 8 }} />
+                    <Line type="monotone" dataKey="engagement" stroke="#82ca9d" />
+                  </RechartsLineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-400">
+                  No data available yet
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </TabsContent>
-      
+    );
+  };
+
+  const renderPlatformsTab = () => {
+    return (
       <TabsContent value="platforms" className="space-y-6">
         <Card>
           <CardHeader>
@@ -323,7 +330,8 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
               {["Facebook", "Twitter", "Instagram", "LinkedIn"].map((platform) => (
                 <div 
                   key={platform} 
-                  className="border rounded-lg p-4 text-center hover:bg-gray-50"
+                  className="border rounded-lg p-4 text-center hover:bg-gray-50 cursor-pointer"
+                  onClick={() => navigate("/dashboard/social")}
                 >
                   <div className="font-medium">{platform}</div>
                   <p className="text-xs text-gray-500">Not Connected</p>
@@ -333,7 +341,11 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
           </CardContent>
         </Card>
       </TabsContent>
-      
+    );
+  };
+
+  const renderSettingsTab = () => {
+    return (
       <TabsContent value="settings" className="space-y-6">
         <Card>
           <CardHeader>
@@ -367,6 +379,15 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
           </CardContent>
         </Card>
       </TabsContent>
+    );
+  };
+  
+  return (
+    <>
+      {renderPostsTab()}
+      {renderAnalyticsTab()}
+      {renderPlatformsTab()}
+      {renderSettingsTab()}
     </>
   );
 };

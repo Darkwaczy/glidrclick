@@ -1,6 +1,6 @@
 
 import React from "react";
-import { MoreVertical, Eye, Edit, X, RefreshCw, Calendar } from "lucide-react";
+import { MoreVertical, Eye, Edit, X, RefreshCw, Calendar, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -40,18 +40,20 @@ const PostsList = ({
   onRepublish,
   onViewAll,
 }: PostsListProps) => {
+  const displayPosts = posts || [];
+  
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-lg">{title}</CardTitle>
-        {onViewAll && posts.length > 0 && (
+        {onViewAll && displayPosts.length > 0 && (
           <Button variant="ghost" size="sm" onClick={onViewAll}>
             View all
           </Button>
         )}
       </CardHeader>
       <CardContent>
-        {posts.length === 0 ? (
+        {displayPosts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <div className="rounded-full bg-gray-100 p-3 mb-3">
               {type === "scheduled" ? (
@@ -59,7 +61,7 @@ const PostsList = ({
               ) : type === "published" ? (
                 <Eye size={18} className="text-gray-500" />
               ) : (
-                <Edit size={18} className="text-gray-500" />
+                <FileText size={18} className="text-gray-500" />
               )}
             </div>
             <h3 className="font-medium text-sm">No {type} posts</h3>
@@ -73,7 +75,7 @@ const PostsList = ({
           </div>
         ) : (
           <div className="space-y-4 max-h-[320px] overflow-y-auto">
-            {posts.map((post) => (
+            {displayPosts.map((post) => (
               <div
                 key={post.id}
                 className="flex items-start justify-between border-b pb-4 last:border-0 last:pb-0"

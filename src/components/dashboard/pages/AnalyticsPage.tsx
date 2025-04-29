@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { 
   Card, 
   CardContent, 
@@ -9,11 +9,12 @@ import {
   CardTitle 
 } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Calendar, LineChart, Loader } from "lucide-react";
+import { Calendar, LineChart, BarChart as BarChartIcon, Loader, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePosts } from "@/hooks/usePosts";
 
 const AnalyticsPage = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const postId = searchParams.get('postId');
   const { posts, isLoading } = usePosts();
@@ -36,36 +37,38 @@ const AnalyticsPage = () => {
     );
   }
 
-  if (posts.length === 0) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Analytics</h1>
-          <p className="text-gray-600">Track the performance of your content</p>
-        </div>
-
-        <Card>
-          <CardContent className="py-10">
-            <div className="text-center">
-              <div className="mb-4">
-                <LineChart className="mx-auto h-12 w-12 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium">No analytics data available yet</h3>
-              <p className="mt-2 text-sm text-gray-500">
-                Create and publish content to start seeing performance analytics.
-              </p>
-              <Button 
-                variant="outline" 
-                className="mt-4"
-                onClick={() => window.location.href = "/dashboard/new-post"}
-              >
-                Create Your First Post
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+  const renderEmptyState = () => (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">Analytics</h1>
+        <p className="text-gray-600">Track the performance of your content</p>
       </div>
-    );
+
+      <Card>
+        <CardContent className="py-10">
+          <div className="text-center">
+            <div className="mb-4">
+              <LineChart className="mx-auto h-12 w-12 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-medium">No analytics data available yet</h3>
+            <p className="mt-2 text-sm text-gray-500">
+              Create and publish content to start seeing performance analytics.
+            </p>
+            <Button 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => navigate("/dashboard/new-post")}
+            >
+              Create Your First Post
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  if (!posts || posts.length === 0) {
+    return renderEmptyState();
   }
 
   return (
@@ -86,7 +89,7 @@ const AnalyticsPage = () => {
         </TabsList>
 
         <div className="mt-6">
-          {selectedPost ? (
+          {selectedPost && (
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle>{selectedPost.title}</CardTitle>
@@ -111,7 +114,7 @@ const AnalyticsPage = () => {
                 </div>
               </CardContent>
             </Card>
-          ) : null}
+          )}
 
           <TabsContent value="overview">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -124,7 +127,7 @@ const AnalyticsPage = () => {
                   <div className="flex items-center justify-center h-full bg-gray-50 rounded-md">
                     <div className="text-center">
                       <LineChart className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                      <p className="text-sm text-gray-500">Analytics visualization will appear here</p>
+                      <p className="text-sm text-gray-500">Data visualization will appear here</p>
                       <p className="text-xs text-gray-400">Continue posting content to gather more data</p>
                     </div>
                   </div>
@@ -202,7 +205,7 @@ const AnalyticsPage = () => {
               <CardContent className="h-80">
                 <div className="flex items-center justify-center h-full bg-gray-50 rounded-md">
                   <div className="text-center">
-                    <BarChart className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                    <BarChartIcon className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                     <p className="text-sm text-gray-500">Conversion metrics will appear here</p>
                     <p className="text-xs text-gray-400">Set up conversion tracking to see results</p>
                   </div>
@@ -215,49 +218,5 @@ const AnalyticsPage = () => {
     </div>
   );
 };
-
-// Missing Icons that were used above
-function Users(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
-
-function BarChart(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="12" x2="12" y1="20" y2="10" />
-      <line x1="18" x2="18" y1="20" y2="4" />
-      <line x1="6" x2="6" y1="20" y2="16" />
-    </svg>
-  );
-}
 
 export default AnalyticsPage;

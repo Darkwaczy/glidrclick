@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation, useSearchParams, Routes, Route, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -27,7 +26,7 @@ const Dashboard = () => {
   const [activePage, setActivePage] = useState("dashboard");
   const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
-  const { deletePost, updatePost } = usePosts();
+  const { posts, isLoading, deletePost, updatePost } = usePosts();
 
   // Update active page based on current route
   useEffect(() => {
@@ -60,8 +59,9 @@ const Dashboard = () => {
   
   const cancelPost = (id: number) => {
     const stringId = String(id);
-    if (confirm(`Are you sure you want to cancel post ${stringId}?`)) {
+    if (window.confirm(`Are you sure you want to cancel post ${stringId}?`)) {
       deletePost(stringId);
+      toast.success(`Post ${stringId} has been canceled`);
     }
   };
   
@@ -72,7 +72,6 @@ const Dashboard = () => {
   const viewStats = (id: number) => {
     const stringId = String(id);
     navigate(`/dashboard/analytics?postId=${stringId}`);
-    toast.success(`Viewing statistics for post ${stringId}`);
   };
   
   const republishPost = (id: number) => {
@@ -84,7 +83,6 @@ const Dashboard = () => {
         scheduled_for: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
       } 
     });
-    toast.success(`Post ${stringId} has been scheduled for republishing`);
   };
   
   const viewAllPublished = () => {
@@ -102,7 +100,6 @@ const Dashboard = () => {
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     setSearchParams({ tab: value });
-    toast.info(`Switched to ${value} tab`);
   };
 
   // Get the current path to determine what to render
