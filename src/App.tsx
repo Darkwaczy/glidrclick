@@ -11,6 +11,7 @@ import AutoPosting from "./pages/features/AutoPosting";
 import SocialSharing from "./pages/features/SocialSharing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/features/social-sharing" element={<SocialSharing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/auth" element={<Auth />} />
           
           {/* Dashboard routes - ensure all nested routes are properly handled */}
           <Route path="/dashboard" element={<Dashboard />} />

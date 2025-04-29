@@ -2,7 +2,7 @@
 import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Home } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
@@ -29,18 +29,19 @@ const NotFound = () => {
             variant="default"
             className="w-full flex items-center justify-center"
           >
-            <Link to="/dashboard">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Return to Dashboard
+            <Link to="/">
+              <Home className="mr-2 h-4 w-4" />
+              Return to Homepage
             </Link>
           </Button>
           <Button 
             asChild
             variant="outline"
-            className="w-full"
+            className="w-full flex items-center justify-center"
           >
-            <Link to="/">
-              Go to Homepage
+            <Link to="/auth">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Go to Login
             </Link>
           </Button>
         </div>

@@ -18,10 +18,6 @@ export const useAuth = () => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-
-        if (!session?.user) {
-          navigate('/auth');
-        }
       }
     );
 
@@ -30,14 +26,10 @@ export const useAuth = () => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-
-      if (!session?.user) {
-        navigate('/auth');
-      }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, []);
 
   const signIn = async ({ email, password }: { email: string, password: string }) => {
     try {
