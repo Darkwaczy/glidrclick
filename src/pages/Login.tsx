@@ -31,19 +31,20 @@ const formSchema = z.object({
 const LoginPage = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { signIn, user } = useAuth();
+  const { signIn, user, isAdmin } = useAuth();
   
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
+      console.log("User authenticated, redirecting to dashboard", {isAdmin});
       // Check if user is admin to redirect to the appropriate dashboard
-      if (user.email === "admin@glidrclick.com") {
+      if (isAdmin || user.email === "admin@glidrclick.com") {
         navigate("/admin-dashboard");
       } else {
         navigate("/dashboard");
       }
     }
-  }, [user, navigate]);
+  }, [user, navigate, isAdmin]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -60,15 +61,10 @@ const LoginPage = () => {
       // Since we're using zod validation, we can be confident that email and password are defined
       const { email, password } = values;
       
-      if (email === "admin@glidrclick.com" && password === "admin123") {
-        toast.success("Admin login successful!");
-        // Manually navigate for admin user
-        setTimeout(() => navigate("/admin-dashboard"), 1000);
-      } else {
-        await signIn({ email, password });
-        toast.success("Login successful!");
-        // Redirection for regular users will be handled by the useEffect above
-      }
+      await signIn({ email, password });
+      toast.success("Login successful!");
+      // Redirection will be handled by the useEffect above
+      
     } catch (error: any) {
       console.error("Login error:", error);
       toast.error(error?.message || "Login failed. Please check your credentials.");

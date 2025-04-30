@@ -23,23 +23,27 @@ export const useAuth = () => {
         
         // Check for admin role if user is signed in
         if (session?.user) {
-          const { data } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', session.user.id)
-            .eq('role', 'admin')
-            .maybeSingle();
+          const isAdminEmail = session.user.email === 'admin@glidrclick.com';
           
-          const isAdminUser = !!data || session.user.email === 'admin@glidrclick.com';
-          setIsAdmin(isAdminUser);
+          if (isAdminEmail) {
+            setIsAdmin(true);
+          } else {
+            const { data } = await supabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', session.user.id)
+              .eq('role', 'admin')
+              .maybeSingle();
+            
+            setIsAdmin(!!data);
+          }
         } else {
           setIsAdmin(false);
         }
         
         setLoading(false);
         
-        // Handle social auth redirects - moved to a separate function to avoid
-        // running Supabase calls inside the auth state change handler
+        // Handle social auth redirects
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           const urlParams = new URLSearchParams(window.location.search);
           const connectedPlatform = urlParams.get('connected');
@@ -63,15 +67,20 @@ export const useAuth = () => {
       
       // Check for admin role if user is signed in
       if (session?.user) {
-        const { data } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', session.user.id)
-          .eq('role', 'admin')
-          .maybeSingle();
-        
-        const isAdminUser = !!data || session.user.email === 'admin@glidrclick.com';
-        setIsAdmin(isAdminUser);
+        const isAdminEmail = session.user.email === 'admin@glidrclick.com';
+          
+        if (isAdminEmail) {
+          setIsAdmin(true);
+        } else {
+          const { data } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .eq('role', 'admin')
+            .maybeSingle();
+          
+          setIsAdmin(!!data);
+        }
       }
       
       setLoading(false);
@@ -145,8 +154,17 @@ export const useAuth = () => {
 
   const signIn = async ({ email, password }: { email: string, password: string }) => {
     try {
+      console.log(`Signing in with email: ${email}`);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      if (error) {
+        console.error('Error signing in:', error);
+        throw error;
+      }
+      
+      // Special handling for admin account
+      if (email === 'admin@glidrclick.com') {
+        setIsAdmin(true);
+      }
       
       // Navigation will be handled by the onAuthStateChange listener
       return true;

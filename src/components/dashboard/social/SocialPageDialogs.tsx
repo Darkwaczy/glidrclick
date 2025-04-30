@@ -41,14 +41,7 @@ const SocialPageDialogs: React.FC<SocialPageDialogsProps> = ({ social }) => {
       
       <CreatePostDialog
         open={social.showCreatePostDialog}
-        onOpenChange={(open) => {
-          if (typeof social.handleCreatePost === 'function' && open) {
-            social.handleCreatePost();
-          } else {
-            // Close the dialog when open is false
-            social.handleSubmitNewPost(new Event('close') as unknown as React.FormEvent);
-          }
-        }}
+        onOpenChange={social.setShowCreatePostDialog}
         platforms={social.platforms}
         onSubmit={social.handleSubmitNewPost}
       />

@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { signIn, signUp, user, loading } = useAuth();
+  const { signIn, signUp, user, loading, isAdmin } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
   
@@ -28,14 +28,15 @@ const Auth = () => {
   // Redirect to dashboard if already logged in
   useEffect(() => {
     if (user && !loading) {
+      console.log("Auth page: User authenticated, redirecting", { isAdmin, email: user.email });
       // Check if admin user to redirect to appropriate dashboard
-      if (user.email === "admin@glidrclick.com") {
+      if (isAdmin || user.email === "admin@glidrclick.com") {
         navigate("/admin-dashboard");
       } else {
         navigate("/dashboard");
       }
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, isAdmin]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,16 +49,9 @@ const Auth = () => {
     setIsLoading(true);
     
     try {
-      // Special handling for admin account
-      if (loginEmail === "admin@glidrclick.com" && loginPassword === "admin123") {
-        await signIn({ email: loginEmail, password: loginPassword });
-        toast.success("Admin login successful!");
-        navigate("/admin-dashboard");
-      } else {
-        await signIn({ email: loginEmail, password: loginPassword });
-        toast.success("Successfully logged in!");
-        navigate("/dashboard");
-      }
+      await signIn({ email: loginEmail, password: loginPassword });
+      toast.success("Successfully logged in!");
+      // Redirection will be handled by useEffect
     } catch (error: any) {
       console.error("Login error:", error);
       toast.error(error?.message || "Failed to login. Please check your credentials.");
