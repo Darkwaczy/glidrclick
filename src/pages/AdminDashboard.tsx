@@ -42,10 +42,11 @@ const AdminDashboard = () => {
     const tabFromUrl = searchParams.get("tab");
     if (tabFromUrl && ["users", "analytics", "system", "security", "settings"].includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
-    } else if (!tabFromUrl) {
+    } else if (!tabFromUrl && location.pathname === "/admin-dashboard") {
+      // Only set default tab if we're on the main admin dashboard page
       setSearchParams({ tab: "users" });
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, location.pathname]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -55,6 +56,13 @@ const AdminDashboard = () => {
 
   // Determine if we need to show the dashboard content or a specific page
   const showDashboardContent = location.pathname === "/admin-dashboard" || location.pathname === "/admin-dashboard/";
+
+  console.log("Admin Dashboard Render:", { 
+    path: location.pathname, 
+    showDashboardContent, 
+    activeTab,
+    searchParams: searchParams.toString()
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -85,11 +93,56 @@ const AdminDashboard = () => {
             </>
           ) : (
             <Routes>
-              {/* Add routes for admin-specific pages here if needed */}
-              <Route path="users" element={<div>User Management Page</div>} />
-              <Route path="system" element={<div>System Management Page</div>} />
-              <Route path="security" element={<div>Security Management Page</div>} />
-              {/* Add more routes as needed */}
+              <Route path="/" element={
+                <div className="space-y-6">
+                  <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+                  <p>Select a section from the sidebar to continue.</p>
+                </div>
+              } />
+              <Route path="users/*" element={
+                <div className="space-y-6">
+                  <h1 className="text-2xl font-bold">User Management</h1>
+                  <AdminTabContent activeTab="users" />
+                </div>
+              } />
+              <Route path="system/*" element={
+                <div className="space-y-6">
+                  <h1 className="text-2xl font-bold">System Management</h1>
+                  <AdminTabContent activeTab="system" />
+                </div>
+              } />
+              <Route path="security/*" element={
+                <div className="space-y-6">
+                  <h1 className="text-2xl font-bold">Security Management</h1>
+                  <AdminTabContent activeTab="security" />
+                </div>
+              } />
+              <Route path="settings/*" element={
+                <div className="space-y-6">
+                  <h1 className="text-2xl font-bold">Admin Settings</h1>
+                  <AdminTabContent activeTab="settings" />
+                </div>
+              } />
+              <Route path="analytics/*" element={
+                <div className="space-y-6">
+                  <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
+                  <AdminTabContent activeTab="analytics" />
+                </div>
+              } />
+              <Route path="*" element={
+                <div className="p-6 bg-white rounded-lg shadow-sm">
+                  <h2 className="text-xl font-medium mb-2">Page Not Found</h2>
+                  <p className="text-gray-600 mb-4">
+                    The admin page you're looking for doesn't exist.
+                  </p>
+                  <button 
+                    onClick={() => navigate("/admin-dashboard")}
+                    className="text-blue-600 hover:underline"
+                  >
+                    Return to Admin Dashboard
+                  </button>
+                </div>
+              } />
             </Routes>
           )}
         </main>

@@ -82,7 +82,7 @@ function AppContent() {
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/register" element={<Register />} />
-        {/* Redirect /login to /auth */}
+        {/* Redirect any /login attempts to /auth */}
         <Route path="/login" element={<Navigate to="/auth" replace />} />
         
         {/* Protected routes */}
