@@ -165,11 +165,19 @@ export const connectFacebookWithSdk = async (): Promise<boolean> => {
     // Make sure Facebook SDK is loaded
     await initFacebookSdk();
     
-    // Check if user is already logged into Facebook
+    // Check if JSSDK login is enabled
     try {
-      const loginStatus = await checkFacebookLoginStatus();
+      // Try to use the SDK login flow
+      const loginStatus = await checkFacebookLoginStatus().catch((error) => {
+        const errorMessage = error?.message || '';
+        if (errorMessage.includes("JSSDK option is not toggled")) {
+          throw new Error("Facebook JSSDK option not enabled");
+        }
+        return null;
+      });
       
-      if (loginStatus.status === 'connected' && loginStatus.authResponse) {
+      // If we get this far with no error, proceed with normal flow
+      if (loginStatus?.status === 'connected' && loginStatus.authResponse) {
         console.log("User already logged into Facebook, using existing auth:", loginStatus);
         
         // Use existing authentication
@@ -236,13 +244,26 @@ export const connectFacebookWithSdk = async (): Promise<boolean> => {
         toast.success(`Successfully connected to Facebook!`);
         return true;
       }
-    } catch (loginStatusError) {
-      console.warn("Error checking Facebook login status:", loginStatusError);
+    } catch (loginError) {
+      if (loginError.message === "Facebook JSSDK option not enabled") {
+        toast.dismiss();
+        toast.error(
+          "The Facebook JS SDK login option is not enabled. Please go to developers.facebook.com, find your app, navigate to Facebook Login > Settings, and toggle 'Log in with JavaScript SDK' to 'Yes'."
+        );
+        return false;
+      }
+      console.warn("Error checking Facebook login status:", loginError);
       // Continue with normal login flow if status check fails
     }
     
     // If not already logged in or status check failed, proceed with regular login
-    const authResponse = await loginWithFacebook();
+    const authResponse = await loginWithFacebook().catch(error => {
+      const errorMessage = error?.message || '';
+      if (errorMessage.includes("JSSDK option is not toggled")) {
+        throw new Error("Facebook JSSDK option not enabled. Please go to developers.facebook.com, find your app, navigate to Facebook Login > Settings, and toggle 'Log in with JavaScript SDK' to 'Yes'.");
+      }
+      throw error;
+    });
     
     if (!authResponse) {
       toast.error("Facebook authentication failed");
@@ -312,7 +333,14 @@ export const connectFacebookWithSdk = async (): Promise<boolean> => {
     
   } catch (error) {
     console.error('Error in connectFacebookWithSdk:', error);
-    toast.error(`Something went wrong while connecting to Facebook: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    
+    // Special error handling for JSSDK toggle error
+    if (error.message && error.message.includes("JSSDK option is not toggled")) {
+      toast.error("Please toggle the 'Log in with JavaScript SDK' option to 'Yes' in your Facebook Developer settings (developers.facebook.com > Your App > Facebook Login > Settings).");
+    } else {
+      toast.error(`Something went wrong while connecting to Facebook: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+    
     return false;
   }
 };

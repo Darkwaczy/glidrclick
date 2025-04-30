@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { 
   initFacebookSdk, 
@@ -21,12 +22,14 @@ export const useFacebookAuth = () => {
   const [loginStatus, setLoginStatus] = useState<FacebookLoginStatus>({ 
     authenticated: false 
   });
+  const [error, setError] = useState<string | null>(null);
 
   // Initialize SDK and check login status
   useEffect(() => {
     const initialize = async () => {
       try {
         setIsLoading(true);
+        setError(null);
         
         if (!isFacebookSdkLoaded()) {
           await initFacebookSdk();
@@ -44,6 +47,14 @@ export const useFacebookAuth = () => {
           console.log("Facebook login status from hook:", status);
         } catch (statusError) {
           console.warn("Error checking Facebook login status:", statusError);
+          
+          // Check if it's the specific JSSDK error
+          const errorMessage = statusError instanceof Error ? statusError.message : String(statusError);
+          if (errorMessage.includes("JSSDK option is not toggled") || 
+              errorMessage.toLowerCase().includes("log in with javascript sdk")) {
+            setError("Please toggle the 'Log in with JavaScript SDK' option to 'Yes' in your Facebook Developer settings.");
+          }
+          
           setLoginStatus({
             status: 'unknown',
             authenticated: false
@@ -53,6 +64,8 @@ export const useFacebookAuth = () => {
         setIsInitialized(true);
       } catch (error) {
         console.error("Failed to initialize Facebook SDK:", error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -64,6 +77,7 @@ export const useFacebookAuth = () => {
   // Function to check status again
   const refreshLoginStatus = async (): Promise<FacebookLoginStatus> => {
     try {
+      setError(null);
       const status = await checkFacebookLoginStatus();
       const newStatus = {
         status: status.status as 'connected' | 'not_authorized' | 'unknown',
@@ -77,6 +91,15 @@ export const useFacebookAuth = () => {
       return newStatus;
     } catch (error) {
       console.error("Error refreshing Facebook login status:", error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      if (errorMessage.includes("JSSDK option is not toggled") || 
+          errorMessage.toLowerCase().includes("log in with javascript sdk")) {
+        setError("Please toggle the 'Log in with JavaScript SDK' option to 'Yes' in your Facebook Developer settings.");
+      } else {
+        setError(errorMessage);
+      }
+      
       return { authenticated: false, status: 'unknown' };
     }
   };
@@ -84,6 +107,7 @@ export const useFacebookAuth = () => {
   // Connect with existing login or create new login
   const connectWithFacebook = async (): Promise<boolean> => {
     try {
+      setError(null);
       // First refresh the login status to make sure it's current
       const currentStatus = await refreshLoginStatus();
       
@@ -96,7 +120,17 @@ export const useFacebookAuth = () => {
       }
     } catch (error) {
       console.error("Error connecting with Facebook:", error);
-      toast.error(`Failed to connect with Facebook: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      if (errorMessage.includes("JSSDK option is not toggled") || 
+          errorMessage.toLowerCase().includes("log in with javascript sdk")) {
+        setError("Please toggle the 'Log in with JavaScript SDK' option to 'Yes' in your Facebook Developer settings.");
+        toast.error(`Failed to connect with Facebook: ${errorMessage}`);
+      } else {
+        setError(errorMessage);
+        toast.error(`Failed to connect with Facebook: ${errorMessage}`);
+      }
+      
       return false;
     }
   };
@@ -105,6 +139,7 @@ export const useFacebookAuth = () => {
     isInitialized,
     isLoading,
     loginStatus,
+    error,
     refreshLoginStatus,
     connectWithFacebook
   };

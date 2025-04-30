@@ -20,11 +20,13 @@ import {
 
 // Import authentication utilities
 import { handleOAuthCallback } from "@/utils/social/authentication";
+import { useFacebookAuth } from "@/hooks/useFacebookAuth";
 
 // Import refactored components
 import ConnectedPlatformsList from "../social/ConnectedPlatformsList";
 import MentionsList from "../social/MentionsList";
 import ScheduledPostsList from "../social/ScheduledPostsList";
+import FacebookSdkWarning from "../social/FacebookSdkWarning";
 
 // Import dialogs
 import ConnectPlatformDialog from "../social/dialogs/ConnectPlatformDialog";
@@ -57,6 +59,9 @@ const SocialPage = () => {
   const [scheduledPostsList, setScheduledPostsList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [processingOAuth, setProcessingOAuth] = useState(false);
+  
+  // Use our enhanced Facebook hook
+  const { error: facebookSdkError } = useFacebookAuth();
 
   useEffect(() => {
     // Add event listener for showing WordPress dialog
@@ -442,6 +447,9 @@ const SocialPage = () => {
           {processingOAuth ? 'Processing...' : isRefreshing ? 'Refreshing...' : 'Refresh Connections'}
         </Button>
       </div>
+      
+      {/* Display Facebook SDK warning if there's an error */}
+      {facebookSdkError && <FacebookSdkWarning error={facebookSdkError} />}
       
       {processingOAuth && (
         <div className="p-4 border border-blue-100 rounded bg-blue-50 text-blue-800 text-sm">
