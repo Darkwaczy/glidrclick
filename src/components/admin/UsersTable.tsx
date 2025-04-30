@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Table, TableHeader, TableHead, TableRow, TableCell, TableBody } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
@@ -36,52 +37,57 @@ const UsersTable = ({ onUserAction }: UsersTableProps) => {
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users', roleFilter, currentPage],
     queryFn: async () => {
-      // First get users from auth
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers({
-        page: currentPage,
-        perPage: pageSize,
-      });
-      
-      if (authError) {
-        console.error("Error fetching users:", authError);
-        return { users: [], count: 0 };
-      }
+      try {
+        // First get users from auth
+        const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers({
+          page: currentPage,
+          perPage: pageSize,
+        });
+        
+        if (authError) {
+          console.error("Error fetching users:", authError);
+          return { users: [], count: 0 };
+        }
 
-      // Get role information for these users
-      const userIds = authUsers.users.map(user => user.id);
-      
-      // Get roles for these users
-      const { data: roles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role')
-        .in('user_id', userIds);
-      
-      if (rolesError) {
-        console.error("Error fetching roles:", rolesError);
+        // Get role information for these users
+        const userIds = authUsers.users.map(user => user.id);
+        
+        // Get roles for these users
+        const { data: roles, error: rolesError } = await supabase
+          .from('user_roles')
+          .select('user_id, role')
+          .in('user_id', userIds);
+        
+        if (rolesError) {
+          console.error("Error fetching roles:", rolesError);
+        }
+        
+        // Create a map of user_id to role
+        const roleMap = (roles || []).reduce((acc: Record<string, string>, curr) => {
+          acc[curr.user_id] = curr.role;
+          return acc;
+        }, {});
+        
+        // Combine the data
+        const usersWithRoles = authUsers.users.map(user => ({
+          ...user,
+          role: roleMap[user.id] || 'user'
+        }));
+        
+        // Apply role filter if needed
+        let filteredUsers = usersWithRoles;
+        if (roleFilter) {
+          filteredUsers = usersWithRoles.filter(user => user.role === roleFilter);
+        }
+        
+        return { 
+          users: filteredUsers, 
+          count: authUsers.users.length // Fixed: Using length as fallback if count is not available
+        };
+      } catch (error) {
+        console.error("Error in queryFn:", error);
+        return { users: [], count: 0 }; // Ensure we always return an object with users and count
       }
-      
-      // Create a map of user_id to role
-      const roleMap = (roles || []).reduce((acc: Record<string, string>, curr) => {
-        acc[curr.user_id] = curr.role;
-        return acc;
-      }, {});
-      
-      // Combine the data
-      const usersWithRoles = authUsers.users.map(user => ({
-        ...user,
-        role: roleMap[user.id] || 'user'
-      }));
-      
-      // Apply role filter if needed
-      let filteredUsers = usersWithRoles;
-      if (roleFilter) {
-        filteredUsers = usersWithRoles.filter(user => user.role === roleFilter);
-      }
-      
-      return { 
-        users: filteredUsers, 
-        count: authUsers.users.length // Fixed: Using length as fallback if count is not available
-      };
     }
   });
 

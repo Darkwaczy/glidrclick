@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -19,6 +19,27 @@ import WatchDemoModal from "@/components/dashboard/WatchDemoModal";
 import EditPostPage from "@/components/dashboard/pages/EditPostPage";
 import { usePosts } from "@/hooks/usePosts";
 import { checkAndUpdatePostStatus } from "@/utils/social";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy loaded components for better performance
+const LazyDashboardTabContent = React.lazy(() => import("@/components/dashboard/content/DashboardTabContent"));
+const LazySocialPage = React.lazy(() => import("@/components/dashboard/pages/SocialPage"));
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="w-full p-8">
+    <div className="space-y-4">
+      <Skeleton className="h-8 w-3/4" />
+      <Skeleton className="h-4 w-1/2" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        <Skeleton className="h-32 rounded-md" />
+        <Skeleton className="h-32 rounded-md" />
+        <Skeleton className="h-32 rounded-md" />
+      </div>
+      <Skeleton className="h-64 mt-4" />
+    </div>
+  </div>
+);
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -28,7 +49,8 @@ const Dashboard = () => {
   const [activePage, setActivePage] = useState("dashboard");
   const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
-  const { posts, isLoading, deletePost, updatePost } = usePosts();
+  const [isLoading, setIsLoading] = useState(true);
+  const { posts, isLoading: postsLoading, deletePost, updatePost } = usePosts();
 
   // Update active page based on current route
   useEffect(() => {
@@ -55,6 +77,13 @@ const Dashboard = () => {
     if (tabFromUrl && ["posts", "analytics", "platforms", "settings"].includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
     }
+    
+    // Set loading state
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
   }, [searchParams]);
 
   const createPost = () => {
@@ -116,6 +145,11 @@ const Dashboard = () => {
   // Get the current path to determine what to render
   const path = location.pathname;
   const isEditingPost = path.includes('/edit-post/');
+  const isSocialPage = path === "/dashboard/social";
+
+  if (isLoading && path === "/dashboard") {
+    return <LoadingFallback />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -144,16 +178,18 @@ const Dashboard = () => {
                     <TabsTrigger value="settings">Settings</TabsTrigger>
                   </TabsList>
                   
-                  <DashboardTabContent 
-                    activeTab={activeTab} 
-                    onEdit={editPost}
-                    onCancel={cancelPost}
-                    onViewAllScheduled={viewAllScheduled}
-                    onViewStats={viewStats}
-                    onRepublish={republishPost}
-                    onViewAllPublished={viewAllPublished}
-                    onViewAllDrafts={viewAllDrafts}
-                  />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <LazyDashboardTabContent 
+                      activeTab={activeTab} 
+                      onEdit={editPost}
+                      onCancel={cancelPost}
+                      onViewAllScheduled={viewAllScheduled}
+                      onViewStats={viewStats}
+                      onRepublish={republishPost}
+                      onViewAllPublished={viewAllPublished}
+                      onViewAllDrafts={viewAllDrafts}
+                    />
+                  </Suspense>
                 </Tabs>
               </>
             )}
@@ -161,7 +197,11 @@ const Dashboard = () => {
             {path === "/dashboard/content" && <ContentPage />}
             {path === "/dashboard/schedule" && <SchedulePage />}
             {path === "/dashboard/analytics" && <AnalyticsPage />}
-            {path === "/dashboard/social" && <SocialPage />}
+            {isSocialPage && (
+              <Suspense fallback={<LoadingFallback />}>
+                <LazySocialPage />
+              </Suspense>
+            )}
             {path === "/dashboard/profile" && <ProfilePage />}
             {path === "/dashboard/settings" && <SettingsPage />}
             {path === "/dashboard/new-post" && <NewPostPage />}

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,15 +10,31 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log('Auth state change event:', event);
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Check for admin role if user is signed in
+        if (session?.user) {
+          const { data } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .eq('role', 'admin')
+            .maybeSingle();
+          
+          setIsAdmin(!!data);
+        } else {
+          setIsAdmin(false);
+        }
+        
         setLoading(false);
         
         // Handle social auth redirects - moved to a separate function to avoid
@@ -38,10 +55,23 @@ export const useAuth = () => {
     );
 
     // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       console.log('Existing session:', session ? 'Yes' : 'No');
       setSession(session);
       setUser(session?.user ?? null);
+      
+      // Check for admin role if user is signed in
+      if (session?.user) {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .eq('role', 'admin')
+          .maybeSingle();
+        
+        setIsAdmin(!!data);
+      }
+      
       setLoading(false);
       
       // Handle URL parameters for social connections on initial load
@@ -146,6 +176,7 @@ export const useAuth = () => {
     user,
     session,
     loading,
+    isAdmin,
     signIn,
     signUp,
     signOut,
