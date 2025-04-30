@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation, useSearchParams, Routes, Route, Navigate } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
@@ -25,7 +26,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("posts");
   const [activePage, setActivePage] = useState("dashboard");
   const [demoModalOpen, setDemoModalOpen] = useState(false);
-  const [editingPostId, setEditingPostId] = useState<number | null>(null);
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const { posts, isLoading, deletePost, updatePost } = usePosts();
 
   // Update active page based on current route
@@ -52,7 +53,7 @@ const Dashboard = () => {
   
   const editPost = (id: number) => {
     const stringId = String(id);
-    setEditingPostId(id);
+    setEditingPostId(stringId);
     navigate(`/dashboard/edit-post/${stringId}`);
     toast.info(`Editing post ${stringId}`);
   };

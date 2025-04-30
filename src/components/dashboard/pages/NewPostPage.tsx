@@ -16,6 +16,7 @@ import ContentEditor from "@/components/dashboard/content/ContentEditor";
 import ImageGenerator from "@/components/dashboard/content/ImageGenerator";
 import RssFeedSelector from "@/components/dashboard/content/RssFeedSelector";
 import { generateContent, generateTitle } from "@/services/aiService";
+import { schedulePost } from "@/utils/socialConnections";
 
 const NewPostPage = () => {
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ const NewPostPage = () => {
   const [aiModel, setAiModel] = useState("llama");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleGenerateContent = async () => {
     if (!selectedCategory || !selectedTone) {
@@ -73,16 +75,47 @@ const NewPostPage = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!title || !content) {
       toast.error("Please fill in all required fields");
       return;
     }
+
+    if (!scheduledDate) {
+      toast.error("Please select a schedule date");
+      return;
+    }
     
-    toast.success("Post created and scheduled successfully!");
-    navigate("/dashboard");
+    setIsSubmitting(true);
+    
+    try {
+      // Filter platforms if "all" is selected
+      const platformsToUse = selectedPlatforms[0] === "all" 
+        ? ["facebook", "instagram", "wordpress"] 
+        : selectedPlatforms;
+      
+      const scheduled = await schedulePost(
+        title,
+        content,
+        platformsToUse,
+        new Date(scheduledDate)
+      );
+      
+      if (scheduled) {
+        toast.success("Post created and scheduled successfully!");
+        // Navigate back to dashboard after a short delay to allow toast to be seen
+        setTimeout(() => navigate("/dashboard"), 1000);
+      } else {
+        throw new Error("Failed to schedule post");
+      }
+    } catch (error) {
+      console.error("Error scheduling post:", error);
+      toast.error("Failed to schedule post. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -216,6 +249,7 @@ const NewPostPage = () => {
                     type="datetime-local" 
                     value={scheduledDate}
                     onChange={(e) => setScheduledDate(e.target.value)}
+                    required
                   />
                 </div>
                 
@@ -227,8 +261,17 @@ const NewPostPage = () => {
                   >
                     Cancel
                   </Button>
-                  <Button type="submit">
-                    Schedule Post
+                  <Button 
+                    type="submit"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader size={16} className="mr-2 animate-spin" /> Scheduling...
+                      </>
+                    ) : (
+                      "Schedule Post"
+                    )}
                   </Button>
                 </div>
               </form>

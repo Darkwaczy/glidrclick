@@ -280,6 +280,7 @@ export const schedulePost = async (
       if (platformError) throw platformError;
     }
     
+    toast.success('Post scheduled successfully!');
     return true;
   } catch (error) {
     console.error('Error scheduling post:', error);
