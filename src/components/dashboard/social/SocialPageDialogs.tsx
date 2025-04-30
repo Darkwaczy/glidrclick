@@ -41,7 +41,7 @@ const SocialPageDialogs: React.FC<SocialPageDialogsProps> = ({ social }) => {
       
       <CreatePostDialog
         open={social.showCreatePostDialog}
-        onOpenChange={social.setShowCreatePostDialog}
+        onOpenChange={(open) => social.setShowCreatePostDialog(open)}
         platforms={social.platforms}
         onSubmit={social.handleSubmitNewPost}
       />
