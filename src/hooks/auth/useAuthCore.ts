@@ -18,8 +18,8 @@ export const useAuthCore = () => {
 
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state change event:', event);
+      (event, session) => {
+        console.log('Auth state change event:', event, 'Has session:', !!session);
         
         if (!isMounted) return;
         
@@ -33,20 +33,25 @@ export const useAuthCore = () => {
           if (isAdminEmail) {
             setIsAdmin(true);
           } else {
-            try {
-              const { data } = await supabase
-                .from('user_roles')
-                .select('role')
-                .eq('user_id', session.user.id)
-                .eq('role', 'admin')
-                .maybeSingle();
+            // Using setTimeout to avoid Supabase deadlocks
+            setTimeout(async () => {
+              if (!isMounted) return;
               
-              if (isMounted) {
-                setIsAdmin(!!data);
+              try {
+                const { data } = await supabase
+                  .from('user_roles')
+                  .select('role')
+                  .eq('user_id', session.user.id)
+                  .eq('role', 'admin')
+                  .maybeSingle();
+                
+                if (isMounted) {
+                  setIsAdmin(!!data);
+                }
+              } catch (error) {
+                console.error("Error checking admin role:", error);
               }
-            } catch (error) {
-              console.error("Error checking admin role:", error);
-            }
+            }, 0);
           }
         } else {
           setIsAdmin(false);
@@ -62,9 +67,15 @@ export const useAuthCore = () => {
     const checkSession = async () => {
       try {
         console.log('Checking for existing session...');
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
         
         if (!isMounted) return;
+        
+        if (error) {
+          console.error('Session check error:', error);
+          setLoading(false);
+          return;
+        }
         
         console.log('Existing session:', session ? 'Yes' : 'No');
         setSession(session);
@@ -108,6 +119,7 @@ export const useAuthCore = () => {
     checkSession();
 
     return () => { 
+      console.log('useAuthCore cleanup - unsubscribing from auth events');
       isMounted = false;
       subscription.unsubscribe();
     };
@@ -116,11 +128,14 @@ export const useAuthCore = () => {
   const signIn = async ({ email, password }: { email: string, password: string }) => {
     try {
       console.log(`Signing in with email: ${email}`);
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      
       if (error) {
         console.error('Error signing in:', error);
         throw error;
       }
+      
+      console.log('Sign in successful:', !!data.session);
       
       // Special handling for admin account
       if (email === 'admin@glidrclick.com') {
@@ -137,8 +152,10 @@ export const useAuthCore = () => {
 
   const signUp = async ({ email, password }: { email: string, password: string }) => {
     try {
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      
       if (error) throw error;
+      console.log('Sign up successful:', !!data.user);
       toast.success('Check your email for the confirmation link!');
     } catch (error) {
       console.error('Error signing up:', error);
@@ -148,8 +165,10 @@ export const useAuthCore = () => {
 
   const signOut = async () => {
     try {
+      console.log('Signing out...');
       await supabase.auth.signOut();
       navigate('/auth');
+      console.log('Sign out successful');
     } catch (error) {
       console.error('Error signing out:', error);
     }

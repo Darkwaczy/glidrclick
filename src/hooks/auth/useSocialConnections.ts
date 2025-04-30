@@ -18,6 +18,7 @@ export const useSocialConnections = (user: User | null) => {
     
     if (connectedPlatform) {
       console.log(`Found connected platform in URL: ${connectedPlatform}`);
+      // Use setTimeout to avoid potential deadlocks with Supabase
       setTimeout(() => {
         if (isMounted && user) {
           saveSocialPlatformConnection(connectedPlatform, user.id);
@@ -25,7 +26,10 @@ export const useSocialConnections = (user: User | null) => {
       }, 0);
     }
     
-    return () => { isMounted = false; };
+    return () => { 
+      console.log('useSocialConnections cleanup');
+      isMounted = false; 
+    };
   }, [user]);
 
   const saveSocialPlatformConnection = async (platformId: string, userId: string) => {
@@ -37,16 +41,20 @@ export const useSocialConnections = (user: User | null) => {
     try {
       console.log(`Saving connection for platform: ${platformId}, user: ${userId}`);
       // Check if the platform is already connected
-      const { data: existingPlatforms } = await supabase
+      const { data: existingPlatforms, error: queryError } = await supabase
         .from('social_platforms')
         .select('*')
         .eq('user_id', userId)
         .eq('platform_id', platformId);
       
+      if (queryError) {
+        throw queryError;
+      }
+      
       if (existingPlatforms && existingPlatforms.length > 0) {
         console.log('Updating existing platform connection');
         // Update the existing platform connection
-        await supabase
+        const { error } = await supabase
           .from('social_platforms')
           .update({
             is_connected: true,
@@ -54,10 +62,12 @@ export const useSocialConnections = (user: User | null) => {
           })
           .eq('user_id', userId)
           .eq('platform_id', platformId);
+          
+        if (error) throw error;
       } else {
         console.log('Creating new platform connection');
         // Create a new platform connection
-        await supabase
+        const { error } = await supabase
           .from('social_platforms')
           .insert({
             user_id: userId,
@@ -70,6 +80,8 @@ export const useSocialConnections = (user: User | null) => {
             sync_frequency: 'daily',
             notifications: { mentions: true, messages: true }
           });
+          
+        if (error) throw error;
       }
       
       toast.success(`Connected to ${getPlatformName(platformId)} successfully!`);

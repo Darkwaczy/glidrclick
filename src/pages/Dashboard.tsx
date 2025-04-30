@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, Suspense } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -20,6 +19,7 @@ import EditPostPage from "@/components/dashboard/pages/EditPostPage";
 import { usePosts } from "@/hooks/usePosts";
 import { checkAndUpdatePostStatus } from "@/utils/social";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth";
 
 // Lazy loaded components for better performance
 const LazyDashboardTabContent = React.lazy(() => import("@/components/dashboard/content/DashboardTabContent"));
@@ -42,7 +42,7 @@ const LoadingFallback = () => (
 );
 
 const Dashboard = () => {
-  console.log("Dashboard page rendering");
+  console.log("Dashboard page rendering - URL:", window.location.pathname);
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -51,7 +51,20 @@ const Dashboard = () => {
   const [demoModalOpen, setDemoModalOpen] = useState(false);
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  const { user } = useAuth();
   const { posts, isLoading: postsLoading, deletePost, updatePost } = usePosts();
+
+  // Debug user authentication status
+  useEffect(() => {
+    console.log("Dashboard - Authentication status:", {
+      hasUser: !!user,
+      userId: user?.id,
+      email: user?.email,
+      timestamp: new Date().toISOString()
+    });
+  }, [user]);
 
   // Update active page based on current route
   useEffect(() => {
@@ -61,15 +74,20 @@ const Dashboard = () => {
     } else {
       setActivePage("dashboard");
     }
+    
+    console.log("Dashboard - Route updated:", location.pathname);
   }, [location.pathname]);
 
   // Check for scheduled posts that should be published on dashboard load
   useEffect(() => {
     const checkScheduledPosts = async () => {
       try {
+        console.log("Dashboard - Checking scheduled posts...");
         await checkAndUpdatePostStatus();
+        console.log("Dashboard - Scheduled posts check completed");
       } catch (error) {
         console.error("Error checking scheduled posts:", error);
+        setError("Failed to check scheduled posts. Please try refreshing the page.");
       }
     };
     
@@ -81,11 +99,13 @@ const Dashboard = () => {
     const tabFromUrl = searchParams.get("tab");
     if (tabFromUrl && ["posts", "analytics", "platforms", "settings"].includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
+      console.log("Dashboard - Tab set from URL:", tabFromUrl);
     }
     
     // Set loading state with a shorter timeout
     const timer = setTimeout(() => {
       setIsLoading(false);
+      console.log("Dashboard - Loading state complete");
     }, 500);
     
     return () => clearTimeout(timer);
@@ -93,8 +113,8 @@ const Dashboard = () => {
 
   // Debug the current path to help troubleshoot
   useEffect(() => {
-    console.log(`Current dashboard path: ${location.pathname}`);
-    console.log(`Dashboard posts loading: ${postsLoading}`);
+    console.log(`Dashboard - Current path: ${location.pathname}`);
+    console.log(`Dashboard - Posts loading: ${postsLoading}`);
   }, [location.pathname, postsLoading]);
 
   const createPost = () => {
@@ -158,8 +178,28 @@ const Dashboard = () => {
   const isEditingPost = path.includes('/edit-post/');
   const isSocialPage = path === "/dashboard/social";
 
+  // Handle errors
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+        <div className="bg-red-50 border border-red-200 rounded-md p-6 max-w-md w-full">
+          <h2 className="text-red-800 font-semibold text-lg mb-2">Error Loading Dashboard</h2>
+          <p className="text-red-700 mb-4">{error}</p>
+          <Button 
+            variant="destructive" 
+            className="w-full"
+            onClick={() => window.location.reload()}
+          >
+            Reload Page
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   // Show the loading fallback only initially
   if (isLoading && path === "/dashboard") {
+    console.log("Dashboard - Showing initial loading state");
     return <LoadingFallback />;
   }
 

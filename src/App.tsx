@@ -27,42 +27,64 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import FacebookDataDeletion from "./pages/FacebookDataDeletion";
 
-// Create a client
+// Create a client with more aggressive stale time settings for production
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 1,
+      retry: 2,
+      retryDelay: (attempt) => Math.min(attempt > 1 ? 2000 : 1000, 30000),
+      refetchOnMount: true,
       refetchOnWindowFocus: false,
     }
   }
 });
 
-// Protected route component
+// Protected route component with better loading states and error handling
 const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.ReactNode, requireAdmin?: boolean }) => {
   const { user, loading, isAdmin } = useAuth();
   
+  useEffect(() => {
+    console.log("ProtectedRoute - Auth state:", { 
+      isLoading: loading, 
+      hasUser: !!user, 
+      isAdmin, 
+      url: window.location.href,
+      timestamp: new Date().toISOString()
+    });
+  }, [user, loading, isAdmin]);
+  
   // Show loading state while checking authentication
   if (loading) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+    console.log("ProtectedRoute - Still loading auth state");
+    return <div className="flex h-screen items-center justify-center">
+      <div className="text-center">
+        <div className="w-16 h-16 border-4 border-t-blue-500 border-blue-200 rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-gray-600">Authenticating...</p>
+      </div>
+    </div>;
   }
   
   // Redirect to auth if not authenticated
   if (!user) {
+    console.log("ProtectedRoute - No user, redirecting to auth page");
     return <Navigate to="/auth" replace />;
   }
   
   // Redirect non-admin users from admin routes
   if (requireAdmin && !isAdmin) {
+    console.log("ProtectedRoute - User is not admin, redirecting to dashboard");
     return <Navigate to="/dashboard" replace />;
   }
   
   // Render children if authenticated
+  console.log("ProtectedRoute - Auth successful, rendering protected content");
   return <>{children}</>;
 };
 
 function AppContent() {
-  console.log("AppContent rendering...");
+  console.log("AppContent rendering - URL:", window.location.href);
+  
   // Initialize Facebook SDK when the app loads
   useEffect(() => {
     const initFacebook = async () => {
@@ -84,6 +106,11 @@ function AppContent() {
     };
 
     initFacebook();
+    
+    // Log if we're in production or preview
+    const isProduction = !window.location.hostname.includes('preview');
+    console.log(`Environment: ${isProduction ? 'Production' : 'Preview'}`);
+    console.log("Current hostname:", window.location.hostname);
   }, []);
   
   return (
@@ -92,8 +119,6 @@ function AppContent() {
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/register" element={<Register />} />
-        {/* Explicitly redirect /login to /auth */}
-        <Route path="/login" element={<Navigate to="/auth" replace />} />
         
         {/* Protected routes */}
         <Route path="/dashboard/*" element={
@@ -126,7 +151,7 @@ function AppContent() {
 }
 
 function App() {
-  console.log("App rendering...");
+  console.log("App rendering - Initial load:", new Date().toISOString());
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
