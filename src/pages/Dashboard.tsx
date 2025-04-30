@@ -18,6 +18,7 @@ import NewPostPage from "@/components/dashboard/pages/NewPostPage";
 import WatchDemoModal from "@/components/dashboard/WatchDemoModal";
 import EditPostPage from "@/components/dashboard/pages/EditPostPage";
 import { usePosts } from "@/hooks/usePosts";
+import { checkAndUpdatePostStatus } from "@/utils/social";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -38,6 +39,15 @@ const Dashboard = () => {
       setActivePage("dashboard");
     }
   }, [location.pathname]);
+
+  // Check for scheduled posts that should be published on dashboard load
+  useEffect(() => {
+    const checkScheduledPosts = async () => {
+      await checkAndUpdatePostStatus();
+    };
+    
+    checkScheduledPosts();
+  }, []);
 
   // Get tab from URL if available
   useEffect(() => {
