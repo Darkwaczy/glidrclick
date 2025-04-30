@@ -27,16 +27,21 @@ const ConnectedPlatformsList = ({
     );
   }
 
+  // Ensure platforms is always an array
+  const validPlatforms = Array.isArray(platforms) ? platforms : [];
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {platforms.filter(platform => platform.isConnected).map(platform => (
-        <ConnectedPlatform
-          key={platform.id}
-          platform={platform}
-          onSettings={() => onOpenPlatformSettings(platform.id)}
-          onDisconnect={() => onDisconnectPlatform(platform.id)}
-        />
-      ))}
+      {validPlatforms
+        .filter(platform => platform && platform.isConnected)
+        .map(platform => (
+          <ConnectedPlatform
+            key={platform.id}
+            platform={platform}
+            onSettings={() => onOpenPlatformSettings(platform.id)}
+            onDisconnect={() => onDisconnectPlatform(platform.id)}
+          />
+        ))}
       
       <ConnectPlatformCard onClick={onOpenConnectDialog} />
     </div>
