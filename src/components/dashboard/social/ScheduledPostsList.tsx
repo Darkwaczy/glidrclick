@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Edit, X, Plus, Calendar, Share } from "lucide-react";
 import { getPlatformIcon } from "./utils/platformUtils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ScheduledPostsListProps {
   posts: any[];
@@ -18,14 +19,16 @@ const ScheduledPostsList = ({
   onEditPost, 
   onCancelPost 
 }: ScheduledPostsListProps) => {
+  const isMobile = useIsMobile();
+  
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className={`flex ${isMobile ? "flex-col" : "flex-row items-center"} justify-between`}>
         <div>
           <CardTitle>Scheduled Posts</CardTitle>
           <CardDescription>Create and schedule posts across multiple platforms</CardDescription>
         </div>
-        <Button onClick={onCreatePost} className="flex items-center">
+        <Button onClick={onCreatePost} className={`flex items-center ${isMobile ? "mt-2 w-full" : ""}`}>
           <Plus size={16} className="mr-2" /> Create Post
         </Button>
       </CardHeader>
@@ -47,13 +50,23 @@ const ScheduledPostsList = ({
           ) : (
             posts.map((post) => (
               <div key={post.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                <div className="flex justify-between items-start">
+                <div className={`flex justify-between items-start ${isMobile ? "flex-col" : ""}`}>
                   <h3 className="font-medium">{post.title}</h3>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => onEditPost(post.id)} className="flex items-center">
+                  <div className={`flex gap-2 ${isMobile ? "mt-2 w-full" : ""}`}>
+                    <Button 
+                      size={isMobile ? "sm" : "sm"} 
+                      variant="outline" 
+                      onClick={() => onEditPost(post.id)} 
+                      className={`flex items-center ${isMobile ? "flex-1" : ""}`}
+                    >
                       <Edit size={14} className="mr-1" /> Edit
                     </Button>
-                    <Button size="sm" variant="outline" className="text-red-600 flex items-center" onClick={() => onCancelPost(post.id)}>
+                    <Button 
+                      size={isMobile ? "sm" : "sm"} 
+                      variant="outline" 
+                      className={`text-red-600 flex items-center ${isMobile ? "flex-1" : ""}`} 
+                      onClick={() => onCancelPost(post.id)}
+                    >
                       <X size={14} className="mr-1" /> Cancel
                     </Button>
                   </div>

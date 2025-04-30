@@ -147,6 +147,27 @@ export const getScheduledPosts = async () => {
       .order('scheduled_for', { ascending: true });
       
     if (error) throw error;
+
+    // Check if any scheduled posts should now be published
+    const now = new Date();
+    const postsToUpdate = data?.filter(post => {
+      return post.scheduled_for && new Date(post.scheduled_for) <= now;
+    });
+
+    // Auto-publish posts whose scheduled time has passed
+    if (postsToUpdate && postsToUpdate.length > 0) {
+      for (const post of postsToUpdate) {
+        await supabase
+          .from('posts')
+          .update({
+            status: 'published',
+            published_at: now.toISOString()
+          })
+          .eq('id', post.id);
+        
+        console.log(`Automatically published scheduled post: ${post.title}`);
+      }
+    }
     
     return data || [];
   } catch (error) {
@@ -181,5 +202,51 @@ export const getPublishedPosts = async () => {
   } catch (error) {
     console.error('Error fetching published posts:', error);
     return [];
+  }
+};
+
+/**
+ * Check and update post status
+ * This function will check if any scheduled posts should be marked as published
+ */
+export const checkAndUpdatePostStatus = async () => {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return;
+    
+    const now = new Date();
+    
+    // Get all scheduled posts that should be published by now
+    const { data: postsToPublish, error } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'scheduled')
+      .lt('scheduled_for', now.toISOString());
+      
+    if (error) throw error;
+    
+    if (postsToPublish && postsToPublish.length > 0) {
+      // Update all these posts to published status
+      const postIds = postsToPublish.map(post => post.id);
+      
+      const { error: updateError } = await supabase
+        .from('posts')
+        .update({
+          status: 'published',
+          published_at: now.toISOString()
+        })
+        .in('id', postIds);
+        
+      if (updateError) throw updateError;
+      
+      console.log(`Updated ${postsToPublish.length} posts from scheduled to published`);
+      return postsToPublish.length;
+    }
+    
+    return 0;
+  } catch (error) {
+    console.error('Error updating post status:', error);
+    return 0;
   }
 };

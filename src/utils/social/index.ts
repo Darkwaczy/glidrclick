@@ -57,6 +57,10 @@ export default {
     const { getPublishedPosts } = await import('./posts');
     return getPublishedPosts();
   },
+  checkAndUpdatePostStatus: async () => {
+    const { checkAndUpdatePostStatus } = await import('./posts');
+    return checkAndUpdatePostStatus();
+  },
   
   // Helper functions
   getPlatformName: (platformId: string) => {
