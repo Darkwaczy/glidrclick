@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getPlatformName } from "./helpers";
@@ -83,35 +84,36 @@ export const schedulePost = async (
       
     if (postError) throw postError;
     
-    // First, fetch available platforms from the database
-    // This assumes we have a table called 'platforms' with platform UUIDs
-    const { data: availablePlatforms, error: platformsError } = await supabase
-      .from('platforms')
-      .select('id, name');
+    // Get available platform information from the social_platforms table
+    const { data: connectedPlatforms, error: platformsError } = await supabase
+      .from('social_platforms')
+      .select('platform_id, name')
+      .eq('user_id', user.user.id)
+      .eq('is_connected', true);
       
     if (platformsError) {
       console.error("Error fetching platforms:", platformsError);
       throw platformsError;
     }
     
-    // Create a mapping of platform names to UUIDs
+    // Create a mapping of platform names to platform_ids
     const platformMap: Record<string, string> = {};
-    if (availablePlatforms) {
-      availablePlatforms.forEach(platform => {
-        platformMap[platform.name.toLowerCase()] = platform.id;
+    if (connectedPlatforms && connectedPlatforms.length > 0) {
+      connectedPlatforms.forEach(platform => {
+        platformMap[platform.name.toLowerCase()] = platform.platform_id;
       });
     }
     
-    // Create post_platform relations for each platform
+    // Create post_platform relations for each selected platform
     for (const platformName of platforms) {
       // Handle 'all' case by using all available platform IDs
       const platformsToUse = platformName.toLowerCase() === 'all' 
-        ? availablePlatforms?.map(p => p.id) || [] 
+        ? connectedPlatforms?.map(p => p.platform_id) || [] 
         : [platformMap[platformName.toLowerCase()]];
         
       for (const platformId of platformsToUse) {
         if (!platformId) {
-          console.warn(`Platform not found: ${platformName}`);
+          console.warn(`Platform not found or not connected: ${platformName}`);
           continue;
         }
         
