@@ -27,15 +27,32 @@ let mockPublishedPosts: any[] = [];
 export const getSocialPlatforms = async (): Promise<SocialPlatform[]> => {
   try {
     // Try to get platforms from Supabase first
+    const { data: userSession } = await supabase.auth.getSession();
+    const userId = userSession.session?.user.id;
+    
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+    
     const { data: socialPlatforms, error } = await supabase
       .from('social_platforms')
       .select('*')
-      .eq('user_id', supabase.auth.getSession().then(res => res.data.session?.user.id));
+      .eq('user_id', userId);
     
     if (error) throw error;
     
     if (socialPlatforms && socialPlatforms.length > 0) {
-      return socialPlatforms;
+      // Transform the data to match our SocialPlatform type
+      return socialPlatforms.map(platform => ({
+        id: platform.platform_id,
+        name: platform.name,
+        icon: platform.icon as "facebook" | "twitter" | "instagram" | "linkedin" | "wordpress",
+        isConnected: platform.is_connected,
+        accountName: platform.account_name,
+        lastSync: platform.last_sync,
+        syncFrequency: platform.sync_frequency as "realtime" | "hourly" | "daily",
+        notifications: platform.notifications
+      }));
     }
     
     // If no platforms are returned, return default platforms list
@@ -90,12 +107,20 @@ export const connectPlatform = (platformId: string): void => {
 
 export const disconnectPlatform = async (platformId: string): Promise<boolean> => {
   try {
+    // Get the user ID
+    const { data: userSession } = await supabase.auth.getSession();
+    const userId = userSession.session?.user.id;
+    
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+    
     // Remove from Supabase
     const { error } = await supabase
       .from('social_platforms')
       .delete()
       .eq('platform_id', platformId)
-      .eq('user_id', supabase.auth.getSession().then(res => res.data.session?.user.id));
+      .eq('user_id', userId);
     
     if (error) throw error;
     
@@ -113,12 +138,26 @@ export const updatePlatformSettings = async (
   settings: Partial<SocialPlatform>
 ): Promise<boolean> => {
   try {
+    // Get the user ID
+    const { data: userSession } = await supabase.auth.getSession();
+    const userId = userSession.session?.user.id;
+    
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+    
+    // Transform settings to match database schema
+    const dbSettings: any = {};
+    if (settings.syncFrequency) dbSettings.sync_frequency = settings.syncFrequency;
+    if (settings.notifications) dbSettings.notifications = settings.notifications;
+    if (settings.accountName) dbSettings.account_name = settings.accountName;
+    
     // Update settings in Supabase
     const { error } = await supabase
       .from('social_platforms')
-      .update(settings)
+      .update(dbSettings)
       .eq('platform_id', platformId)
-      .eq('user_id', supabase.auth.getSession().then(res => res.data.session?.user.id));
+      .eq('user_id', userId);
     
     if (error) throw error;
     
@@ -136,14 +175,15 @@ export const publishToSocialMedia = async (
   title?: string
 ): Promise<boolean> => {
   try {
-    // Create a post in Supabase
-    const user = await supabase.auth.getUser();
+    // Get the user ID
+    const { data: user } = await supabase.auth.getUser();
     
-    if (!user.data?.user?.id) {
+    if (!user.user?.id) {
       toast.error('You must be logged in to publish content');
       return false;
     }
     
+    // Create a post in Supabase
     const { data: post, error: postError } = await supabase
       .from('posts')
       .insert({
@@ -151,7 +191,7 @@ export const publishToSocialMedia = async (
         content,
         status: 'published',
         published_at: new Date().toISOString(),
-        user_id: user.data.user.id,
+        user_id: user.user.id,
         type: 'social'
       })
       .select()
@@ -186,14 +226,15 @@ export const schedulePost = async (
   scheduledDate: Date
 ): Promise<boolean> => {
   try {
-    // Insert into posts table
-    const user = await supabase.auth.getUser();
+    // Get the user ID
+    const { data: user } = await supabase.auth.getUser();
     
-    if (!user.data?.user?.id) {
+    if (!user.user?.id) {
       toast.error('You must be logged in to schedule posts');
       return false;
     }
     
+    // Insert into posts table
     const { data: post, error: postError } = await supabase
       .from('posts')
       .insert({
@@ -201,7 +242,7 @@ export const schedulePost = async (
         content,
         status: 'scheduled',
         scheduled_for: scheduledDate.toISOString(),
-        user_id: user.data.user.id,
+        user_id: user.user.id,
         type: 'social'
       })
       .select()
@@ -232,16 +273,16 @@ export const schedulePost = async (
 
 export const getScheduledPosts = async () => {
   try {
-    const user = await supabase.auth.getUser();
+    const { data: user } = await supabase.auth.getUser();
     
-    if (!user.data?.user?.id) {
+    if (!user.user?.id) {
       return [];
     }
     
     const { data: posts, error } = await supabase
       .from('posts')
       .select('*, post_platforms(*, platforms:platform_id(name))')
-      .eq('user_id', user.data.user.id)
+      .eq('user_id', user.user.id)
       .eq('status', 'scheduled')
       .order('scheduled_for', { ascending: true });
       
@@ -256,16 +297,16 @@ export const getScheduledPosts = async () => {
 
 export const getPublishedPosts = async () => {
   try {
-    const user = await supabase.auth.getUser();
+    const { data: user } = await supabase.auth.getUser();
     
-    if (!user.data?.user?.id) {
+    if (!user.user?.id) {
       return [];
     }
     
     const { data: posts, error } = await supabase
       .from('posts')
       .select('*, post_platforms(*, platforms:platform_id(name))')
-      .eq('user_id', user.data.user.id)
+      .eq('user_id', user.user.id)
       .eq('status', 'published')
       .order('published_at', { ascending: false });
       
@@ -279,7 +320,7 @@ export const getPublishedPosts = async () => {
 };
 
 // Helper function to get platform name
-const getPlatformName = (platformId: string): string => {
+export const getPlatformName = (platformId: string): string => {
   const platforms: Record<string, string> = {
     facebook: 'Facebook',
     twitter: 'Twitter',

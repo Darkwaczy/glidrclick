@@ -24,7 +24,8 @@ import {
   publishToSocialMedia,
   schedulePost,
   getScheduledPosts,
-  getPublishedPosts
+  getPublishedPosts,
+  getPlatformName
 } from "@/utils/socialConnections";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -52,7 +53,7 @@ const SocialPage = () => {
     
     if (connectedPlatform) {
       savePlatformConnection(connectedPlatform);
-      toast.success(`Connected to ${connectedPlatform} successfully!`);
+      toast.success(`Connected to ${getPlatformName(connectedPlatform)} successfully!`);
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (error) {
       toast.error(`Connection failed: ${error}`);
@@ -113,13 +114,13 @@ const SocialPage = () => {
     }
   };
 
-  const handleRefreshConnections = () => {
+  const handleRefreshConnections = async () => {
     setIsRefreshing(true);
-    loadPlatforms().then(() => {
-      setIsRefreshing(false);
-      toast.success("Connections refreshed successfully!");
-      setScheduledPostsList(getScheduledPosts());
-    });
+    await loadPlatforms();
+    setIsRefreshing(false);
+    toast.success("Connections refreshed successfully!");
+    const posts = await getScheduledPosts();
+    setScheduledPostsList(posts || []);
   };
 
   const handleConnectPlatform = (platformId: string) => {
@@ -389,7 +390,7 @@ const SocialPage = () => {
                       <p className="text-sm text-gray-600 mt-2">{post.content}</p>
                       
                       <div className="flex flex-wrap gap-2 mt-3">
-                        {post.platforms.map((platform: string) => (
+                        {post.platforms?.map((platform: string) => (
                           <div key={platform} className="flex items-center bg-gray-100 rounded px-2 py-1 text-xs">
                             {getPlatformIcon(platform, 12)}
                             <span className="ml-1">{platform}</span>
@@ -398,7 +399,7 @@ const SocialPage = () => {
                       </div>
                       
                       <div className="mt-3 text-sm text-gray-500">
-                        Scheduled for: {post.scheduledFor}
+                        Scheduled for: {post.scheduledFor || new Date(post.scheduled_for).toLocaleString()}
                       </div>
                     </div>
                   ))

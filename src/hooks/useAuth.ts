@@ -23,13 +23,13 @@ export const useAuth = () => {
         // Handle social auth redirects
         if (event === 'SIGNED_IN' && window.location.href.includes('dashboard/social')) {
           const urlParams = new URLSearchParams(window.location.search);
-          const platform = urlParams.get('platform');
+          const connectedPlatform = urlParams.get('platform');
           
-          if (platform) {
+          if (connectedPlatform && session?.user?.id) {
             // Save the platform connection in a separate call to avoid
             // running Supabase calls inside the auth state change handler
             setTimeout(() => {
-              saveSocialPlatformConnection(platform, session?.user?.id);
+              saveSocialPlatformConnection(connectedPlatform, session.user.id);
             }, 0);
           }
         }
@@ -47,7 +47,7 @@ export const useAuth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const saveSocialPlatformConnection = async (platformId: string, userId: string | undefined) => {
+  const saveSocialPlatformConnection = async (platformId: string, userId: string) => {
     if (!userId) return;
     
     try {
