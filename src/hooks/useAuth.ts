@@ -4,6 +4,7 @@ import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "sonner";
+import { getPlatformName } from '@/utils/socialConnections';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -89,18 +90,6 @@ export const useAuth = () => {
     } catch (error) {
       console.error('Error saving social platform connection:', error);
     }
-  };
-
-  const getPlatformName = (platformId: string): string => {
-    const platforms: Record<string, string> = {
-      facebook: 'Facebook',
-      twitter: 'Twitter',
-      instagram: 'Instagram',
-      linkedin: 'LinkedIn',
-      wordpress: 'WordPress Blog'
-    };
-    
-    return platforms[platformId] || platformId;
   };
 
   const signIn = async ({ email, password }: { email: string, password: string }) => {

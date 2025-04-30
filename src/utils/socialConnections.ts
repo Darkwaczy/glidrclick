@@ -47,11 +47,17 @@ export const getSocialPlatforms = async (): Promise<SocialPlatform[]> => {
         id: platform.platform_id,
         name: platform.name,
         icon: platform.icon as "facebook" | "twitter" | "instagram" | "linkedin" | "wordpress",
-        isConnected: platform.is_connected,
+        isConnected: platform.is_connected || false,
         accountName: platform.account_name,
         lastSync: platform.last_sync,
         syncFrequency: platform.sync_frequency as "realtime" | "hourly" | "daily",
-        notifications: platform.notifications
+        notifications: platform.notifications ? {
+          mentions: platform.notifications.mentions === true,
+          messages: platform.notifications.messages === true
+        } : {
+          mentions: true,
+          messages: true
+        }
       }));
     }
     
@@ -331,3 +337,4 @@ export const getPlatformName = (platformId: string): string => {
   
   return platforms[platformId] || platformId;
 };
+
