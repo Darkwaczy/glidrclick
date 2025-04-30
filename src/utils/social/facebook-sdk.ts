@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getPlatformName } from "./helpers";
@@ -54,6 +53,30 @@ export const initFacebookSdk = (): Promise<void> => {
         resolve();
       }
     }, 100);
+  });
+};
+
+/**
+ * Check if user is already logged into Facebook
+ */
+export const checkFacebookLoginStatus = (): Promise<{status: string, authResponse?: FacebookAuthResponse}> => {
+  return new Promise((resolve, reject) => {
+    if (!isFacebookSdkLoaded()) {
+      reject(new Error("Facebook SDK not loaded"));
+      return;
+    }
+    
+    window.FB.getLoginStatus((response: any) => {
+      console.log("Facebook login status:", response);
+      if (response) {
+        resolve({
+          status: response.status,
+          authResponse: response.authResponse
+        });
+      } else {
+        reject(new Error("Failed to get Facebook login status"));
+      }
+    });
   });
 };
 
@@ -142,7 +165,83 @@ export const connectFacebookWithSdk = async (): Promise<boolean> => {
     // Make sure Facebook SDK is loaded
     await initFacebookSdk();
     
-    // Get user authentication
+    // Check if user is already logged into Facebook
+    try {
+      const loginStatus = await checkFacebookLoginStatus();
+      
+      if (loginStatus.status === 'connected' && loginStatus.authResponse) {
+        console.log("User already logged into Facebook, using existing auth:", loginStatus);
+        
+        // Use existing authentication
+        const authResponse = loginStatus.authResponse;
+        
+        // Get user information
+        const userInfo = await getFacebookUserInfo(authResponse.accessToken);
+        
+        // Get pages that the user manages
+        const pages = await getFacebookPages();
+        
+        // Continue with the existing flow...
+        const { data: userSession } = await supabase.auth.getSession();
+        const userId = userSession.session?.user.id;
+        
+        if (!userId) {
+          toast.error("You must be logged in to connect platforms");
+          return false;
+        }
+        
+        // Format data for storage (same as before)
+        const platformData = {
+          user_id: userId,
+          platform_id: 'facebook',
+          name: getPlatformName('facebook'),
+          icon: 'facebook',
+          is_connected: true,
+          access_token: authResponse.accessToken,
+          refresh_token: null,
+          token_expires_at: new Date(Date.now() + (authResponse.expiresIn * 1000)).toISOString(),
+          account_name: userInfo.name || `Facebook User`,
+          last_sync: new Date().toISOString(),
+          sync_frequency: 'daily',
+          notifications: { mentions: true, messages: true },
+          meta: {
+            user_id: userInfo.id,
+            pages: pages
+          }
+        };
+        
+        // Check if platform is already connected
+        const { data: existingPlatform } = await supabase
+          .from('social_platforms')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('platform_id', 'facebook')
+          .maybeSingle();
+        
+        // Update or insert platform data
+        let result;
+        if (existingPlatform) {
+          result = await supabase
+            .from('social_platforms')
+            .update(platformData)
+            .eq('id', existingPlatform.id);
+        } else {
+          result = await supabase
+            .from('social_platforms')
+            .insert(platformData);
+        }
+        
+        if (result.error) throw result.error;
+        
+        toast.success(`Successfully connected to Facebook!`);
+        return true;
+      }
+    } catch (loginStatusError) {
+      console.warn("Error checking Facebook login status:", loginStatusError);
+      // Continue with normal login flow if status check fails
+    }
+    
+    // If not already logged in or status check failed, proceed with regular login
     const authResponse = await loginWithFacebook();
     
     if (!authResponse) {
@@ -229,7 +328,115 @@ export const connectInstagramWithSdk = async (): Promise<boolean> => {
     // Make sure Facebook SDK is loaded
     await initFacebookSdk();
     
-    // Get user authentication
+    // Check if user is already logged into Facebook
+    try {
+      const loginStatus = await checkFacebookLoginStatus();
+      
+      if (loginStatus.status === 'connected' && loginStatus.authResponse) {
+        console.log("User already logged into Facebook, using existing auth for Instagram:", loginStatus);
+        
+        // Use existing authentication
+        const authResponse = loginStatus.authResponse;
+        
+        // Get user information
+        const userInfo = await getFacebookUserInfo(authResponse.accessToken);
+        
+        // Get the user ID for storing the connection
+        const { data: userSession } = await supabase.auth.getSession();
+        const userId = userSession.session?.user.id;
+        
+        if (!userId) {
+          toast.error("You must be logged in to connect platforms");
+          return false;
+        }
+        
+        // Get Instagram accounts connected to Facebook
+        const result = await new Promise<any>((resolve, reject) => {
+          window.FB.api(
+            '/me/accounts',
+            { fields: 'name,access_token,instagram_business_account{id,name,username}' },
+            (response) => {
+              if (response && !response.error) {
+                resolve(response);
+              } else {
+                reject(response?.error || new Error("Failed to get Instagram accounts"));
+              }
+            }
+          );
+        });
+        
+        // Continue with normal Instagram connection flow...
+        // Filter to only pages with Instagram business accounts
+        const instagramAccounts = result.data ? 
+          result.data.filter((page: any) => page.instagram_business_account) : [];
+        
+        if (instagramAccounts.length === 0) {
+          toast.error("No Instagram Business accounts found. Please connect your Instagram account to a Facebook Page first.");
+          return false;
+        }
+        
+        // Use the first Instagram account
+        const instagramAccount = instagramAccounts[0];
+        const instagramBusinessAccount = instagramAccount.instagram_business_account;
+        
+        // Format data for storage
+        const platformData = {
+          user_id: userId,
+          platform_id: 'instagram',
+          name: getPlatformName('instagram'),
+          icon: 'instagram',
+          is_connected: true,
+          access_token: instagramAccount.access_token,
+          refresh_token: null,
+          token_expires_at: new Date(Date.now() + (authResponse.expiresIn * 1000)).toISOString(),
+          account_name: instagramBusinessAccount.username ? `@${instagramBusinessAccount.username}` : instagramBusinessAccount.name || `Instagram User`,
+          last_sync: new Date().toISOString(),
+          sync_frequency: 'daily',
+          notifications: { mentions: true, messages: true },
+          meta: {
+            user_id: instagramBusinessAccount.id,
+            facebook_page_id: instagramAccount.id,
+            instagram_accounts: instagramAccounts.map((account: any) => ({
+              id: account.instagram_business_account?.id,
+              name: account.name,
+              username: account.instagram_business_account?.username,
+              access_token: account.access_token
+            }))
+          }
+        };
+        
+        // Check if platform is already connected
+        const { data: existingPlatform } = await supabase
+          .from('social_platforms')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('platform_id', 'instagram')
+          .maybeSingle();
+        
+        // Update or insert platform data
+        let result2;
+        if (existingPlatform) {
+          result2 = await supabase
+            .from('social_platforms')
+            .update(platformData)
+            .eq('id', existingPlatform.id);
+        } else {
+          result2 = await supabase
+            .from('social_platforms')
+            .insert(platformData);
+        }
+        
+        if (result2.error) throw result2.error;
+        
+        toast.success(`Successfully connected to Instagram!`);
+        return true;
+      }
+    } catch (loginStatusError) {
+      console.warn("Error checking Facebook login status for Instagram connection:", loginStatusError);
+      // Continue with normal login flow if status check fails
+    }
+    
+    // If not already logged in or status check failed, proceed with regular login
     const authResponse = await loginWithFacebook();
     
     if (!authResponse) {

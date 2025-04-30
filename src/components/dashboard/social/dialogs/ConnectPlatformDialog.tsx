@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { connectPlatform, connectWordPressSelfHosted } from "@/utils/social/authentication";
 import { getPlatformDocUrl, getPlatformOAuthConfig } from "@/utils/social/helpers";
-import { connectFacebookWithSdk, connectInstagramWithSdk, isFacebookSdkLoaded, initFacebookSdk } from "@/utils/social/facebook-sdk";
+import { connectFacebookWithSdk, connectInstagramWithSdk, isFacebookSdkLoaded, initFacebookSdk, checkFacebookLoginStatus } from "@/utils/social/facebook-sdk";
 import { toast } from "sonner";
 
 interface ConnectPlatformDialogProps {
@@ -24,6 +24,7 @@ const ConnectPlatformDialog = ({ open, onOpenChange, onConnect }: ConnectPlatfor
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [fbSdkLoaded, setFbSdkLoaded] = useState(false);
+  const [fbLoginStatus, setFbLoginStatus] = useState<{status?: string; authenticated?: boolean}>({});
 
   // Check if Facebook SDK is loaded when dialog opens
   useEffect(() => {
@@ -34,6 +35,20 @@ const ConnectPlatformDialog = ({ open, onOpenChange, onConnect }: ConnectPlatfor
           if (!isFacebookSdkLoaded()) {
             await initFacebookSdk();
             setFbSdkLoaded(true);
+          }
+          
+          // Check login status once SDK is loaded
+          if (isFacebookSdkLoaded()) {
+            try {
+              const loginStatus = await checkFacebookLoginStatus();
+              setFbLoginStatus({
+                status: loginStatus.status,
+                authenticated: loginStatus.status === 'connected'
+              });
+              console.log("Facebook login status on dialog open:", loginStatus);
+            } catch (statusError) {
+              console.warn("Error checking Facebook login status:", statusError);
+            }
           }
         } catch (error) {
           console.error("Failed to load Facebook SDK:", error);
@@ -99,6 +114,13 @@ const ConnectPlatformDialog = ({ open, onOpenChange, onConnect }: ConnectPlatfor
     }
   };
 
+  // Get the right button text based on Facebook login status
+  const getFacebookButtonText = () => {
+    if (!fbSdkLoaded) return "Connect Facebook";
+    if (fbLoginStatus.authenticated) return "Continue with Facebook";
+    return "Connect Facebook";
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -116,7 +138,7 @@ const ConnectPlatformDialog = ({ open, onOpenChange, onConnect }: ConnectPlatfor
               <div className="grid grid-cols-2 gap-4">
                 <Button 
                   variant="outline" 
-                  className="flex flex-col items-center justify-center h-24 space-y-2"
+                  className={`flex flex-col items-center justify-center h-24 space-y-2 ${fbLoginStatus.authenticated ? 'border-blue-500 bg-blue-50' : ''}`}
                   onClick={() => handleConnect('facebook')}
                   disabled={isLoading || !fbSdkLoaded}
                 >
@@ -125,12 +147,15 @@ const ConnectPlatformDialog = ({ open, onOpenChange, onConnect }: ConnectPlatfor
                   ) : (
                     <Facebook size={24} className="text-blue-600" />
                   )}
-                  <span>Facebook</span>
+                  <span>{getFacebookButtonText()}</span>
+                  {fbLoginStatus.authenticated && (
+                    <span className="text-xs text-blue-600">Already logged in</span>
+                  )}
                 </Button>
                 
                 <Button 
                   variant="outline" 
-                  className="flex flex-col items-center justify-center h-24 space-y-2"
+                  className={`flex flex-col items-center justify-center h-24 space-y-2 ${fbLoginStatus.authenticated ? 'border-pink-500 bg-pink-50' : ''}`}
                   onClick={() => handleConnect('instagram')}
                   disabled={isLoading || !fbSdkLoaded}
                 >
@@ -139,7 +164,10 @@ const ConnectPlatformDialog = ({ open, onOpenChange, onConnect }: ConnectPlatfor
                   ) : (
                     <Instagram size={24} className="text-pink-600" />
                   )}
-                  <span>Instagram</span>
+                  <span>{fbLoginStatus.authenticated ? "Continue with Instagram" : "Connect Instagram"}</span>
+                  {fbLoginStatus.authenticated && (
+                    <span className="text-xs text-pink-600">Already logged in to Facebook</span>
+                  )}
                 </Button>
                 
                 <Button 
@@ -175,7 +203,9 @@ const ConnectPlatformDialog = ({ open, onOpenChange, onConnect }: ConnectPlatfor
                     <h4 className="font-medium text-blue-800">Facebook Authentication</h4>
                     <p className="text-xs text-blue-800 mt-1">
                       {fbSdkLoaded 
-                        ? "We'll use the Facebook SDK for a secure and reliable connection to your account." 
+                        ? fbLoginStatus.authenticated
+                          ? "You're already logged in to Facebook. Click to continue with this account."
+                          : "We'll use the Facebook SDK for a secure and reliable connection to your account."
                         : "Loading Facebook SDK... If this takes too long, try refreshing the page."}
                     </p>
                   </div>
