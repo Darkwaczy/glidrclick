@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getPlatformName, getPlatformStatus, isPlatformSupported, getPlatformOAuthConfig } from "./helpers";
@@ -37,16 +36,18 @@ export const connectPlatform = async (platformId: string): Promise<void> => {
         // Get OAuth configuration
         const fbConfig = getPlatformOAuthConfig('facebook');
         
-        // Build authorization URL
-        authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${fbConfig.clientId}&redirect_uri=${encodeURIComponent(window.location.origin + '/dashboard/social?connected=facebook')}&scope=${fbConfig.scopes.join(',')}&response_type=code`;
+        // Build authorization URL with properly encoded redirect URI
+        const fbRedirectUri = `${window.location.origin}/dashboard/social?connected=facebook`;
+        authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${fbConfig.clientId}&redirect_uri=${encodeURIComponent(fbRedirectUri)}&scope=${fbConfig.scopes.join(',')}&response_type=code`;
         break;
         
       case 'instagram':
         // Get OAuth configuration
         const igConfig = getPlatformOAuthConfig('instagram');
         
-        // Build authorization URL - Instagram uses Facebook's OAuth flow
-        authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${igConfig.clientId}&redirect_uri=${encodeURIComponent(window.location.origin + '/dashboard/social?connected=instagram')}&scope=${igConfig.scopes.join(',')}&response_type=code`;
+        // Build authorization URL with properly encoded redirect URI
+        const igRedirectUri = `${window.location.origin}/dashboard/social?connected=instagram`;
+        authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${igConfig.clientId}&redirect_uri=${encodeURIComponent(igRedirectUri)}&scope=${igConfig.scopes.join(',')}&response_type=code`;
         break;
         
       case 'wordpress':
@@ -73,6 +74,7 @@ export const connectPlatform = async (platformId: string): Promise<void> => {
     
     // Redirect to the authentication URL
     if (authUrl) {
+      console.log("Redirecting to auth URL:", authUrl);
       window.location.href = authUrl;
     }
     
@@ -96,9 +98,15 @@ export const handleOAuthCallback = async (platform: string, code: string): Promi
     
     toast.loading(`Completing ${getPlatformName(platform)} connection...`);
     
+    const redirectUri = `${window.location.origin}/dashboard/social?connected=${platform}`;
+    console.log("Using redirect URI for token exchange:", redirectUri);
+    
     // Exchange code for access token using Edge Function
     const { data, error } = await supabase.functions.invoke(`oauth-${platform}`, {
-      body: { code, redirect_uri: window.location.origin + `/dashboard/social?connected=${platform}` }
+      body: { 
+        code, 
+        redirect_uri: redirectUri
+      }
     });
     
     if (error) {

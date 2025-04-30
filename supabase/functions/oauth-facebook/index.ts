@@ -44,6 +44,12 @@ serve(async (req) => {
       })
     });
     
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text();
+      console.error("Token exchange error response:", errorText);
+      throw new Error(`Failed to exchange token: ${errorText}`);
+    }
+    
     const tokenData = await tokenResponse.json();
     
     if (!tokenData.access_token) {
@@ -60,6 +66,12 @@ serve(async (req) => {
       }
     });
     
+    if (!userResponse.ok) {
+      const errorText = await userResponse.text();
+      console.error("User info error response:", errorText);
+      throw new Error(`Failed to get user info: ${errorText}`);
+    }
+    
     const userData = await userResponse.json();
     console.log("User data retrieved:", userData.name);
     
@@ -70,7 +82,16 @@ serve(async (req) => {
       }
     });
     
-    const pagesData = await pagesResponse.json();
+    if (!pagesResponse.ok) {
+      console.error("Pages fetch error:", await pagesResponse.text());
+      // Continue even if we can't get pages
+    }
+    
+    const pagesData = await pagesResponse.json().catch(err => {
+      console.error("Error parsing pages response:", err);
+      return { data: [] };
+    });
+    
     console.log("Pages data retrieved, count:", pagesData.data ? pagesData.data.length : 0);
     
     // For now, use the first page if available

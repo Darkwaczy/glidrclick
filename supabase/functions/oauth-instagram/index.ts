@@ -44,6 +44,12 @@ serve(async (req) => {
       })
     });
     
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text();
+      console.error("Token exchange error response:", errorText);
+      throw new Error(`Failed to exchange token: ${errorText}`);
+    }
+    
     const tokenData = await tokenResponse.json();
     
     if (!tokenData.access_token) {
@@ -60,6 +66,12 @@ serve(async (req) => {
       }
     });
     
+    if (!userResponse.ok) {
+      const errorText = await userResponse.text();
+      console.error("User info error response:", errorText);
+      throw new Error(`Failed to get user info: ${errorText}`);
+    }
+    
     const userData = await userResponse.json();
     console.log("User data retrieved:", userData.name);
     
@@ -70,7 +82,16 @@ serve(async (req) => {
       }
     });
     
-    const accountsData = await accountsResponse.json();
+    if (!accountsResponse.ok) {
+      console.error("Instagram accounts fetch error:", await accountsResponse.text());
+      // Continue even if we can't get accounts
+    }
+    
+    const accountsData = await accountsResponse.json().catch(err => {
+      console.error("Error parsing Instagram accounts response:", err);
+      return { data: [] };
+    });
+    
     console.log("Pages with Instagram accounts retrieved, count:", accountsData.data ? accountsData.data.length : 0);
     
     // Filter to only pages with Instagram business accounts
@@ -91,15 +112,22 @@ serve(async (req) => {
       
       // Get Instagram account details
       if (instagramId) {
-        const igResponse = await fetch(`https://graph.facebook.com/v18.0/${instagramId}?fields=name,username,profile_picture_url`, {
-          headers: {
-            'Authorization': `Bearer ${instagramToken}`
+        try {
+          const igResponse = await fetch(`https://graph.facebook.com/v18.0/${instagramId}?fields=name,username,profile_picture_url`, {
+            headers: {
+              'Authorization': `Bearer ${instagramToken}`
+            }
+          });
+          
+          if (igResponse.ok) {
+            const igData = await igResponse.json();
+            if (igData.username) {
+              accountName = `@${igData.username}`;
+            }
           }
-        });
-        
-        const igData = await igResponse.json();
-        if (igData.username) {
-          accountName = `@${igData.username}`;
+        } catch (igError) {
+          console.error("Error fetching Instagram details:", igError);
+          // Continue with what we have
         }
       }
     }

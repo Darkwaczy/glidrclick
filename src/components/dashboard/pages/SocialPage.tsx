@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -79,14 +78,26 @@ const SocialPage = () => {
 
     // Process OAuth callback if present in URL
     const processOAuthCallback = async () => {
-      const urlParams = new URLSearchParams(window.location.search);
+      const url = new URL(window.location.href);
+      const urlParams = new URLSearchParams(url.search);
       const connectedPlatform = urlParams.get('connected');
       const code = urlParams.get('code');
       const error = urlParams.get('error');
+      const errorReason = urlParams.get('error_reason');
+      const errorDescription = urlParams.get('error_description');
+      
+      if (error || errorReason || errorDescription) {
+        console.error("OAuth error:", { error, errorReason, errorDescription });
+        toast.error(`Connection failed: ${errorDescription || errorReason || error || "Unknown error"}`);
+        // Clean up URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
+      }
       
       if (connectedPlatform && code) {
         setProcessingOAuth(true);
         try {
+          console.log(`Processing OAuth callback for ${connectedPlatform} with code: ${code.substring(0, 10)}...`);
           const success = await handleOAuthCallback(connectedPlatform, code);
           if (success) {
             toast.success(`Connected to ${getPlatformName(connectedPlatform)} successfully!`);
@@ -510,7 +521,7 @@ const SocialPage = () => {
         onSubmit={handleUpdatePost}
       />
       
-      {/* New WordPress Self-Hosted Dialog */}
+      {/* WordPress Self-Hosted Dialog */}
       <ConnectWordPressDialog
         open={showWordPressDialog}
         onOpenChange={setShowWordPressDialog}
