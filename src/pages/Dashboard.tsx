@@ -6,7 +6,6 @@ import { Plus } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import DashboardTabContent from "@/components/dashboard/content/DashboardTabContent";
 import ContentPage from "@/components/dashboard/pages/ContentPage";
 import SchedulePage from "@/components/dashboard/pages/SchedulePage";
 import AnalyticsPage from "@/components/dashboard/pages/AnalyticsPage";
