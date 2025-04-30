@@ -9,6 +9,69 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_logs: {
+        Row: {
+          action: string
+          admin_id: string | null
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+        }
+        Insert: {
+          action: string
+          admin_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+        }
+        Update: {
+          action?: string
+          admin_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      content_templates: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          creator_id: string | null
+          id: string
+          is_public: boolean | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          creator_id?: string | null
+          id?: string
+          is_public?: boolean | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          creator_id?: string | null
+          id?: string
+          is_public?: boolean | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_accounts: {
         Row: {
           access_token: string | null
@@ -199,6 +262,36 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean | null
+          recipient_id: string | null
+          sender_id: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          recipient_id?: string | null
+          sender_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          recipient_id?: string | null
+          sender_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       post_analytics: {
         Row: {
           clicks: number | null
@@ -337,6 +430,42 @@ export type Database = {
         }
         Relationships: []
       }
+      rss_feeds: {
+        Row: {
+          added_by: string | null
+          category: string
+          country: string
+          created_at: string
+          id: string
+          is_default: boolean | null
+          title: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          added_by?: string | null
+          category: string
+          country: string
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          title: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          added_by?: string | null
+          category?: string
+          country?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          title?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       social_platforms: {
         Row: {
           access_token: string | null
@@ -387,6 +516,86 @@ export type Database = {
           sync_frequency?: string | null
           token_expires_at?: string | null
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          description: string | null
+          id: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: string | null
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: string | null
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: string | null
+        }
+        Relationships: []
+      }
+      user_feeds: {
+        Row: {
+          created_at: string
+          feed_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          feed_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          feed_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_feeds_feed_id_fkey"
+            columns: ["feed_id"]
+            isOneToOne: false
+            referencedRelation: "rss_feeds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -489,9 +698,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "moderator" | "user"
       connection_status: "active" | "inactive" | "failed" | "pending"
       email_provider_type: "gmail" | "outlook" | "imap" | "smtp"
     }
@@ -609,6 +825,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator", "user"],
       connection_status: ["active", "inactive", "failed", "pending"],
       email_provider_type: ["gmail", "outlook", "imap", "smtp"],
     },
