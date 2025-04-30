@@ -188,7 +188,7 @@ export const useAuth = () => {
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
-      navigate('/');
+      navigate('/auth');
     } catch (error) {
       console.error('Error signing out:', error);
     }

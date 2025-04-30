@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminTabContent from "@/components/admin/dashboard/AdminTabContent";
+import { useAuth } from "@/hooks/useAuth";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -13,6 +14,18 @@ const AdminDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("users");
   const [activePage, setActivePage] = useState("admin-dashboard");
+  const { user, isAdmin } = useAuth();
+
+  // Redirect if not admin
+  useEffect(() => {
+    if (user && !isAdmin) {
+      console.log("Not admin, redirecting to dashboard");
+      navigate("/dashboard");
+    } else if (!user) {
+      console.log("Not logged in, redirecting to auth");
+      navigate("/auth");
+    }
+  }, [user, isAdmin, navigate]);
 
   // Update activePage based on route
   useEffect(() => {

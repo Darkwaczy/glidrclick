@@ -10,7 +10,6 @@ import { initFacebookSdk, checkFacebookLoginStatus } from "@/utils/social/facebo
 // Import pages
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
@@ -40,9 +39,9 @@ const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.Re
     return <div className="flex h-screen items-center justify-center">Loading...</div>;
   }
   
-  // Redirect to login if not authenticated
+  // Redirect to auth if not authenticated
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/auth" replace />;
   }
   
   // Redirect non-admin users from admin routes
@@ -82,8 +81,9 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
-        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        {/* Redirect /login to /auth */}
+        <Route path="/login" element={<Navigate to="/auth" replace />} />
         
         {/* Protected routes */}
         <Route path="/dashboard/*" element={
