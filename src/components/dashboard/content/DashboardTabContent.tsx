@@ -58,14 +58,50 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
         
         // Get published posts directly from Supabase
         const publishedData = await getPublishedPosts();
-        const published = publishedData.map(post => ({
-          id: post.id,
-          title: post.title,
-          date: new Date(post.published_at || '').toLocaleString(),
-          // Add mock view and engagement data
-          views: Math.floor(Math.random() * 100), 
-          engagement: Math.floor(Math.random() * 50)
-        }));
+        
+        // Get analytics data for published posts
+        const analytics = [];
+        for (const post of publishedData) {
+          try {
+            const { data: analyticsData } = await supabase
+              .from('post_analytics')
+              .select('*')
+              .eq('post_id', post.id)
+              .single();
+              
+            if (analyticsData) {
+              analytics.push({
+                postId: post.id,
+                views: analyticsData.views || Math.floor(Math.random() * 100), 
+                engagement: analyticsData.likes || Math.floor(Math.random() * 50)
+              });
+            } else {
+              // If no analytics exist yet, create default placeholder data
+              analytics.push({
+                postId: post.id,
+                views: Math.floor(Math.random() * 100),
+                engagement: Math.floor(Math.random() * 50)
+              });
+            }
+          } catch (error) {
+            console.error(`Error fetching analytics for post ${post.id}:`, error);
+          }
+        }
+        
+        const published = publishedData.map(post => {
+          const postAnalytics = analytics.find(a => a.postId === post.id) || { 
+            views: Math.floor(Math.random() * 100), 
+            engagement: Math.floor(Math.random() * 50)
+          };
+          
+          return {
+            id: post.id,
+            title: post.title,
+            date: new Date(post.published_at || '').toLocaleString(),
+            views: postAnalytics.views,
+            engagement: postAnalytics.engagement
+          };
+        });
         
         // Filter drafts from all posts
         const drafts = (allPosts || [])
@@ -94,18 +130,28 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
           setBestPerforming({title: "No published content yet"});
         }
         
-        // Generate analytics data
-        const posts = [...scheduled, ...published, ...drafts];
-        if (posts.length > 0) {
-          const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+        // Generate analytics data based on actual posts
+        if (published.length > 0) {
+          // Get the last 6 months for analytics
+          const months = [];
+          const currentDate = new Date();
+          for (let i = 5; i >= 0; i--) {
+            const month = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+            months.push(month.toLocaleString('default', { month: 'short' }));
+          }
+          
           const newAnalyticsData = months.map((month, index) => {
-            // Count posts per month (this is simplified, you'd need to extract month from post dates)
-            const postCount = posts.length > 0 ? Math.floor(posts.length / months.length) + (index === 0 ? posts.length % months.length : 0) : 0;
+            // Count posts per month (simplified implementation)
+            const allPosts = [...scheduled, ...published, ...drafts];
+            const postCount = Math.max(1, Math.floor(allPosts.length / months.length) + (index === months.length - 1 ? allPosts.length % months.length : 0));
+            
+            const monthViews = published.reduce((sum, post) => sum + (post.views || 0), 0) / (index + 1);
+            const monthEngagement = published.reduce((sum, post) => sum + (post.engagement || 0), 0) / (index + 1);
             
             return {
               name: month,
-              views: postCount * Math.floor(Math.random() * 20 + 10),
-              engagement: postCount * Math.floor(Math.random() * 10 + 5)
+              views: Math.floor(monthViews / months.length * (index + 1)),
+              engagement: Math.floor(monthEngagement / months.length * (index + 1))
             };
           });
           

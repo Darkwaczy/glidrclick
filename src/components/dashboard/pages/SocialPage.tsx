@@ -10,12 +10,10 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Share2, RefreshCw, Plus, X, Instagram, Facebook, Twitter, Linkedin, Link2, FileText, AlertCircle } from "lucide-react";
-import type { SocialPlatform } from "@/utils/socialConnections";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   getSocialPlatforms, 
   connectPlatform, 
@@ -26,26 +24,34 @@ import {
   getScheduledPosts,
   getPublishedPosts,
   getPlatformName
-} from "@/utils/socialConnections";
-import { supabase } from "@/integrations/supabase/client";
+} from "@/utils/social";
+
+interface Mention {
+  id: string;
+  platform: string;
+  username: string;
+  timeAgo: string;
+  content: string;
+}
 
 const SocialPage = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [platforms, setPlatforms] = useState<SocialPlatform[]>([]);
+  const [platforms, setPlatforms] = useState<any[]>([]);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showConnectDialog, setShowConnectDialog] = useState(false);
   const [currentPlatform, setCurrentPlatform] = useState<string | null>(null);
-  const [replyingToMention, setReplyingToMention] = useState<number | null>(null);
+  const [replyingToMention, setReplyingToMention] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [showCreatePostDialog, setShowCreatePostDialog] = useState(false);
-  const [editingPostId, setEditingPostId] = useState<number | null>(null);
-  const [mentionsList, setMentionsList] = useState(mentions);
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [mentionsList, setMentionsList] = useState<Mention[]>([]);
   const [scheduledPostsList, setScheduledPostsList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadPlatforms();
     loadScheduledPosts();
+    loadMentions();
 
     const urlParams = new URLSearchParams(window.location.search);
     const connectedPlatform = urlParams.get('connected');
@@ -60,6 +66,76 @@ const SocialPage = () => {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
+
+  const loadMentions = async () => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      
+      if (!user?.user?.id) {
+        return;
+      }
+      
+      // Get all connected platforms
+      const { data: platforms } = await supabase
+        .from('social_platforms')
+        .select('*')
+        .eq('user_id', user.user.id)
+        .eq('is_connected', true);
+        
+      if (!platforms || platforms.length === 0) {
+        return;
+      }
+      
+      // Get platform IDs
+      const platformIds = platforms.map(p => p.id);
+      
+      // Get mentions for those platforms
+      const { data: mentions, error } = await supabase
+        .from('mentions')
+        .select('*')
+        .in('platform_id', platformIds)
+        .eq('is_read', false)
+        .order('created_at', { ascending: false });
+        
+      if (error) {
+        console.error("Error fetching mentions:", error);
+        return;
+      }
+      
+      if (mentions && mentions.length > 0) {
+        // Format mentions data
+        const formattedMentions = mentions.map(mention => {
+          const platform = platforms.find(p => p.id === mention.platform_id);
+          const createdAt = new Date(mention.created_at);
+          const now = new Date();
+          const diffInMinutes = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60));
+          
+          let timeAgo;
+          if (diffInMinutes < 60) {
+            timeAgo = `${diffInMinutes} minutes ago`;
+          } else if (diffInMinutes < 1440) {
+            timeAgo = `${Math.floor(diffInMinutes / 60)} hours ago`;
+          } else {
+            timeAgo = `${Math.floor(diffInMinutes / 1440)} days ago`;
+          }
+          
+          return {
+            id: mention.id,
+            platform: platform ? platform.name.toLowerCase() : 'unknown',
+            username: mention.username,
+            timeAgo: timeAgo,
+            content: mention.content
+          };
+        });
+        
+        setMentionsList(formattedMentions);
+      } else {
+        setMentionsList([]);
+      }
+    } catch (error) {
+      console.error("Error loading mentions:", error);
+    }
+  };
 
   const savePlatformConnection = async (platformId: string) => {
     try {
@@ -117,6 +193,7 @@ const SocialPage = () => {
   const handleRefreshConnections = async () => {
     setIsRefreshing(true);
     await loadPlatforms();
+    await loadMentions();
     setIsRefreshing(false);
     toast.success("Connections refreshed successfully!");
     const posts = await getScheduledPosts();
@@ -143,7 +220,7 @@ const SocialPage = () => {
     setShowSettingsDialog(true);
   };
 
-  const handleSavePlatformSettings = async (platformId: string, settings: Partial<SocialPlatform>) => {
+  const handleSavePlatformSettings = async (platformId: string, settings: any) => {
     const success = await updatePlatformSettings(platformId, settings);
     if (success) {
       loadPlatforms();
@@ -158,28 +235,50 @@ const SocialPage = () => {
     setShowConnectDialog(true);
   };
 
-  const handleOpenReplyDialog = (mentionId: number) => {
+  const handleOpenReplyDialog = (mentionId: string) => {
     setReplyingToMention(mentionId);
     setReplyContent("");
   };
   
-  const handleSubmitReply = () => {
-    if (!replyContent.trim()) {
+  const handleSubmitReply = async () => {
+    if (!replyingToMention || !replyContent.trim()) {
       toast.error("Please enter a reply message");
       return;
     }
     
-    toast.success("Reply sent successfully!");
-    
-    setMentionsList(mentionsList.filter(mention => mention.id !== replyingToMention));
-    
-    setReplyingToMention(null);
-    setReplyContent("");
+    try {
+      // In a real application, you would send the reply to the social platform API
+      // Here we'll just mark the mention as read
+      await supabase
+        .from('mentions')
+        .update({ is_read: true })
+        .eq('id', replyingToMention);
+        
+      toast.success("Reply sent successfully!");
+      
+      setMentionsList(mentionsList.filter(mention => mention.id !== replyingToMention));
+      
+      setReplyingToMention(null);
+      setReplyContent("");
+    } catch (error) {
+      console.error("Error sending reply:", error);
+      toast.error("Failed to send reply");
+    }
   };
   
-  const handleMarkAsRead = (mentionId: number) => {
-    toast.success("Mention marked as read");
-    setMentionsList(mentionsList.filter(mention => mention.id !== mentionId));
+  const handleMarkAsRead = async (mentionId: string) => {
+    try {
+      await supabase
+        .from('mentions')
+        .update({ is_read: true })
+        .eq('id', mentionId);
+        
+      toast.success("Mention marked as read");
+      setMentionsList(mentionsList.filter(mention => mention.id !== mentionId));
+    } catch (error) {
+      console.error("Error marking mention as read:", error);
+      toast.error("Failed to mark as read");
+    }
   };
   
   const handleCreatePost = () => {
@@ -422,18 +521,19 @@ const SocialPage = () => {
               <div className="py-4 space-y-4">
                 <div className="space-y-2">
                   <Label>Sync Frequency</Label>
-                  <Select
+                  <select
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     defaultValue={platforms.find(p => p.id === currentPlatform)?.syncFrequency || "daily"}
-                    onValueChange={(value) => {
+                    onChange={(e) => {
                       handleSavePlatformSettings(currentPlatform, {
-                        syncFrequency: value as "realtime" | "hourly" | "daily"
+                        syncFrequency: e.target.value as "realtime" | "hourly" | "daily"
                       });
                     }}
                   >
                     <option value="realtime">Real-time</option>
                     <option value="hourly">Hourly</option>
                     <option value="daily">Daily</option>
-                  </Select>
+                  </select>
                 </div>
                 
                 <div className="space-y-2">
@@ -441,14 +541,16 @@ const SocialPage = () => {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label htmlFor="notify-mentions">Mentions & Comments</Label>
-                      <Switch
+                      <input
                         id="notify-mentions"
+                        type="checkbox"
+                        className="h-4 w-4"
                         defaultChecked={platforms.find(p => p.id === currentPlatform)?.notifications?.mentions}
-                        onCheckedChange={(checked) => {
+                        onChange={(e) => {
                           handleSavePlatformSettings(currentPlatform, {
                             notifications: {
                               ...platforms.find(p => p.id === currentPlatform)?.notifications,
-                              mentions: checked
+                              mentions: e.target.checked
                             }
                           });
                         }}
@@ -456,14 +558,16 @@ const SocialPage = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <Label htmlFor="notify-messages">Direct Messages</Label>
-                      <Switch
+                      <input
                         id="notify-messages"
+                        type="checkbox"
+                        className="h-4 w-4"
                         defaultChecked={platforms.find(p => p.id === currentPlatform)?.notifications?.messages}
-                        onCheckedChange={(checked) => {
+                        onChange={(e) => {
                           handleSavePlatformSettings(currentPlatform, {
                             notifications: {
                               ...platforms.find(p => p.id === currentPlatform)?.notifications,
-                              messages: checked
+                              messages: e.target.checked
                             }
                           });
                         }}
@@ -727,7 +831,7 @@ const SocialPage = () => {
 };
 
 interface ConnectedPlatformProps {
-  platform: SocialPlatform;
+  platform: any;
   onSettings: () => void;
   onDisconnect: () => void;
 }
@@ -795,29 +899,5 @@ const getPlatformIcon = (platform: string, size: number = 16) => {
       return <Link2 size={size} />;
   }
 };
-
-const mentions = [
-  {
-    id: 1,
-    platform: 'twitter',
-    username: '@customer123',
-    timeAgo: '30 minutes ago',
-    content: "Just tried @glidrclick for the first time and I'm impressed! #contentmarketing"
-  },
-  {
-    id: 2,
-    platform: 'instagram',
-    username: '@socialmediaguru',
-    timeAgo: '2 hours ago',
-    content: 'Check out this amazing content scheduling tool @glidrclick'
-  },
-  {
-    id: 3,
-    platform: 'facebook',
-    username: 'Marketing Group',
-    timeAgo: '1 day ago',
-    content: 'Has anyone used Glidrclick for managing their social media? Looking for reviews.'
-  }
-];
 
 export default SocialPage;
