@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -20,8 +19,8 @@ serve(async (req) => {
     }
     
     // Use the provided Facebook App credentials since Instagram uses the Facebook API
-    const FB_CLIENT_ID = "958890536078118";
-    const FB_CLIENT_SECRET = "75da7b482234f5bb9277aebd02f215ae";
+    const FB_CLIENT_ID = "1315958822809269";
+    const FB_CLIENT_SECRET = "bf552835d3c08342b3bb35030d137207";
     
     if (!FB_CLIENT_ID || !FB_CLIENT_SECRET) {
       throw new Error("Instagram app configuration missing");
