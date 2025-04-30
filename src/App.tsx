@@ -23,6 +23,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 // Import legal pages
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import FacebookDataDeletion from "./pages/FacebookDataDeletion";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -70,6 +71,7 @@ function App() {
             {/* Legal pages */}
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/facebook-data-deletion" element={<FacebookDataDeletion />} />
             
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<Navigate to="/404" replace />} />

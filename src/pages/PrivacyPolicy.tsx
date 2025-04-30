@@ -39,6 +39,7 @@ const PrivacyPolicy = () => {
             
             <h2>6. Facebook Data</h2>
             <p>For Facebook users: You can request deletion of your Facebook data that we've collected by visiting your account settings. You may also contact Facebook directly to request deletion of data that Facebook has shared with us.</p>
+            <p>Our Facebook Data Deletion URL is: <a href="https://glidrclick.lovable.app/facebook-data-deletion" className="text-blue-600 hover:underline">https://glidrclick.lovable.app/facebook-data-deletion</a></p>
             
             <h2>7. Security</h2>
             <p>We take reasonable measures to help protect your personal information from loss, theft, misuse, unauthorized access, disclosure, alteration, and destruction.</p>
