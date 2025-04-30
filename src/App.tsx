@@ -10,6 +10,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
 import { useEffect } from "react";
 import { initFacebookSdk, checkFacebookLoginStatus } from "@/utils/social/facebook-sdk";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Import features pages
 import AIWriting from "./pages/features/AIWriting";
@@ -18,6 +19,9 @@ import SocialSharing from "./pages/features/SocialSharing";
 
 // Import admin pages
 import AdminDashboard from "./pages/AdminDashboard";
+
+// Create a client
+const queryClient = new QueryClient();
 
 function App() {
   // Initialize Facebook SDK when the app loads
@@ -43,27 +47,29 @@ function App() {
   }, []);
   
   return (
-    <TooltipProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/dashboard/*" element={<Dashboard />} />
-          <Route path="/admin/*" element={<AdminDashboard />} />
-          
-          {/* Feature pages */}
-          <Route path="/features/ai-writing" element={<AIWriting />} />
-          <Route path="/features/auto-posting" element={<AutoPosting />} />
-          <Route path="/features/social-sharing" element={<SocialSharing />} />
-          
-          <Route path="/404" element={<NotFound />} />
-          <Route path="*" element={<Navigate to="/404" replace />} />
-        </Routes>
-      </Router>
-      <Toaster position="top-right" />
-    </TooltipProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/dashboard/*" element={<Dashboard />} />
+            <Route path="/admin/*" element={<AdminDashboard />} />
+            
+            {/* Feature pages */}
+            <Route path="/features/ai-writing" element={<AIWriting />} />
+            <Route path="/features/auto-posting" element={<AutoPosting />} />
+            <Route path="/features/social-sharing" element={<SocialSharing />} />
+            
+            <Route path="/404" element={<NotFound />} />
+            <Route path="*" element={<Navigate to="/404" replace />} />
+          </Routes>
+        </Router>
+        <Toaster position="top-right" />
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }
 
