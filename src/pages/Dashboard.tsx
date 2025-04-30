@@ -42,6 +42,7 @@ const LoadingFallback = () => (
 );
 
 const Dashboard = () => {
+  console.log("Dashboard page rendering");
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -65,7 +66,11 @@ const Dashboard = () => {
   // Check for scheduled posts that should be published on dashboard load
   useEffect(() => {
     const checkScheduledPosts = async () => {
-      await checkAndUpdatePostStatus();
+      try {
+        await checkAndUpdatePostStatus();
+      } catch (error) {
+        console.error("Error checking scheduled posts:", error);
+      }
     };
     
     checkScheduledPosts();
@@ -78,13 +83,19 @@ const Dashboard = () => {
       setActiveTab(tabFromUrl);
     }
     
-    // Set loading state
+    // Set loading state with a shorter timeout
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 1000);
+    }, 500);
     
     return () => clearTimeout(timer);
   }, [searchParams]);
+
+  // Debug the current path to help troubleshoot
+  useEffect(() => {
+    console.log(`Current dashboard path: ${location.pathname}`);
+    console.log(`Dashboard posts loading: ${postsLoading}`);
+  }, [location.pathname, postsLoading]);
 
   const createPost = () => {
     navigate("/dashboard/new-post");
@@ -147,9 +158,13 @@ const Dashboard = () => {
   const isEditingPost = path.includes('/edit-post/');
   const isSocialPage = path === "/dashboard/social";
 
+  // Show the loading fallback only initially
   if (isLoading && path === "/dashboard") {
     return <LoadingFallback />;
   }
+
+  // Show which component is being rendered (helpful for debugging)
+  console.log("Rendering dashboard component for path:", path);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">

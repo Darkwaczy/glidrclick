@@ -28,7 +28,15 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import FacebookDataDeletion from "./pages/FacebookDataDeletion";
 
 // Create a client
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    }
+  }
+});
 
 // Protected route component
 const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.ReactNode, requireAdmin?: boolean }) => {
@@ -54,9 +62,11 @@ const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.Re
 };
 
 function AppContent() {
+  console.log("AppContent rendering...");
   // Initialize Facebook SDK when the app loads
   useEffect(() => {
     const initFacebook = async () => {
+      console.log("Initializing Facebook SDK...");
       try {
         // Initialize Facebook SDK
         await initFacebookSdk();
@@ -82,7 +92,7 @@ function AppContent() {
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/register" element={<Register />} />
-        {/* Redirect any /login attempts to /auth */}
+        {/* Explicitly redirect /login to /auth */}
         <Route path="/login" element={<Navigate to="/auth" replace />} />
         
         {/* Protected routes */}
@@ -116,6 +126,7 @@ function AppContent() {
 }
 
 function App() {
+  console.log("App rendering...");
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

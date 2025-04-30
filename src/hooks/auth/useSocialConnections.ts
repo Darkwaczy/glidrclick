@@ -7,21 +7,32 @@ import { getPlatformName } from '@/utils/social/helpers';
 
 export const useSocialConnections = (user: User | null) => {
   useEffect(() => {
-    if (user) {
-      // Handle URL parameters for social connections on initial load
-      const urlParams = new URLSearchParams(window.location.search);
-      const connectedPlatform = urlParams.get('connected');
-      
-      if (connectedPlatform) {
-        setTimeout(() => {
+    if (!user) return;
+    
+    console.log("Social connections hook initializing for user:", user.id);
+    let isMounted = true;
+    
+    // Handle URL parameters for social connections on initial load
+    const urlParams = new URLSearchParams(window.location.search);
+    const connectedPlatform = urlParams.get('connected');
+    
+    if (connectedPlatform) {
+      console.log(`Found connected platform in URL: ${connectedPlatform}`);
+      setTimeout(() => {
+        if (isMounted && user) {
           saveSocialPlatformConnection(connectedPlatform, user.id);
-        }, 0);
-      }
+        }
+      }, 0);
     }
+    
+    return () => { isMounted = false; };
   }, [user]);
 
   const saveSocialPlatformConnection = async (platformId: string, userId: string) => {
-    if (!userId) return;
+    if (!userId) {
+      console.warn("Cannot save connection - no user ID provided");
+      return;
+    }
     
     try {
       console.log(`Saving connection for platform: ${platformId}, user: ${userId}`);

@@ -14,18 +14,27 @@ const AdminDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("users");
   const [activePage, setActivePage] = useState("admin-dashboard");
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
+
+  console.log("AdminDashboard rendering, path:", location.pathname);
 
   // Redirect if not admin
   useEffect(() => {
+    if (loading) {
+      console.log("Auth still loading, waiting...");
+      return;
+    }
+    
     if (user && !isAdmin) {
       console.log("Not admin, redirecting to dashboard");
       navigate("/dashboard");
     } else if (!user) {
       console.log("Not logged in, redirecting to auth");
       navigate("/auth");
+    } else {
+      console.log("Admin access confirmed");
     }
-  }, [user, isAdmin, navigate]);
+  }, [user, isAdmin, navigate, loading]);
 
   // Update activePage based on route
   useEffect(() => {
@@ -64,6 +73,10 @@ const AdminDashboard = () => {
     searchParams: searchParams.toString()
   });
 
+  if (loading) {
+    return <div className="flex h-screen items-center justify-center">Verifying admin access...</div>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <AdminSidebar activePage={activePage} />
@@ -93,12 +106,6 @@ const AdminDashboard = () => {
             </>
           ) : (
             <Routes>
-              <Route path="/" element={
-                <div className="space-y-6">
-                  <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-                  <p>Select a section from the sidebar to continue.</p>
-                </div>
-              } />
               <Route path="users/*" element={
                 <div className="space-y-6">
                   <h1 className="text-2xl font-bold">User Management</h1>

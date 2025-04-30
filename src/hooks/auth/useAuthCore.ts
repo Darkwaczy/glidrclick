@@ -13,10 +13,16 @@ export const useAuthCore = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("Auth core initializing...");
+    let isMounted = true;
+
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state change event:', event);
+        
+        if (!isMounted) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -27,51 +33,84 @@ export const useAuthCore = () => {
           if (isAdminEmail) {
             setIsAdmin(true);
           } else {
-            const { data } = await supabase
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', session.user.id)
-              .eq('role', 'admin')
-              .maybeSingle();
-            
-            setIsAdmin(!!data);
+            try {
+              const { data } = await supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', session.user.id)
+                .eq('role', 'admin')
+                .maybeSingle();
+              
+              if (isMounted) {
+                setIsAdmin(!!data);
+              }
+            } catch (error) {
+              console.error("Error checking admin role:", error);
+            }
           }
         } else {
           setIsAdmin(false);
         }
         
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     );
 
     // Then check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      console.log('Existing session:', session ? 'Yes' : 'No');
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      // Check for admin role if user is signed in
-      if (session?.user) {
-        const isAdminEmail = session.user.email === 'admin@glidrclick.com';
-          
-        if (isAdminEmail) {
-          setIsAdmin(true);
-        } else {
-          const { data } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', session.user.id)
-            .eq('role', 'admin')
-            .maybeSingle();
-          
-          setIsAdmin(!!data);
+    const checkSession = async () => {
+      try {
+        console.log('Checking for existing session...');
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!isMounted) return;
+        
+        console.log('Existing session:', session ? 'Yes' : 'No');
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Check for admin role if user is signed in
+        if (session?.user) {
+          const isAdminEmail = session.user.email === 'admin@glidrclick.com';
+            
+          if (isAdminEmail) {
+            setIsAdmin(true);
+          } else {
+            try {
+              const { data } = await supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', session.user.id)
+                .eq('role', 'admin')
+                .maybeSingle();
+              
+              if (isMounted) {
+                setIsAdmin(!!data);
+              }
+            } catch (error) {
+              console.error("Error checking admin role:", error);
+            }
+          }
+        }
+        
+        if (isMounted) {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Session check error:", error);
+        if (isMounted) {
+          setLoading(false);
         }
       }
-      
-      setLoading(false);
-    });
+    };
 
-    return () => subscription.unsubscribe();
+    checkSession();
+
+    return () => { 
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const signIn = async ({ email, password }: { email: string, password: string }) => {
