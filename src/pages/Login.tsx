@@ -45,12 +45,15 @@ const LoginPage = () => {
     setIsSubmitting(true);
     
     try {
-      // Use the actual signIn function from useAuth
-      if (values.email === "admin@glidrclick.com" && values.password === "admin123") {
+      // Since we're using zod validation, we can be confident that email and password are defined
+      // The TypeScript error was occurring because the types weren't being properly narrowed
+      const { email, password } = values;
+      
+      if (email === "admin@glidrclick.com" && password === "admin123") {
         toast.success("Admin login successful! Redirecting to admin dashboard...");
         setTimeout(() => navigate("/admin-dashboard"), 1500);
       } else {
-        await signIn(values);
+        await signIn({ email, password });
         toast.success("Login successful!");
         // The useAuth hook will handle the redirect to dashboard
       }
