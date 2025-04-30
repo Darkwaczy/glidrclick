@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { connectPlatform, connectWordPressSelfHosted } from "@/utils/social/authentication";
-import { getPlatformDocUrl } from "@/utils/social/helpers";
+import { getPlatformDocUrl, getPlatformOAuthConfig } from "@/utils/social/helpers";
 
 interface ConnectPlatformDialogProps {
   open: boolean;
@@ -115,10 +115,9 @@ const ConnectPlatformDialog = ({ open, onOpenChange, onConnect }: ConnectPlatfor
                 <div className="flex items-start gap-3">
                   <div className="text-blue-800 mt-1 flex-shrink-0">💡</div>
                   <div>
-                    <h4 className="font-medium text-blue-800">Hootsuite-like Functionality</h4>
+                    <h4 className="font-medium text-blue-800">OAuth Authentication</h4>
                     <p className="text-xs text-blue-800 mt-1">
-                      After connecting your accounts, you'll be able to post content to multiple platforms simultaneously,
-                      respond to comments, and manage all your social media engagement from this dashboard.
+                      You'll be redirected to the platform's login page to authorize access. After connecting, you'll be able to post, manage comments, and track engagement from this dashboard.
                     </p>
                   </div>
                 </div>

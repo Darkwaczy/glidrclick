@@ -1,7 +1,7 @@
 
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { getPlatformName, getPlatformStatus, isPlatformSupported } from "./helpers";
+import { getPlatformName, getPlatformStatus, isPlatformSupported, getPlatformOAuthConfig } from "./helpers";
 
 // Main function to initiate platform connection
 export const connectPlatform = async (platformId: string): Promise<void> => {
@@ -34,13 +34,19 @@ export const connectPlatform = async (platformId: string): Promise<void> => {
     
     switch(platformId) {
       case 'facebook':
-        // Redirect to Facebook OAuth flow
-        authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${process.env.FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(window.location.origin + '/dashboard/social?connected=facebook')}&scope=pages_read_engagement,pages_manage_posts,instagram_basic,instagram_content_publish,pages_show_list,public_profile`;
+        // Get OAuth configuration
+        const fbConfig = getPlatformOAuthConfig('facebook');
+        
+        // Build authorization URL
+        authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${fbConfig.clientId}&redirect_uri=${encodeURIComponent(window.location.origin + '/dashboard/social?connected=facebook')}&scope=${fbConfig.scopes.join(',')}&response_type=code`;
         break;
         
       case 'instagram':
-        // Redirect to Instagram OAuth flow (via Facebook)
-        authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${process.env.FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(window.location.origin + '/dashboard/social?connected=instagram')}&scope=instagram_basic,instagram_content_publish,pages_show_list,public_profile`;
+        // Get OAuth configuration
+        const igConfig = getPlatformOAuthConfig('instagram');
+        
+        // Build authorization URL - Instagram uses Facebook's OAuth flow
+        authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${igConfig.clientId}&redirect_uri=${encodeURIComponent(window.location.origin + '/dashboard/social?connected=instagram')}&scope=${igConfig.scopes.join(',')}&response_type=code`;
         break;
         
       case 'wordpress':
@@ -88,6 +94,8 @@ export const handleOAuthCallback = async (platform: string, code: string): Promi
       return false;
     }
     
+    toast.loading(`Completing ${getPlatformName(platform)} connection...`);
+    
     // Exchange code for access token using Edge Function
     const { data, error } = await supabase.functions.invoke(`oauth-${platform}`, {
       body: { code, redirect_uri: window.location.origin + `/dashboard/social?connected=${platform}` }
@@ -124,7 +132,7 @@ export const handleOAuthCallback = async (platform: string, code: string): Promi
       .select('*')
       .eq('user_id', userId)
       .eq('platform_id', platform)
-      .single();
+      .maybeSingle();
     
     // Update or insert platform data
     let result;
@@ -167,6 +175,8 @@ export const connectWordPressSelfHosted = async (
       return false;
     }
     
+    toast.loading("Connecting to WordPress site...");
+    
     // Call the WordPress connection edge function
     const { data, error } = await supabase.functions.invoke('connect-wordpress-self-hosted', {
       body: { 
@@ -185,6 +195,43 @@ export const connectWordPressSelfHosted = async (
     if (!data || !data.success) {
       throw new Error(data?.message || "Failed to connect to WordPress site");
     }
+    
+    // Format data for storage
+    const platformData = {
+      user_id: userId,
+      platform_id: 'wordpress',
+      name: 'WordPress Blog',
+      icon: 'wordpress',
+      is_connected: true,
+      access_token: data.applicationPassword, // Store the application password as the "access token"
+      account_name: data.site_name || siteUrl,
+      last_sync: new Date().toISOString(),
+      sync_frequency: 'daily',
+      notifications: { mentions: true, messages: true }
+    };
+    
+    // Check if WordPress is already connected
+    const { data: existingPlatform } = await supabase
+      .from('social_platforms')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('platform_id', 'wordpress')
+      .maybeSingle();
+    
+    // Update or insert platform data
+    let result;
+    if (existingPlatform) {
+      result = await supabase
+        .from('social_platforms')
+        .update(platformData)
+        .eq('id', existingPlatform.id);
+    } else {
+      result = await supabase
+        .from('social_platforms')
+        .insert(platformData);
+    }
+    
+    if (result.error) throw result.error;
     
     toast.success(`Successfully connected to WordPress site at ${siteUrl}`);
     return true;
@@ -206,19 +253,26 @@ export const disconnectPlatform = async (platformId: string): Promise<boolean> =
       throw new Error("User not authenticated");
     }
     
+    toast.loading(`Disconnecting from ${getPlatformName(platformId)}...`);
+    
     // Revoke access tokens if needed
     const { data: platform } = await supabase
       .from('social_platforms')
       .select('access_token, refresh_token')
       .eq('platform_id', platformId)
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
     
     if (platform && platform.access_token) {
       // Call the edge function to revoke the token
-      await supabase.functions.invoke(`revoke-${platformId}`, {
-        body: { access_token: platform.access_token }
-      });
+      try {
+        await supabase.functions.invoke(`revoke-${platformId}`, {
+          body: { access_token: platform.access_token }
+        });
+      } catch (revokeError) {
+        console.warn(`Error revoking token for ${platformId}:`, revokeError);
+        // Continue with disconnection even if token revocation fails
+      }
     }
     
     // Remove from Supabase
@@ -239,3 +293,68 @@ export const disconnectPlatform = async (platformId: string): Promise<boolean> =
   }
 };
 
+// Get connected account pages/profiles
+export const getPlatformAccounts = async (platformId: string) => {
+  try {
+    // Get the user ID
+    const { data: userSession } = await supabase.auth.getSession();
+    const userId = userSession.session?.user.id;
+    
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+    
+    // Get platform details including access token
+    const { data: platform } = await supabase
+      .from('social_platforms')
+      .select('*')
+      .eq('platform_id', platformId)
+      .eq('user_id', userId)
+      .maybeSingle();
+      
+    if (!platform) {
+      throw new Error("Platform not connected");
+    }
+    
+    switch(platformId) {
+      case 'facebook':
+        // Get Facebook pages
+        const pagesResponse = await fetch('https://graph.facebook.com/me/accounts', {
+          headers: {
+            'Authorization': `Bearer ${platform.access_token}`
+          }
+        });
+        
+        const pagesData = await pagesResponse.json();
+        return pagesData.data || [];
+        
+      case 'instagram':
+        // Get Instagram business accounts
+        const accountsResponse = await fetch('https://graph.facebook.com/v18.0/me/accounts?fields=name,instagram_business_account', {
+          headers: {
+            'Authorization': `Bearer ${platform.access_token}`
+          }
+        });
+        
+        const accountsData = await accountsResponse.json();
+        const instagramAccounts = accountsData.data ? 
+          accountsData.data.filter((page: any) => page.instagram_business_account) : [];
+          
+        return instagramAccounts;
+        
+      case 'wordpress':
+        // For WordPress, no need to list multiple accounts as we connect to a specific site
+        return [{
+          id: platform.id,
+          name: platform.account_name,
+          site_url: platform.account_name
+        }];
+        
+      default:
+        return [];
+    }
+  } catch (error) {
+    console.error(`Error getting ${platformId} accounts:`, error);
+    return [];
+  }
+};

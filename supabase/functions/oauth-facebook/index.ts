@@ -19,12 +19,16 @@ serve(async (req) => {
       throw new Error("Authorization code is required");
     }
     
-    const FB_CLIENT_ID = Deno.env.get("FACEBOOK_APP_ID");
-    const FB_CLIENT_SECRET = Deno.env.get("FACEBOOK_APP_SECRET");
+    // Use the provided Facebook App credentials
+    const FB_CLIENT_ID = "958890536078118";
+    const FB_CLIENT_SECRET = "75da7b482234f5bb9277aebd02f215ae";
     
     if (!FB_CLIENT_ID || !FB_CLIENT_SECRET) {
       throw new Error("Facebook app configuration missing");
     }
+    
+    console.log("Exchanging code for access token...");
+    console.log("Redirect URI:", redirect_uri);
     
     // Exchange the authorization code for an access token
     const tokenResponse = await fetch('https://graph.facebook.com/v18.0/oauth/access_token', {
@@ -43,8 +47,11 @@ serve(async (req) => {
     const tokenData = await tokenResponse.json();
     
     if (!tokenData.access_token) {
+      console.error("Token response error:", JSON.stringify(tokenData));
       throw new Error("Failed to obtain access token: " + JSON.stringify(tokenData));
     }
+    
+    console.log("Access token obtained successfully");
     
     // Get user info
     const userResponse = await fetch('https://graph.facebook.com/me?fields=name,email', {
@@ -54,6 +61,7 @@ serve(async (req) => {
     });
     
     const userData = await userResponse.json();
+    console.log("User data retrieved:", userData.name);
     
     // Get pages that the user manages
     const pagesResponse = await fetch('https://graph.facebook.com/me/accounts', {
@@ -63,20 +71,23 @@ serve(async (req) => {
     });
     
     const pagesData = await pagesResponse.json();
+    console.log("Pages data retrieved, count:", pagesData.data ? pagesData.data.length : 0);
     
     // For now, use the first page if available
     let pageAccessToken = tokenData.access_token;
     let accountName = userData.name;
+    let accountId = userData.id;
     
     if (pagesData.data && pagesData.data.length > 0) {
       pageAccessToken = pagesData.data[0].access_token;
       accountName = pagesData.data[0].name;
+      accountId = pagesData.data[0].id;
     }
     
     return new Response(
       JSON.stringify({
         access_token: pageAccessToken,
-        user_id: userData.id,
+        user_id: accountId,
         account_name: accountName,
         expires_in: tokenData.expires_in,
         pages: pagesData.data || []

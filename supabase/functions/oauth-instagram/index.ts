@@ -19,14 +19,18 @@ serve(async (req) => {
       throw new Error("Authorization code is required");
     }
     
-    const FB_CLIENT_ID = Deno.env.get("FACEBOOK_APP_ID");
-    const FB_CLIENT_SECRET = Deno.env.get("FACEBOOK_APP_SECRET");
+    // Use the provided Facebook App credentials since Instagram uses the Facebook API
+    const FB_CLIENT_ID = "958890536078118";
+    const FB_CLIENT_SECRET = "75da7b482234f5bb9277aebd02f215ae";
     
     if (!FB_CLIENT_ID || !FB_CLIENT_SECRET) {
-      throw new Error("Facebook app configuration missing");
+      throw new Error("Instagram app configuration missing");
     }
     
-    // Exchange the authorization code for an access token (same as Facebook)
+    console.log("Exchanging code for access token...");
+    console.log("Redirect URI:", redirect_uri);
+    
+    // Exchange the authorization code for an access token
     const tokenResponse = await fetch('https://graph.facebook.com/v18.0/oauth/access_token', {
       method: 'POST',
       headers: {
@@ -43,8 +47,11 @@ serve(async (req) => {
     const tokenData = await tokenResponse.json();
     
     if (!tokenData.access_token) {
+      console.error("Token response error:", JSON.stringify(tokenData));
       throw new Error("Failed to obtain access token: " + JSON.stringify(tokenData));
     }
+    
+    console.log("Access token obtained successfully");
     
     // Get user info
     const userResponse = await fetch('https://graph.facebook.com/me?fields=name,email', {
@@ -54,60 +61,60 @@ serve(async (req) => {
     });
     
     const userData = await userResponse.json();
+    console.log("User data retrieved:", userData.name);
     
-    // Get Instagram Business accounts linked to the user's Facebook Pages
-    const pagesResponse = await fetch('https://graph.facebook.com/me/accounts', {
+    // Get Instagram business accounts connected to the user's pages
+    const accountsResponse = await fetch('https://graph.facebook.com/v18.0/me/accounts?fields=name,access_token,instagram_business_account', {
       headers: {
         'Authorization': `Bearer ${tokenData.access_token}`
       }
     });
     
-    const pagesData = await pagesResponse.json();
-    let instagramAccount = null;
-    let instagramUsername = null;
+    const accountsData = await accountsResponse.json();
+    console.log("Pages with Instagram accounts retrieved, count:", accountsData.data ? accountsData.data.length : 0);
     
-    // For each page, check if there's an Instagram account linked
-    if (pagesData.data && pagesData.data.length > 0) {
-      for (const page of pagesData.data) {
-        const instagramResponse = await fetch(`https://graph.facebook.com/v18.0/${page.id}?fields=instagram_business_account{id,name,username}`, {
+    // Filter to only pages with Instagram business accounts
+    const instagramAccounts = accountsData.data ? 
+      accountsData.data.filter(page => page.instagram_business_account) : [];
+    
+    // For now, use the first Instagram account if available
+    let instagramToken = tokenData.access_token;
+    let accountName = userData.name;
+    let accountId = userData.id;
+    let instagramId = null;
+    
+    if (instagramAccounts.length > 0) {
+      instagramToken = instagramAccounts[0].access_token;
+      accountName = instagramAccounts[0].name;
+      accountId = instagramAccounts[0].id;
+      instagramId = instagramAccounts[0].instagram_business_account.id;
+      
+      // Get Instagram account details
+      if (instagramId) {
+        const igResponse = await fetch(`https://graph.facebook.com/v18.0/${instagramId}?fields=name,username,profile_picture_url`, {
           headers: {
-            'Authorization': `Bearer ${tokenData.access_token}`
+            'Authorization': `Bearer ${instagramToken}`
           }
         });
         
-        const instagramData = await instagramResponse.json();
-        
-        if (instagramData.instagram_business_account) {
-          instagramAccount = instagramData.instagram_business_account;
-          instagramUsername = instagramData.instagram_business_account.username || '@instagram_user';
-          // Use the page access token for Instagram API calls
-          break;
+        const igData = await igResponse.json();
+        if (igData.username) {
+          accountName = `@${igData.username}`;
         }
       }
     }
     
-    // If no Instagram account found, return an error
-    if (!instagramAccount) {
-      return new Response(
-        JSON.stringify({ 
-          error: "No Instagram Business account found linked to your Facebook Pages" 
-        }),
-        {
-          status: 400,
-          headers: {
-            ...corsHeaders,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-    }
-    
     return new Response(
       JSON.stringify({
-        access_token: tokenData.access_token,
-        instagram_account_id: instagramAccount.id,
-        account_name: instagramUsername,
-        expires_in: tokenData.expires_in
+        access_token: instagramToken,
+        user_id: instagramId || accountId,
+        account_name: accountName,
+        expires_in: tokenData.expires_in,
+        instagram_accounts: instagramAccounts.map(account => ({
+          id: account.instagram_business_account?.id,
+          name: account.name,
+          access_token: account.access_token
+        })) || []
       }),
       {
         headers: {

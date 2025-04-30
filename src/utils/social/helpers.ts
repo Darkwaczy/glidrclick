@@ -7,9 +7,9 @@
 export const getPlatformName = (platformId: string): string => {
   const platforms: Record<string, string> = {
     facebook: 'Facebook',
-    twitter: 'Twitter',
+    twitter: 'Twitter (coming soon)',
     instagram: 'Instagram',
-    linkedin: 'LinkedIn',
+    linkedin: 'LinkedIn (coming soon)',
     wordpress: 'WordPress Blog'
   };
   
@@ -60,3 +60,26 @@ export const getPlatformDocUrl = (platformId: string): string => {
   return urlMap[platformId] || '#';
 };
 
+/**
+ * Get OAuth application configuration for platforms
+ * @param platformId The ID of the platform
+ * @returns OAuth app configuration
+ */
+export const getPlatformOAuthConfig = (platformId: string) => {
+  const config: Record<string, { clientId: string, scopes: string[] }> = {
+    facebook: { 
+      clientId: '958890536078118', 
+      scopes: ['pages_read_engagement', 'pages_manage_posts', 'public_profile'] 
+    },
+    instagram: { 
+      clientId: '958890536078118', // Same as Facebook since Instagram uses Facebook's API
+      scopes: ['instagram_basic', 'instagram_content_publish', 'pages_show_list'] 
+    },
+    wordpress: { 
+      clientId: process.env.WORDPRESS_CLIENT_ID || '', 
+      scopes: ['global'] 
+    }
+  };
+  
+  return config[platformId] || { clientId: '', scopes: [] };
+};
