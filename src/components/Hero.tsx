@@ -1,56 +1,45 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import TypeAnimation from "./TypeAnimation";
+import { Play } from "lucide-react";
 
 const Hero = () => {
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 pt-20">
+    <div className="relative min-h-screen flex items-center justify-center bg-[#e5deff] pt-20">
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute left-1/2 top-0 -translate-x-1/2 w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(0,128,255,0.15),transparent_35%)]"></div>
+        <div className="absolute w-full h-full">
+          {/* Decorative circles */}
+          <div className="absolute top-1/4 left-1/5 w-16 h-16 bg-[#e5deff] rounded-full opacity-70"></div>
+          <div className="absolute top-1/2 right-1/4 w-24 h-24 bg-[#e5deff] rounded-full opacity-70"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-20 h-20 bg-[#e5deff] rounded-full opacity-70"></div>
+          <div className="absolute top-1/3 right-1/5 w-12 h-12 bg-[#e5deff] rounded-full opacity-70"></div>
+          <div className="absolute bottom-1/3 left-1/4 w-28 h-28 bg-[#e5deff] rounded-full opacity-60"></div>
+          <div className="absolute top-20 left-1/2 w-14 h-14 bg-[#e5deff] rounded-full opacity-60"></div>
+        </div>
       </div>
       
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center max-w-5xl mx-auto">
-          <h1 className="text-4xl md:text-6xl font-extrabold mb-6">
-            <span className="gradient-text">Create, Schedule, Share</span>
-            <br />Social Content Made Easy
-          </h1>
-          
-          <div className="text-xl md:text-2xl text-gray-600 mb-8 h-20">
-            <TypeAnimation />
-          </div>
-          
-          <div className="flex flex-col md:flex-row gap-4 justify-center">
-            <Link to="/register">
-              <Button size="lg" className="text-lg px-8 py-6">
-                Get Started Free
-              </Button>
-            </Link>
-            <Link to="/auth">
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6">
-                Sign In
-              </Button>
-            </Link>
-          </div>
-          
-          <div className="mt-12 text-gray-600 flex items-center justify-center">
-            <svg viewBox="0 0 24 24" className="h-5 w-5 mr-2 text-green-500" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            <span>No credit card required</span>
-            
-            <svg viewBox="0 0 24 24" className="h-5 w-5 mx-2 text-green-500 ml-6" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            <span>14-day free trial</span>
-            
-            <svg viewBox="0 0 24 24" className="h-5 w-5 mx-2 text-green-500 ml-6" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            <span>Cancel anytime</span>
-          </div>
+      <div className="container mx-auto px-4 relative z-10 text-center">
+        <h1 className="text-4xl md:text-6xl font-bold mb-6">
+          <span className="text-black">Automate Your Blog in </span>
+          <span className="text-[#9b87f5]">One Click</span>
+        </h1>
+        
+        <p className="text-xl text-gray-700 mb-12 max-w-2xl mx-auto">
+          Let Glidrclick write and post high-quality content daily — straight to
+          your blog and social media.
+        </p>
+        
+        <div className="flex flex-col md:flex-row gap-4 justify-center">
+          <Button size="lg" className="bg-[#9b87f5] hover:bg-[#7E69AB] text-white px-8 py-6 text-lg rounded-full">
+            Try Free for 7 Days
+          </Button>
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="border-[#9b87f5] text-[#9b87f5] hover:bg-[#e5deff] px-8 py-6 text-lg rounded-full"
+          >
+            <Play size={18} className="mr-1" /> Watch Demo
+          </Button>
         </div>
       </div>
     </div>
