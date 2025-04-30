@@ -1,20 +1,12 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle, 
-  CardDescription 
-} from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Share2, RefreshCw, Plus, X, Instagram, Facebook, Twitter, Linkedin, Link2, FileText, AlertCircle } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+
+// Import utilities and functions
 import { 
   getSocialPlatforms, 
   connectPlatform, 
@@ -26,6 +18,18 @@ import {
   getPublishedPosts,
   getPlatformName
 } from "@/utils/social";
+
+// Import refactored components
+import ConnectedPlatformsList from "../social/ConnectedPlatformsList";
+import MentionsList from "../social/MentionsList";
+import ScheduledPostsList from "../social/ScheduledPostsList";
+
+// Import dialogs
+import ConnectPlatformDialog from "../social/dialogs/ConnectPlatformDialog";
+import PlatformSettingsDialog from "../social/dialogs/PlatformSettingsDialog";
+import ReplyMentionDialog from "../social/dialogs/ReplyMentionDialog";
+import CreatePostDialog from "../social/dialogs/CreatePostDialog";
+import EditPostDialog from "../social/dialogs/EditPostDialog";
 
 interface Mention {
   id: string;
@@ -357,6 +361,26 @@ const SocialPage = () => {
     toast.success("Post updated successfully!");
   };
 
+  const handleCancelPost = (postId: string) => {
+    setScheduledPostsList(scheduledPostsList.filter(p => p.id !== postId));
+    toast.success("Post has been cancelled");
+  };
+
+  // Get the currently edited post
+  const currentEditingPost = editingPostId 
+    ? scheduledPostsList.find(post => post.id === editingPostId) 
+    : null;
+
+  // Get the mention being replied to
+  const currentReplyMention = replyingToMention 
+    ? mentionsList.find(mention => mention.id === replyingToMention) 
+    : null;
+
+  // Get the platform being configured
+  const currentPlatformObj = currentPlatform 
+    ? platforms.find(p => p.id === currentPlatform) 
+    : null;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -379,529 +403,71 @@ const SocialPage = () => {
         </TabsList>
         
         <TabsContent value="connected" className="mt-6">
-          {isLoading ? (
-            <div className="flex justify-center py-12">
-              <RefreshCw size={24} className="animate-spin text-gray-400" />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {platforms.filter(platform => platform.isConnected).map(platform => (
-                <ConnectedPlatform
-                  key={platform.id}
-                  platform={platform}
-                  onSettings={() => handleOpenPlatformSettings(platform.id)}
-                  onDisconnect={() => handleDisconnectPlatform(platform.id)}
-                />
-              ))}
-              
-              <Card className="border-dashed border-2">
-                <CardContent className="p-6 flex flex-col items-center justify-center min-h-[200px]">
-                  <div className="rounded-full bg-gray-100 p-4 mb-4">
-                    <Plus size={24} className="text-gray-500" />
-                  </div>
-                  <h3 className="font-medium text-lg mb-2">Connect New Platform</h3>
-                  <p className="text-sm text-gray-500 text-center mb-4">
-                    Add more social media accounts to manage
-                  </p>
-                  <Button variant="outline" onClick={handleOpenConnectDialog}>
-                    Connect Platform
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+          <ConnectedPlatformsList
+            platforms={platforms}
+            isLoading={isLoading}
+            onOpenPlatformSettings={handleOpenPlatformSettings}
+            onDisconnectPlatform={handleDisconnectPlatform}
+            onOpenConnectDialog={handleOpenConnectDialog}
+          />
         </TabsContent>
         
-        
         <TabsContent value="mentions" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Social Mentions</CardTitle>
-              <CardDescription>Track mentions of your brand across platforms</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {mentionsList.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 mb-2">No new mentions to display</p>
-                    <p className="text-sm text-gray-400">
-                      When people mention you on social media, they'll appear here
-                    </p>
-                  </div>
-                ) : (
-                  mentionsList.map((mention) => (
-                    <div key={mention.id} className="flex border-b pb-4">
-                      <div className="mr-4 flex-shrink-0">
-                        {getPlatformIcon(mention.platform, 24)}
-                      </div>
-                      <div className="flex-grow">
-                        <div className="flex justify-between">
-                          <h4 className="font-medium">{mention.username}</h4>
-                          <span className="text-sm text-gray-500">{mention.timeAgo}</span>
-                        </div>
-                        <p className="text-sm my-1">{mention.content}</p>
-                        <div className="flex gap-2 mt-2">
-                          <Button size="sm" variant="outline" onClick={() => handleOpenReplyDialog(mention.id)}>
-                            Reply
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => handleMarkAsRead(mention.id)}>
-                            Mark as Read
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <MentionsList
+            mentions={mentionsList}
+            onReply={handleOpenReplyDialog}
+            onMarkAsRead={handleMarkAsRead}
+          />
         </TabsContent>
         
         <TabsContent value="schedule" className="mt-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Scheduled Posts</CardTitle>
-                <CardDescription>Your upcoming social media posts</CardDescription>
-              </div>
-              <Button onClick={handleCreatePost}>
-                <Plus size={16} className="mr-2" /> Create Post
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {scheduledPostsList.length === 0 ? (
-                  <p className="text-center text-gray-500 py-4">No scheduled posts</p>
-                ) : (
-                  scheduledPostsList.map((post) => (
-                    <div key={post.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-medium">{post.title}</h3>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline" onClick={() => setEditingPostId(post.id)}>
-                            Edit
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-red-600" onClick={() => {
-                            setScheduledPostsList(scheduledPostsList.filter(p => p.id !== post.id));
-                            toast.success("Post has been cancelled");
-                          }}>
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                      
-                      <p className="text-sm text-gray-600 mt-2">{post.content}</p>
-                      
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {post.platforms?.map((platform: string) => (
-                          <div key={platform} className="flex items-center bg-gray-100 rounded px-2 py-1 text-xs">
-                            {getPlatformIcon(platform, 12)}
-                            <span className="ml-1">{platform}</span>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      <div className="mt-3 text-sm text-gray-500">
-                        Scheduled for: {post.scheduledFor || new Date(post.scheduled_for).toLocaleString()}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <ScheduledPostsList
+            posts={scheduledPostsList}
+            onCreatePost={handleCreatePost}
+            onEditPost={setEditingPostId}
+            onCancelPost={handleCancelPost}
+          />
         </TabsContent>
       </Tabs>
       
-      <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {platforms.find(p => p.id === currentPlatform)?.name} Settings
-            </DialogTitle>
-          </DialogHeader>
-          {currentPlatform && (
-            <>
-              <div className="py-4 space-y-4">
-                <div className="space-y-2">
-                  <Label>Sync Frequency</Label>
-                  <select
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    defaultValue={platforms.find(p => p.id === currentPlatform)?.syncFrequency || "daily"}
-                    onChange={(e) => {
-                      handleSavePlatformSettings(currentPlatform, {
-                        syncFrequency: e.target.value as "realtime" | "hourly" | "daily"
-                      });
-                    }}
-                  >
-                    <option value="realtime">Real-time</option>
-                    <option value="hourly">Hourly</option>
-                    <option value="daily">Daily</option>
-                  </select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Notification Preferences</Label>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="notify-mentions">Mentions & Comments</Label>
-                      <input
-                        id="notify-mentions"
-                        type="checkbox"
-                        className="h-4 w-4"
-                        defaultChecked={platforms.find(p => p.id === currentPlatform)?.notifications?.mentions}
-                        onChange={(e) => {
-                          handleSavePlatformSettings(currentPlatform, {
-                            notifications: {
-                              ...platforms.find(p => p.id === currentPlatform)?.notifications,
-                              mentions: e.target.checked
-                            }
-                          });
-                        }}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="notify-messages">Direct Messages</Label>
-                      <input
-                        id="notify-messages"
-                        type="checkbox"
-                        className="h-4 w-4"
-                        defaultChecked={platforms.find(p => p.id === currentPlatform)?.notifications?.messages}
-                        onChange={(e) => {
-                          handleSavePlatformSettings(currentPlatform, {
-                            notifications: {
-                              ...platforms.find(p => p.id === currentPlatform)?.notifications,
-                              messages: e.target.checked
-                            }
-                          });
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setShowSettingsDialog(false)}>
-                  Close
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Dialogs */}
+      <PlatformSettingsDialog
+        open={showSettingsDialog}
+        onOpenChange={setShowSettingsDialog}
+        platform={currentPlatformObj}
+        onSaveSettings={handleSavePlatformSettings}
+      />
       
-      <Dialog open={showConnectDialog} onOpenChange={setShowConnectDialog}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Connect Platform</DialogTitle>
-          </DialogHeader>
-          <div className="py-6 space-y-4">
-            <p className="text-sm text-gray-600">
-              Select a platform to connect to your social media dashboard:
-            </p>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <Button 
-                variant="outline" 
-                className="flex flex-col items-center justify-center h-24 space-y-2"
-                onClick={() => handleConnectPlatform('facebook')}
-              >
-                <Facebook size={24} className="text-blue-600" />
-                <span>Facebook</span>
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="flex flex-col items-center justify-center h-24 space-y-2"
-                onClick={() => handleConnectPlatform('instagram')}
-              >
-                <Instagram size={24} className="text-pink-600" />
-                <span>Instagram</span>
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="flex flex-col items-center justify-center h-24 space-y-2"
-                onClick={() => handleConnectPlatform('wordpress')}
-              >
-                <FileText size={24} className="text-gray-700" />
-                <span>WordPress Blog</span>
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="flex flex-col items-center justify-center h-24 space-y-2 opacity-60"
-                disabled
-              >
-                <Twitter size={24} className="text-blue-400" />
-                <span className="flex items-center gap-1">
-                  Twitter <AlertCircle size={12} />
-                  <span className="text-xs bg-yellow-100 text-yellow-800 px-1 rounded">Coming Soon</span>
-                </span>
-              </Button>
-            </div>
-            
-            <p className="text-xs text-gray-500 mt-4">
-              Connect your social media accounts to manage them directly from your dashboard.
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowConnectDialog(false)}>
-              Cancel
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConnectPlatformDialog
+        open={showConnectDialog}
+        onOpenChange={setShowConnectDialog}
+        onConnect={handleConnectPlatform}
+      />
       
-      <Dialog open={replyingToMention !== null} onOpenChange={(open) => !open && setReplyingToMention(null)}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Reply to Mention</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="bg-gray-50 p-3 rounded-md">
-              <div className="flex items-center mb-2">
-                <span className="font-medium">
-                  {mentionsList.find(m => m.id === replyingToMention)?.username}
-                </span>
-                <span className="text-sm text-gray-500 ml-2">
-                  {mentionsList.find(m => m.id === replyingToMention)?.timeAgo}
-                </span>
-              </div>
-              <p className="text-sm">
-                {mentionsList.find(m => m.id === replyingToMention)?.content}
-              </p>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="reply">Your Reply</Label>
-              <textarea 
-                id="reply" 
-                placeholder="Write your reply..." 
-                value={replyContent}
-                onChange={(e) => setReplyContent(e.target.value)}
-                rows={3}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setReplyingToMention(null)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSubmitReply}>
-              Send Reply
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ReplyMentionDialog
+        open={replyingToMention !== null}
+        onOpenChange={(open) => !open && setReplyingToMention(null)}
+        mention={currentReplyMention}
+        replyContent={replyContent}
+        onReplyContentChange={setReplyContent}
+        onSubmitReply={handleSubmitReply}
+      />
       
-      <Dialog open={showCreatePostDialog} onOpenChange={setShowCreatePostDialog}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Create New Post</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmitNewPost}>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="post-title">Post Title</Label>
-                <Input id="post-title" name="post-title" placeholder="Enter a title for your post" required />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="post-content">Content</Label>
-                <textarea 
-                  id="post-content" 
-                  name="post-content"
-                  placeholder="Write your post content here..." 
-                  rows={4}
-                  required
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Select Platforms</Label>
-                <div className="flex flex-wrap gap-4 py-2">
-                  {platforms.filter(platform => platform.isConnected).map(platform => (
-                    <div key={platform.id} className="flex items-center space-x-2">
-                      <input 
-                        type="checkbox" 
-                        id={`platform-${platform.id}`} 
-                        name={`platform-${platform.id}`} 
-                        className="rounded" 
-                        defaultChecked
-                      />
-                      <Label htmlFor={`platform-${platform.id}`}>{platform.name}</Label>
-                    </div>
-                  ))}
-                </div>
-                {platforms.filter(platform => platform.isConnected).length === 0 && (
-                  <p className="text-sm text-yellow-600">
-                    No platforms connected. Please connect at least one platform to post content.
-                  </p>
-                )}
-              </div>
-              
-              <div className="flex items-center space-x-2 py-2">
-                <input 
-                  type="checkbox" 
-                  id="post-immediate" 
-                  name="post-immediate" 
-                  className="rounded" 
-                />
-                <Label htmlFor="post-immediate">Post immediately</Label>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="schedule-date">Schedule Date</Label>
-                <Input 
-                  id="schedule-date" 
-                  name="schedule-date" 
-                  type="datetime-local" 
-                  defaultValue={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 16)}
-                  required
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowCreatePostDialog(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={platforms.filter(platform => platform.isConnected).length === 0}>
-                {platforms.filter(platform => platform.isConnected).length === 0 ? 
-                  'No Platforms Connected' : 'Schedule Post'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <CreatePostDialog
+        open={showCreatePostDialog}
+        onOpenChange={setShowCreatePostDialog}
+        platforms={platforms}
+        onSubmit={handleSubmitNewPost}
+      />
       
-      {editingPostId !== null && (
-        <Dialog open={true} onOpenChange={() => setEditingPostId(null)}>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>Edit Scheduled Post</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleUpdatePost}>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-post-title">Post Title</Label>
-                  <Input 
-                    id="edit-post-title"
-                    name="edit-post-title"
-                    defaultValue={scheduledPostsList.find(p => p.id === editingPostId)?.title} 
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="edit-post-content">Content</Label>
-                  <textarea 
-                    id="edit-post-content" 
-                    name="edit-post-content"
-                    defaultValue={scheduledPostsList.find(p => p.id === editingPostId)?.content}
-                    rows={4}
-                    required
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="edit-schedule-date">Schedule Date</Label>
-                  <Input 
-                    id="edit-schedule-date"
-                    name="edit-schedule-date"
-                    type="datetime-local"
-                    defaultValue={new Date().toISOString().slice(0, 16)}
-                    required
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setEditingPostId(null)}>
-                  Cancel
-                </Button>
-                <Button type="submit">
-                  Update Post
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      )}
+      <EditPostDialog
+        open={editingPostId !== null}
+        onOpenChange={() => setEditingPostId(null)}
+        post={currentEditingPost}
+        onSubmit={handleUpdatePost}
+      />
     </div>
   );
-};
-
-interface ConnectedPlatformProps {
-  platform: any;
-  onSettings: () => void;
-  onDisconnect: () => void;
-}
-
-const ConnectedPlatform = ({ platform, onSettings, onDisconnect }: ConnectedPlatformProps) => {
-  return (
-    <Card>
-      <CardContent className="p-6">
-        <div className="flex items-center mb-4">
-          <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4">
-            {getPlatformIcon(platform.id, 24)}
-          </div>
-          <div>
-            <h3 className="font-medium text-lg">{platform.name}</h3>
-            <div className="flex items-center text-sm text-green-600">
-              <span>Connected</span>
-            </div>
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Account</span>
-            <span className="font-medium">{platform.accountName}</span>
-          </div>
-          {platform.lastSync && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Last Synced</span>
-              <span>{new Date(platform.lastSync).toLocaleString()}</span>
-            </div>
-          )}
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Sync Frequency</span>
-            <span>{platform.syncFrequency || "Daily"}</span>
-          </div>
-        </div>
-        
-        <div className="mt-4 pt-4 border-t flex justify-between">
-          <Button variant="outline" size="sm" onClick={onSettings}>
-            Settings
-          </Button>
-          <Button variant="outline" size="sm" className="text-red-600" onClick={onDisconnect}>
-            Disconnect
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-// Helper function to render platform icons
-const getPlatformIcon = (platform: string, size: number = 16) => {
-  switch (platform.toLowerCase()) {
-    case 'facebook':
-      return <Facebook size={size} className="text-blue-600" />;
-    case 'instagram':
-      return <Instagram size={size} className="text-pink-600" />;
-    case 'twitter':
-      return <Twitter size={size} className="text-blue-400" />;
-    case 'linkedin':
-      return <Linkedin size={size} className="text-blue-800" />;
-    case 'wordpress':
-      return <FileText size={size} className="text-gray-700" />;
-    default:
-      return <Link2 size={size} className="text-gray-500" />;
-  }
 };
 
 export default SocialPage;
