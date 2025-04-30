@@ -35,6 +35,10 @@ export default {
     const { connectWithOAuth } = await import('./authentication');
     return connectWithOAuth(platform);
   },
+  connectWordPressSelfHosted: async (siteUrl: string, username: string, password: string) => {
+    const { connectWordPressSelfHosted } = await import('./authentication');
+    return connectWordPressSelfHosted(siteUrl, username, password);
+  },
   
   // Post management
   publishToSocialMedia: async (platformId: string, content: string, title?: string) => {
@@ -58,5 +62,13 @@ export default {
   getPlatformName: (platformId: string) => {
     const { getPlatformName } = require('./helpers');
     return getPlatformName(platformId);
+  },
+  getPlatformDocUrl: (platformId: string) => {
+    const { getPlatformDocUrl } = require('./helpers');
+    return getPlatformDocUrl(platformId);
+  },
+  getPlatformOAuthConfig: (platformId: string) => {
+    const { getPlatformOAuthConfig } = require('./helpers');
+    return getPlatformOAuthConfig(platformId);
   }
 };

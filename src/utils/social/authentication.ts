@@ -1,8 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { getCurrentUserId } from './helpers';
-import { getPlatformName } from './helpers';
+import { getCurrentUserId, getPlatformName } from './helpers';
 
 /**
  * Handle OAuth callback for various platforms
@@ -96,6 +95,72 @@ export const connectWithOAuth = async (platform: string): Promise<void> => {
   }
   // Add more platforms as needed
   else {
-    toast.error(`Connection to ${platform} is not implemented`);
+    toast.error(`Connection to ${platform} is not yet implemented`);
   }
 };
+
+/**
+ * Connect to WordPress self-hosted site
+ * @param siteUrl WordPress site URL
+ * @param username WordPress username
+ * @param password Application password
+ */
+export const connectWordPressSelfHosted = async (siteUrl: string, username: string, password: string): Promise<boolean> => {
+  try {
+    // Get current user
+    const userId = await getCurrentUserId();
+    
+    if (!userId) {
+      toast.error('You must be logged in to connect platforms');
+      return false;
+    }
+    
+    // Normalize site URL
+    const normalizedUrl = siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`;
+    
+    // Test connection to WordPress API
+    const response = await fetch(`${normalizedUrl}wp-json/wp/v2/users/me`, {
+      headers: {
+        'Authorization': `Basic ${btoa(`${username}:${password}`)}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to connect to WordPress site: ${response.statusText}`);
+    }
+    
+    const userData = await response.json();
+    
+    // Insert or update platform in database
+    const { error } = await supabase
+      .from('social_platforms')
+      .upsert({
+        user_id: userId,
+        platform_id: 'wordpress_self',
+        name: 'WordPress (Self-hosted)',
+        account_name: userData.name || username,
+        access_token: btoa(`${username}:${password}`), // Base64 encode credentials
+        site_url: normalizedUrl,
+        is_connected: true,
+        icon: 'wordpress',
+        last_sync: new Date().toISOString(),
+        platform_user_id: userData.id.toString(),
+        sync_frequency: 'daily',
+        notifications: { mentions: false, messages: false }
+      });
+      
+    if (error) throw error;
+    
+    toast.success('Successfully connected to WordPress site');
+    return true;
+  } catch (error) {
+    console.error('Error connecting to WordPress:', error);
+    toast.error(`Failed to connect to WordPress: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    return false;
+  }
+};
+
+// Export the platform connection function from platforms.ts
+// to make it available for the ConnectPlatformDialog
+export { connectPlatform } from './platforms';
