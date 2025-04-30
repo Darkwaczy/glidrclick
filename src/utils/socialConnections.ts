@@ -59,7 +59,8 @@ export const schedulePost = async (
 
 export const connectPlatform = async (platformType: string, authData: any) => {
   try {
-    const userId = supabase.auth.getUser().then(response => response.data.user?.id);
+    const userResponse = await supabase.auth.getUser();
+    const userId = userResponse.data.user?.id;
     
     if (!userId) {
       console.error("No user ID found");
@@ -71,7 +72,7 @@ export const connectPlatform = async (platformType: string, authData: any) => {
       .from('social_platforms')
       .insert({
         platform_id: platformType,
-        user_id: await userId,
+        user_id: userId,
         name: platformType.charAt(0).toUpperCase() + platformType.slice(1),
         icon: platformType.toLowerCase(),
         access_token: authData.accessToken,
