@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Facebook, Instagram, Twitter, Linkedin, FileText, Link2 } from "lucide-react";
+import { Facebook, Instagram, X, Linkedin, FileText, Link2 } from "lucide-react";
 
 // Helper function to render platform icons
 export const getPlatformIcon = (platform: string, size: number = 16) => {
@@ -10,7 +10,7 @@ export const getPlatformIcon = (platform: string, size: number = 16) => {
     case 'instagram':
       return <Instagram size={size} className="text-pink-600" />;
     case 'twitter':
-      return <Twitter size={size} className="text-blue-400" />;
+      return <X size={size} className="text-blue-400" />;
     case 'linkedin':
       return <Linkedin size={size} className="text-blue-800" />;
     case 'wordpress':

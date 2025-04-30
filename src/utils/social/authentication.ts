@@ -1,26 +1,26 @@
-
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getPlatformName } from "./helpers";
 
 export const connectPlatform = async (platformId: string): Promise<void> => {
   try {
-    // Configure OAuth providers based on platform
-    const authProviders: Record<string, string> = {
-      facebook: 'facebook',
-      instagram: 'instagram',
-      linkedin: 'linkedin',
-      wordpress: 'github' // Using GitHub as a proxy for WordPress OAuth
+    // Configure OAuth providers - restrict to only supported providers
+    const supportedAuthProviders: Record<string, string> = {
+      facebook: 'facebook'
+      // Note: Other providers like 'instagram' and 'wordpress' are commented out
+      // because they aren't enabled in the Supabase project yet
     };
     
-    if (!authProviders[platformId]) {
-      toast.error(`${getPlatformName(platformId)} authentication is not available yet`);
+    if (!supportedAuthProviders[platformId]) {
+      toast.error(`${getPlatformName(platformId)} authentication is not available yet`, {
+        description: "This provider hasn't been enabled in the project settings."
+      });
       return;
     }
     
     // Create a popup window for the OAuth flow
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: authProviders[platformId] as any,
+      provider: supportedAuthProviders[platformId] as any,
       options: {
         redirectTo: `${window.location.origin}/dashboard/social?connected=${platformId}`,
         skipBrowserRedirect: false
@@ -29,7 +29,9 @@ export const connectPlatform = async (platformId: string): Promise<void> => {
     
     if (error) {
       console.error('Error connecting platform:', error);
-      toast.error(`Failed to connect to ${getPlatformName(platformId)}`);
+      toast.error(`Failed to connect to ${getPlatformName(platformId)}`, {
+        description: error.message
+      });
     } else {
       toast.success(`Connecting to ${getPlatformName(platformId)}...`);
     }
@@ -66,4 +68,3 @@ export const disconnectPlatform = async (platformId: string): Promise<boolean> =
     return false;
   }
 };
-

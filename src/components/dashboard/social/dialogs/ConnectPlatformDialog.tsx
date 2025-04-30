@@ -2,7 +2,8 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Facebook, Instagram, Twitter, FileText, AlertCircle } from "lucide-react";
+import { Facebook, Instagram, X, FileText, AlertCircle } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ConnectPlatformDialogProps {
   open: boolean;
@@ -11,6 +12,18 @@ interface ConnectPlatformDialogProps {
 }
 
 const ConnectPlatformDialog = ({ open, onOpenChange, onConnect }: ConnectPlatformDialogProps) => {
+  // Define which platforms are actually enabled and available
+  const enabledPlatforms = {
+    facebook: true,
+    instagram: false,
+    wordpress: false,
+    twitter: false
+  };
+
+  const handleConnect = (platformId: string) => {
+    onConnect(platformId);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -26,46 +39,85 @@ const ConnectPlatformDialog = ({ open, onOpenChange, onConnect }: ConnectPlatfor
             <Button 
               variant="outline" 
               className="flex flex-col items-center justify-center h-24 space-y-2"
-              onClick={() => onConnect('facebook')}
+              onClick={() => handleConnect('facebook')}
             >
               <Facebook size={24} className="text-blue-600" />
               <span>Facebook</span>
             </Button>
             
-            <Button 
-              variant="outline" 
-              className="flex flex-col items-center justify-center h-24 space-y-2"
-              onClick={() => onConnect('instagram')}
-            >
-              <Instagram size={24} className="text-pink-600" />
-              <span>Instagram</span>
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Button 
+                      variant="outline" 
+                      className="flex flex-col items-center justify-center h-24 space-y-2 opacity-60"
+                      disabled
+                    >
+                      <Instagram size={24} className="text-pink-600" />
+                      <span className="flex items-center gap-1">
+                        Instagram <AlertCircle size={12} />
+                      </span>
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Instagram provider is not enabled in this project yet</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             
-            <Button 
-              variant="outline" 
-              className="flex flex-col items-center justify-center h-24 space-y-2"
-              onClick={() => onConnect('wordpress')}
-            >
-              <FileText size={24} className="text-gray-700" />
-              <span>WordPress Blog</span>
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Button 
+                      variant="outline" 
+                      className="flex flex-col items-center justify-center h-24 space-y-2 opacity-60"
+                      disabled
+                    >
+                      <FileText size={24} className="text-gray-700" />
+                      <span className="flex items-center gap-1">
+                        WordPress <AlertCircle size={12} />
+                      </span>
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>WordPress provider is not enabled in this project yet</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             
-            <Button 
-              variant="outline" 
-              className="flex flex-col items-center justify-center h-24 space-y-2 opacity-60"
-              disabled
-            >
-              <Twitter size={24} className="text-blue-400" />
-              <span className="flex items-center gap-1">
-                Twitter <AlertCircle size={12} />
-                <span className="text-xs bg-yellow-100 text-yellow-800 px-1 rounded">Coming Soon</span>
-              </span>
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Button 
+                      variant="outline" 
+                      className="flex flex-col items-center justify-center h-24 space-y-2 opacity-60"
+                      disabled
+                    >
+                      <X size={24} className="text-gray-700" />
+                      <span className="flex items-center gap-1">
+                        Twitter <AlertCircle size={12} />
+                      </span>
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Coming soon</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           
-          <p className="text-xs text-gray-500 mt-4">
-            Connect your social media accounts to manage them directly from your dashboard.
-          </p>
+          <div className="p-4 border border-amber-200 bg-amber-50 rounded-md mt-4">
+            <p className="text-xs text-amber-800">
+              <strong>Note:</strong> Currently, only Facebook authentication is enabled for this project. 
+              To enable other providers, you would need to configure them in your Supabase authentication settings.
+            </p>
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
