@@ -43,22 +43,33 @@ export const getSocialPlatforms = async (): Promise<SocialPlatform[]> => {
     
     if (socialPlatforms && socialPlatforms.length > 0) {
       // Transform the data to match our SocialPlatform type
-      return socialPlatforms.map(platform => ({
-        id: platform.platform_id,
-        name: platform.name,
-        icon: platform.icon as "facebook" | "twitter" | "instagram" | "linkedin" | "wordpress",
-        isConnected: platform.is_connected || false,
-        accountName: platform.account_name,
-        lastSync: platform.last_sync,
-        syncFrequency: platform.sync_frequency as "realtime" | "hourly" | "daily",
-        notifications: platform.notifications ? {
-          mentions: platform.notifications.mentions === true,
-          messages: platform.notifications.messages === true
-        } : {
+      return socialPlatforms.map(platform => {
+        // Convert notifications to the correct format
+        let notificationsObj = {
           mentions: true,
           messages: true
+        };
+        
+        // Check if notifications exists and is an object
+        if (platform.notifications && typeof platform.notifications === 'object' && !Array.isArray(platform.notifications)) {
+          const notifs = platform.notifications as Record<string, any>;
+          notificationsObj = {
+            mentions: Boolean(notifs.mentions),
+            messages: Boolean(notifs.messages)
+          };
         }
-      }));
+        
+        return {
+          id: platform.platform_id,
+          name: platform.name,
+          icon: platform.icon as "facebook" | "twitter" | "instagram" | "linkedin" | "wordpress",
+          isConnected: platform.is_connected || false,
+          accountName: platform.account_name,
+          lastSync: platform.last_sync,
+          syncFrequency: platform.sync_frequency as "realtime" | "hourly" | "daily",
+          notifications: notificationsObj
+        };
+      });
     }
     
     // If no platforms are returned, return default platforms list
@@ -337,4 +348,3 @@ export const getPlatformName = (platformId: string): string => {
   
   return platforms[platformId] || platformId;
 };
-
