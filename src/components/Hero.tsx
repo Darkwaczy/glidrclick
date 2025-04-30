@@ -19,7 +19,12 @@ const Hero = () => {
           </h1>
           
           <div className="text-xl md:text-2xl text-gray-600 mb-8 h-20">
-            <TypeAnimation />
+            <TypeAnimation texts={[
+              "Streamline your content marketing workflow",
+              "Schedule posts across multiple platforms",
+              "Generate AI-powered content ideas",
+              "Analyze performance with detailed metrics"
+            ]} />
           </div>
           
           <div className="flex flex-col md:flex-row gap-4 justify-center">
