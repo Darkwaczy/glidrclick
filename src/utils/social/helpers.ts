@@ -22,8 +22,8 @@ export const getPlatformName = (platformId: string): string => {
  * @returns Whether the platform is supported
  */
 export const isPlatformSupported = (platformId: string): boolean => {
-  // Currently, only Facebook is configured in the Supabase project
-  const supportedPlatforms = ['facebook'];
+  // Currently, no platform is properly configured in the Supabase project
+  const supportedPlatforms: string[] = [];
   return supportedPlatforms.includes(platformId);
 };
 
@@ -34,7 +34,7 @@ export const isPlatformSupported = (platformId: string): boolean => {
  */
 export const getPlatformStatus = (platformId: string) => {
   const statusMap: Record<string, { status: 'available' | 'coming-soon' | 'not-configured', message: string }> = {
-    facebook: { status: 'available', message: 'Ready to connect' },
+    facebook: { status: 'not-configured', message: 'Facebook provider is not enabled in this project' },
     instagram: { status: 'not-configured', message: 'Instagram provider is not enabled in this project' },
     wordpress: { status: 'not-configured', message: 'WordPress provider is not enabled in this project' },
     twitter: { status: 'coming-soon', message: 'Coming soon' },

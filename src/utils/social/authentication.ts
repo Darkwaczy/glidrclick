@@ -1,26 +1,32 @@
+
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { getPlatformName } from "./helpers";
+import { getPlatformName, getPlatformStatus } from "./helpers";
 
 export const connectPlatform = async (platformId: string): Promise<void> => {
   try {
-    // Configure OAuth providers - restrict to only supported providers
-    const supportedAuthProviders: Record<string, string> = {
-      facebook: 'facebook'
-      // Note: Other providers like 'instagram' and 'wordpress' are commented out
-      // because they aren't enabled in the Supabase project yet
-    };
+    // Get platform status
+    const platformStatus = getPlatformStatus(platformId);
     
-    if (!supportedAuthProviders[platformId]) {
-      toast.error(`${getPlatformName(platformId)} authentication is not available yet`, {
-        description: "This provider hasn't been enabled in the project settings."
+    // Check if the platform is configured
+    if (platformStatus.status !== 'available') {
+      toast.error(`${getPlatformName(platformId)} authentication is not available`, {
+        description: platformStatus.message
       });
+      
+      // If it's Facebook or Instagram, show a more detailed message
+      if (platformId === 'facebook' || platformId === 'instagram') {
+        toast.info("Authentication provider needs configuration", {
+          description: "This provider needs to be enabled in your Supabase project settings."
+        });
+      }
+      
       return;
     }
     
-    // Create a popup window for the OAuth flow
+    // Create a popup window for the OAuth flow (this won't execute unless we add platforms to supportedAuthProviders)
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: supportedAuthProviders[platformId] as any,
+      provider: platformId as any,
       options: {
         redirectTo: `${window.location.origin}/dashboard/social?connected=${platformId}`,
         skipBrowserRedirect: false
