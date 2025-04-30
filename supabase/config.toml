@@ -1,1 +1,17 @@
+
 project_id = "jbcurgdwbvjsgbftjejg"
+
+[functions.connect-wordpress]
+verify_jwt = true
+
+[functions.connect-wordpress-self-hosted]
+verify_jwt = true
+
+[functions.oauth-facebook]
+verify_jwt = true
+
+[functions.oauth-instagram]
+verify_jwt = true
+
+[functions.oauth-wordpress]
+verify_jwt = true

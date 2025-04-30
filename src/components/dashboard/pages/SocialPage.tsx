@@ -19,6 +19,9 @@ import {
   getPlatformName
 } from "@/utils/social";
 
+// Import authentication utilities
+import { handleOAuthCallback } from "@/utils/social/authentication";
+
 // Import refactored components
 import ConnectedPlatformsList from "../social/ConnectedPlatformsList";
 import MentionsList from "../social/MentionsList";
@@ -30,6 +33,7 @@ import PlatformSettingsDialog from "../social/dialogs/PlatformSettingsDialog";
 import ReplyMentionDialog from "../social/dialogs/ReplyMentionDialog";
 import CreatePostDialog from "../social/dialogs/CreatePostDialog";
 import EditPostDialog from "../social/dialogs/EditPostDialog";
+import ConnectWordPressDialog from "../social/dialogs/ConnectWordPressDialog";
 
 interface Mention {
   id: string;
@@ -44,6 +48,7 @@ const SocialPage = () => {
   const [platforms, setPlatforms] = useState<any[]>([]);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showConnectDialog, setShowConnectDialog] = useState(false);
+  const [showWordPressDialog, setShowWordPressDialog] = useState(false);
   const [currentPlatform, setCurrentPlatform] = useState<string | null>(null);
   const [replyingToMention, setReplyingToMention] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
@@ -52,24 +57,56 @@ const SocialPage = () => {
   const [mentionsList, setMentionsList] = useState<Mention[]>([]);
   const [scheduledPostsList, setScheduledPostsList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [processingOAuth, setProcessingOAuth] = useState(false);
+
+  useEffect(() => {
+    // Add event listener for showing WordPress dialog
+    window.addEventListener('show-wordpress-dialog', () => {
+      setShowWordPressDialog(true);
+    });
+
+    return () => {
+      window.removeEventListener('show-wordpress-dialog', () => {
+        setShowWordPressDialog(true);
+      });
+    };
+  }, []);
 
   useEffect(() => {
     loadPlatforms();
     loadScheduledPosts();
     loadMentions();
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const connectedPlatform = urlParams.get('connected');
-    const error = urlParams.get('error');
+    // Process OAuth callback if present in URL
+    const processOAuthCallback = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const connectedPlatform = urlParams.get('connected');
+      const code = urlParams.get('code');
+      const error = urlParams.get('error');
+      
+      if (connectedPlatform && code) {
+        setProcessingOAuth(true);
+        try {
+          const success = await handleOAuthCallback(connectedPlatform, code);
+          if (success) {
+            toast.success(`Connected to ${getPlatformName(connectedPlatform)} successfully!`);
+            await loadPlatforms();
+          }
+        } catch (err) {
+          console.error("OAuth callback error:", err);
+          toast.error(`Failed to complete ${getPlatformName(connectedPlatform)} connection`);
+        } finally {
+          setProcessingOAuth(false);
+          // Clean up URL parameters
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      } else if (error) {
+        toast.error(`Connection failed: ${error}`);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    };
     
-    if (connectedPlatform) {
-      savePlatformConnection(connectedPlatform);
-      toast.success(`Connected to ${getPlatformName(connectedPlatform)} successfully!`);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } else if (error) {
-      toast.error(`Connection failed: ${error}`);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
+    processOAuthCallback();
   }, []);
 
   const loadMentions = async () => {
@@ -389,11 +426,17 @@ const SocialPage = () => {
           <p className="text-gray-600">Connect and manage your social media accounts</p>
         </div>
         
-        <Button onClick={handleRefreshConnections} disabled={isRefreshing || isLoading}>
-          <RefreshCw size={16} className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} /> 
-          {isRefreshing ? 'Refreshing...' : 'Refresh Connections'}
+        <Button onClick={handleRefreshConnections} disabled={isRefreshing || isLoading || processingOAuth}>
+          <RefreshCw size={16} className={`mr-2 ${isRefreshing || processingOAuth ? 'animate-spin' : ''}`} /> 
+          {processingOAuth ? 'Processing...' : isRefreshing ? 'Refreshing...' : 'Refresh Connections'}
         </Button>
       </div>
+      
+      {processingOAuth && (
+        <div className="p-4 border border-blue-100 rounded bg-blue-50 text-blue-800 text-sm">
+          Processing your platform connection. Please wait...
+        </div>
+      )}
       
       <Tabs defaultValue="connected">
         <TabsList>
@@ -465,6 +508,12 @@ const SocialPage = () => {
         onOpenChange={() => setEditingPostId(null)}
         post={currentEditingPost}
         onSubmit={handleUpdatePost}
+      />
+      
+      {/* New WordPress Self-Hosted Dialog */}
+      <ConnectWordPressDialog
+        open={showWordPressDialog}
+        onOpenChange={setShowWordPressDialog}
       />
     </div>
   );

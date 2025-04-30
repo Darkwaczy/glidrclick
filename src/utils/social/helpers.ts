@@ -43,3 +43,20 @@ export const getPlatformStatus = (platformId: string) => {
   
   return statusMap[platformId] || { status: 'not-configured', message: 'Not configured' };
 };
+
+/**
+ * Get URL for platform documentation
+ * @param platformId The ID of the platform
+ * @returns URL to documentation for platform setup
+ */
+export const getPlatformDocUrl = (platformId: string): string => {
+  const urlMap: Record<string, string> = {
+    facebook: 'https://developers.facebook.com/docs/pages/',
+    instagram: 'https://developers.facebook.com/docs/instagram-api/',
+    wordpress: 'https://developer.wordpress.org/rest-api/',
+    twitter: 'https://developer.twitter.com/en/docs/twitter-api',
+  };
+  
+  return urlMap[platformId] || '#';
+};
+
