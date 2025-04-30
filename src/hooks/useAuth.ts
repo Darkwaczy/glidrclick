@@ -1,10 +1,9 @@
-
 import { useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "sonner";
-import { getPlatformName } from '@/utils/socialConnections';
+import { getPlatformName } from '@/utils/social/helpers';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -21,16 +20,17 @@ export const useAuth = () => {
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Handle social auth redirects
-        if (event === 'SIGNED_IN' && window.location.href.includes('dashboard/social')) {
+        // Handle social auth redirects - moved to a separate function to avoid
+        // running Supabase calls inside the auth state change handler
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           const urlParams = new URLSearchParams(window.location.search);
-          const connectedPlatform = urlParams.get('platform');
+          const connectedPlatform = urlParams.get('connected');
           
           if (connectedPlatform && session?.user?.id) {
             // Save the platform connection in a separate call to avoid
             // running Supabase calls inside the auth state change handler
             setTimeout(() => {
-              saveSocialPlatformConnection(connectedPlatform, session.user.id);
+              saveSocialPlatformConnection(connectedPlatform, session.user!.id);
             }, 0);
           }
         }
@@ -43,6 +43,16 @@ export const useAuth = () => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // Handle URL parameters for social connections on initial load
+      const urlParams = new URLSearchParams(window.location.search);
+      const connectedPlatform = urlParams.get('connected');
+      
+      if (connectedPlatform && session?.user?.id) {
+        setTimeout(() => {
+          saveSocialPlatformConnection(connectedPlatform, session.user!.id);
+        }, 0);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -52,6 +62,7 @@ export const useAuth = () => {
     if (!userId) return;
     
     try {
+      console.log(`Saving connection for platform: ${platformId}, user: ${userId}`);
       // Check if the platform is already connected
       const { data: existingPlatforms } = await supabase
         .from('social_platforms')
@@ -60,6 +71,7 @@ export const useAuth = () => {
         .eq('platform_id', platformId);
       
       if (existingPlatforms && existingPlatforms.length > 0) {
+        console.log('Updating existing platform connection');
         // Update the existing platform connection
         await supabase
           .from('social_platforms')
@@ -70,6 +82,7 @@ export const useAuth = () => {
           .eq('user_id', userId)
           .eq('platform_id', platformId);
       } else {
+        console.log('Creating new platform connection');
         // Create a new platform connection
         await supabase
           .from('social_platforms')
@@ -87,8 +100,14 @@ export const useAuth = () => {
       }
       
       toast.success(`Connected to ${getPlatformName(platformId)} successfully!`);
+      
+      // Clean up the URL parameters
+      const url = new URL(window.location.href);
+      url.searchParams.delete('connected');
+      window.history.replaceState({}, document.title, url.toString());
     } catch (error) {
       console.error('Error saving social platform connection:', error);
+      toast.error(`Failed to complete ${getPlatformName(platformId)} connection`);
     }
   };
 

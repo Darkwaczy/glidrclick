@@ -3,36 +3,40 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getPlatformName } from "./helpers";
 
-export const connectPlatform = (platformId: string): void => {
-  // Configure OAuth providers based on platform
-  const authProviders: Record<string, string> = {
-    facebook: 'facebook',
-    instagram: 'instagram',
-    wordpress: 'github' // Using GitHub as a proxy for WordPress OAuth
-  };
-  
-  if (!authProviders[platformId]) {
-    toast.error(`${getPlatformName(platformId)} authentication is not available yet`);
-    return;
-  }
-
-  // Use Supabase OAuth for authentication
-  supabase.auth.signInWithOAuth({
-    provider: authProviders[platformId] as any,
-    options: {
-      redirectTo: `${window.location.origin}/dashboard/social?connected=${platformId}`,
-      // Store the social platform connection in the session
-      queryParams: {
-        platform: platformId
-      }
+export const connectPlatform = async (platformId: string): Promise<void> => {
+  try {
+    // Configure OAuth providers based on platform
+    const authProviders: Record<string, string> = {
+      facebook: 'facebook',
+      instagram: 'instagram',
+      linkedin: 'linkedin',
+      wordpress: 'github' // Using GitHub as a proxy for WordPress OAuth
+    };
+    
+    if (!authProviders[platformId]) {
+      toast.error(`${getPlatformName(platformId)} authentication is not available yet`);
+      return;
     }
-  })
-  .then(({ error }) => {
+    
+    // Create a popup window for the OAuth flow
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: authProviders[platformId] as any,
+      options: {
+        redirectTo: `${window.location.origin}/dashboard/social?connected=${platformId}`,
+        skipBrowserRedirect: false
+      }
+    });
+    
     if (error) {
       console.error('Error connecting platform:', error);
-      toast.error(`Failed to connect to ${platformId}`);
+      toast.error(`Failed to connect to ${getPlatformName(platformId)}`);
+    } else {
+      toast.success(`Connecting to ${getPlatformName(platformId)}...`);
     }
-  });
+  } catch (err) {
+    console.error('Error in connectPlatform:', err);
+    toast.error(`Something went wrong while connecting to ${getPlatformName(platformId)}`);
+  }
 };
 
 export const disconnectPlatform = async (platformId: string): Promise<boolean> => {
@@ -62,3 +66,4 @@ export const disconnectPlatform = async (platformId: string): Promise<boolean> =
     return false;
   }
 };
+

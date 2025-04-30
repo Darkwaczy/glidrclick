@@ -201,11 +201,8 @@ const SocialPage = () => {
   };
 
   const handleConnectPlatform = (platformId: string) => {
-    connectPlatform(platformId);
     setShowConnectDialog(false);
-    setTimeout(() => {
-      loadPlatforms();
-    }, 1000);
+    connectPlatform(platformId);
   };
 
   const handleDisconnectPlatform = async (platformId: string) => {
@@ -414,6 +411,7 @@ const SocialPage = () => {
           )}
         </TabsContent>
         
+        
         <TabsContent value="mentions" className="mt-6">
           <Card>
             <CardHeader>
@@ -423,7 +421,12 @@ const SocialPage = () => {
             <CardContent>
               <div className="space-y-4">
                 {mentionsList.length === 0 ? (
-                  <p className="text-center text-gray-500 py-4">No new mentions to display</p>
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 mb-2">No new mentions to display</p>
+                    <p className="text-sm text-gray-400">
+                      When people mention you on social media, they'll appear here
+                    </p>
+                  </div>
                 ) : (
                   mentionsList.map((mention) => (
                     <div key={mention.id} className="flex border-b pb-4">
@@ -858,46 +861,3 @@ const ConnectedPlatform = ({ platform, onSettings, onDisconnect }: ConnectedPlat
             <span className="font-medium">{platform.accountName}</span>
           </div>
           {platform.lastSync && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Last synced</span>
-              <span>{new Date(platform.lastSync).toLocaleString()}</span>
-            </div>
-          )}
-        </div>
-        
-        <div className="flex justify-between mt-6">
-          <Button variant="outline" size="sm" onClick={onSettings}>
-            Settings
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="text-red-600"
-            onClick={onDisconnect}
-          >
-            Disconnect
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-const getPlatformIcon = (platform: string, size: number = 16) => {
-  switch (platform.toLowerCase()) {
-    case 'facebook':
-      return <Facebook size={size} className="text-blue-600" />;
-    case 'twitter':
-      return <Twitter size={size} className="text-blue-400" />;
-    case 'instagram':
-      return <Instagram size={size} className="text-pink-600" />;
-    case 'linkedin':
-      return <Linkedin size={size} className="text-blue-700" />;
-    case 'wordpress':
-      return <FileText size={size} className="text-gray-700" />;
-    default:
-      return <Link2 size={size} />;
-  }
-};
-
-export default SocialPage;
