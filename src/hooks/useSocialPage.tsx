@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -318,6 +317,12 @@ export const useSocialPage = () => {
   const handleSubmitNewPost = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // If this is a close event, just close the dialog and return
+    if ((e as any).type === 'close') {
+      setShowCreatePostDialog(false);
+      return;
+    }
+    
     const form = e.target as HTMLFormElement;
     const title = (form.elements.namedItem("post-title") as HTMLInputElement).value;
     const content = (form.elements.namedItem("post-content") as HTMLTextAreaElement).value;
@@ -423,6 +428,7 @@ export const useSocialPage = () => {
     setReplyingToMention,
     setReplyContent,
     setEditingPostId,
+    setShowCreatePostDialog,
     handleRefreshConnections,
     handleConnectPlatform,
     handleDisconnectPlatform,
