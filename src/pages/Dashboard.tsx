@@ -51,14 +51,14 @@ const Dashboard = () => {
     navigate("/dashboard/new-post");
   };
   
-  const editPost = (id: number) => {
+  const editPost = (id: string | number) => {
     const stringId = String(id);
     setEditingPostId(stringId);
     navigate(`/dashboard/edit-post/${stringId}`);
     toast.info(`Editing post ${stringId}`);
   };
   
-  const cancelPost = (id: number) => {
+  const cancelPost = (id: string | number) => {
     const stringId = String(id);
     if (window.confirm(`Are you sure you want to cancel post ${stringId}?`)) {
       deletePost(stringId);
@@ -70,12 +70,12 @@ const Dashboard = () => {
     navigate("/dashboard/schedule");
   };
   
-  const viewStats = (id: number) => {
+  const viewStats = (id: string | number) => {
     const stringId = String(id);
     navigate(`/dashboard/analytics?postId=${stringId}`);
   };
   
-  const republishPost = (id: number) => {
+  const republishPost = (id: string | number) => {
     const stringId = String(id);
     updatePost({ 
       id: stringId, 
