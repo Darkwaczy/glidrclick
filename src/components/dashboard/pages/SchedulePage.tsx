@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -7,33 +8,83 @@ import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, CalendarDays, ListFilter, Calendar as CalendarIcon, Edit, X } from "lucide-react";
-import { addMonths, subMonths, format } from "date-fns";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Edit, X } from "lucide-react";
+import { addMonths, subMonths, format, isSameDay } from "date-fns";
+import { getScheduledPosts } from "@/utils/social/posts";
+import { supabase } from "@/integrations/supabase/client";
 
 const SchedulePage = () => {
   const [activeView, setActiveView] = useState<"calendar" | "list">("calendar");
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [editPostId, setEditPostId] = useState<number | null>(null);
-  const [scheduledPosts, setScheduledPosts] = useState([
-    { 
-      id: 1, 
-      title: "10 Ways to Improve Your Social Media Strategy", 
-      platform: "Multiple", 
-      date: new Date(2025, 3, 27, 9, 0) // April 27, 2025, 9:00 AM
-    },
-    { 
-      id: 2, 
-      title: "How to Increase Website Traffic in 2025", 
-      platform: "Blog, LinkedIn", 
-      date: new Date(2025, 3, 28, 10, 30) // April 28, 2025, 10:30 AM
-    },
-    { 
-      id: 3, 
-      title: "Email Marketing Best Practices", 
-      platform: "Newsletter", 
-      date: new Date(2025, 4, 1, 8, 0) // May 1, 2025, 8:00 AM
+  const [editPostId, setEditPostId] = useState<string | null>(null);
+  const [scheduledPosts, setScheduledPosts] = useState<any[]>([]);
+  const [holidays, setHolidays] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const fetchScheduledPosts = async () => {
+    setIsLoading(true);
+    try {
+      const posts = await getScheduledPosts();
+      
+      const formattedPosts = posts.map(post => ({
+        id: post.id,
+        title: post.title,
+        content: post.content,
+        platform: post.post_platforms?.length > 0 
+          ? post.post_platforms.map((p: any) => p.platforms?.name || 'Unknown').join(', ')
+          : 'Multiple',
+        date: new Date(post.scheduled_for)
+      }));
+      
+      setScheduledPosts(formattedPosts);
+      console.log("Scheduled posts loaded:", formattedPosts);
+    } catch (error) {
+      console.error("Error fetching scheduled posts:", error);
+      toast.error("Failed to load scheduled posts");
+    } finally {
+      setIsLoading(false);
     }
-  ]);
+  };
+  
+  const fetchHolidays = async () => {
+    try {
+      // Get current year
+      const year = new Date().getFullYear();
+      
+      // Get holidays from an API or use a predefined list
+      const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/US`);
+      
+      if (response.ok) {
+        const holidayData = await response.json();
+        const formattedHolidays = holidayData.map((holiday: any) => ({
+          date: new Date(holiday.date),
+          name: holiday.name,
+          type: 'holiday'
+        }));
+        
+        // Add some common awareness days
+        const awarenessEvents = [
+          { date: new Date(year, 2, 8), name: "International Women's Day", type: 'awareness' },
+          { date: new Date(year, 11, 1), name: "World AIDS Day", type: 'awareness' },
+          { date: new Date(year, 9, 10), name: "World Mental Health Day", type: 'awareness' },
+          { date: new Date(year, 5, 5), name: "World Environment Day", type: 'awareness' },
+          { date: new Date(year, 2, 22), name: "World Water Day", type: 'awareness' },
+          { date: new Date(year, 2, 31), name: "Mothers Day", type: 'awareness' }
+        ];
+        
+        setHolidays([...formattedHolidays, ...awarenessEvents]);
+      } else {
+        console.error("Failed to fetch holidays");
+      }
+    } catch (error) {
+      console.error("Error fetching holidays:", error);
+    }
+  };
+  
+  useEffect(() => {
+    fetchScheduledPosts();
+    fetchHolidays();
+  }, []);
   
   const goToPreviousMonth = () => {
     setCurrentDate(prevDate => subMonths(prevDate, 1));
@@ -45,37 +96,64 @@ const SchedulePage = () => {
     toast.info(`Viewing ${format(addMonths(currentDate, 1), 'MMMM yyyy')}`);
   };
   
-  const handleEditPost = (postId: number) => {
+  const handleEditPost = (postId: string) => {
     setEditPostId(postId);
   };
   
-  const handleCancelPost = (postId: number) => {
+  const handleCancelPost = async (postId: string) => {
     const postToCancel = scheduledPosts.find(post => post.id === postId);
     
     if (confirm(`Are you sure you want to cancel "${postToCancel?.title}"?`)) {
-      setScheduledPosts(scheduledPosts.filter(post => post.id !== postId));
-      toast.success("Post has been cancelled");
+      try {
+        const { error } = await supabase
+          .from('posts')
+          .delete()
+          .eq('id', postId);
+          
+        if (error) throw error;
+        
+        setScheduledPosts(scheduledPosts.filter(post => post.id !== postId));
+        toast.success("Post has been cancelled");
+      } catch (error) {
+        console.error("Error cancelling post:", error);
+        toast.error("Failed to cancel post");
+      }
     }
   };
   
-  const handleSaveEdit = (postId: number, updatedTitle: string, updatedDate: Date) => {
-    setScheduledPosts(posts => 
-      posts.map(post => 
-        post.id === postId 
-          ? { ...post, title: updatedTitle, date: updatedDate } 
-          : post
-      )
-    );
-    
-    toast.success("Post updated successfully");
-    setEditPostId(null);
+  const handleSaveEdit = async (postId: string, updatedTitle: string, updatedDate: Date) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .update({
+          title: updatedTitle,
+          scheduled_for: updatedDate.toISOString()
+        })
+        .eq('id', postId);
+        
+      if (error) throw error;
+      
+      setScheduledPosts(posts => 
+        posts.map(post => 
+          post.id === postId 
+            ? { ...post, title: updatedTitle, date: updatedDate } 
+            : post
+        )
+      );
+      
+      toast.success("Post updated successfully");
+      setEditPostId(null);
+    } catch (error) {
+      console.error("Error updating post:", error);
+      toast.error("Failed to update post");
+    }
   };
   
   const editingPost = scheduledPosts.find(post => post.id === editPostId);
   const [editTitle, setEditTitle] = useState("");
   const [editDate, setEditDate] = useState<Date | null>(null);
   
-  React.useEffect(() => {
+  useEffect(() => {
     if (editingPost) {
       setEditTitle(editingPost.title);
       setEditDate(editingPost.date);
@@ -88,27 +166,38 @@ const SchedulePage = () => {
   
   const getPostsByDate = (date: Date) => {
     return scheduledPosts.filter(post => 
-      post.date.getDate() === date.getDate() && 
-      post.date.getMonth() === date.getMonth() &&
-      post.date.getFullYear() === date.getFullYear()
+      isSameDay(post.date, date)
     );
   };
   
-  const hasPostsOnDay = (date: Date) => {
-    return scheduledPosts.some(post => 
-      post.date.getDate() === date.getDate() && 
-      post.date.getMonth() === date.getMonth() &&
-      post.date.getFullYear() === date.getFullYear()
+  const getHolidaysByDate = (date: Date) => {
+    return holidays.filter(holiday => 
+      isSameDay(holiday.date, date)
     );
   };
   
-  const renderDay = ({ date }: { date: Date }) => {
-    const hasContent = hasPostsOnDay(date);
+  const hasContentOnDay = (date: Date) => {
+    return scheduledPosts.some(post => isSameDay(post.date, date)) || 
+           holidays.some(holiday => isSameDay(holiday.date, date));
+  };
+  
+  const renderDay = (day: Date) => {
+    const hasContent = hasContentOnDay(day);
+    const hasPost = scheduledPosts.some(post => isSameDay(post.date, day));
+    const hasHoliday = holidays.some(holiday => isSameDay(holiday.date, day));
     
     return (
-      <div className="relative w-full h-full flex items-center justify-center">
-        {date.getDate()}
-        {hasContent && <div className="absolute bottom-0 w-1 h-1 bg-blue-500 rounded-full"></div>}
+      <div 
+        className="relative w-full h-full flex items-center justify-center"
+        onClick={() => setCurrentDate(day)}
+      >
+        <div className={`${hasHoliday ? 'text-red-500 font-medium' : ''}`}>
+          {day.getDate()}
+        </div>
+        <div className="absolute bottom-1 flex gap-0.5 justify-center">
+          {hasPost && <div className="w-1 h-1 bg-blue-500 rounded-full"></div>}
+          {hasHoliday && <div className="w-1 h-1 bg-red-500 rounded-full"></div>}
+        </div>
       </div>
     );
   };
@@ -126,13 +215,13 @@ const SchedulePage = () => {
             variant={activeView === "calendar" ? "default" : "outline"} 
             onClick={() => setActiveView("calendar")}
           >
-            <CalendarDays size={16} className="mr-2" /> Calendar
+            <CalendarIcon size={16} className="mr-2" /> Calendar
           </Button>
           <Button 
             variant={activeView === "list" ? "default" : "outline"} 
             onClick={() => setActiveView("list")}
           >
-            <ListFilter size={16} className="mr-2" /> List View
+            <X size={16} className="mr-2" /> List View
           </Button>
         </div>
       </div>
@@ -163,15 +252,33 @@ const SchedulePage = () => {
                   month={currentDate}
                   className="rounded-md border"
                   components={{
-                    Day: renderDay
+                    Day: ({ date }) => renderDay(date)
                   }}
                 />
               </div>
               
               <div className="mt-6">
                 <h3 className="font-medium text-lg mb-4">
-                  Posts on {format(currentDate, "MMMM d, yyyy")}
+                  {format(currentDate, "MMMM d, yyyy")}
                 </h3>
+                
+                {/* Show holidays or awareness days for the selected date */}
+                {getHolidaysByDate(currentDate).length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium text-gray-600 mb-2">Events & Holidays</h4>
+                    <div className="space-y-2">
+                      {getHolidaysByDate(currentDate).map((holiday, index) => (
+                        <div key={index} className="rounded-md bg-gray-50 p-2 border border-gray-100">
+                          <p className={`text-sm font-medium ${holiday.type === 'awareness' ? 'text-blue-600' : 'text-red-600'}`}>
+                            {holiday.name}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <h4 className="text-sm font-medium text-gray-600 mb-2">Scheduled Posts</h4>
                 <div className="space-y-4">
                   {getPostsByDate(currentDate).length > 0 ? (
                     getPostsByDate(currentDate).map(post => (
@@ -197,7 +304,7 @@ const SchedulePage = () => {
                       </div>
                     ))
                   ) : (
-                    <p className="text-gray-500 text-center py-10">No posts scheduled for this day</p>
+                    <p className="text-gray-500 text-center py-6 bg-gray-50 rounded-md">No posts scheduled for this day</p>
                   )}
                 </div>
               </div>
@@ -211,7 +318,9 @@ const SchedulePage = () => {
               <CardTitle>Upcoming Content</CardTitle>
             </CardHeader>
             <CardContent>
-              {scheduledPosts.length === 0 ? (
+              {isLoading ? (
+                <div className="py-8 text-center">Loading scheduled posts...</div>
+              ) : scheduledPosts.length === 0 ? (
                 <p className="text-gray-500 text-center py-10">No upcoming posts</p>
               ) : (
                 <div className="space-y-4">
