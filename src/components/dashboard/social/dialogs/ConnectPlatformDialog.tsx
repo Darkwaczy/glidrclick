@@ -1,13 +1,14 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Facebook, Instagram, X, FileText, Clock, Info } from "lucide-react";
+import { Facebook, Instagram, X, FileText, Clock, Info, Loader } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { connectPlatform, connectWordPressSelfHosted } from "@/utils/social/authentication";
 import { getPlatformDocUrl, getPlatformOAuthConfig } from "@/utils/social/helpers";
+import { connectFacebookWithSdk, connectInstagramWithSdk, isFacebookSdkLoaded, initFacebookSdk } from "@/utils/social/facebook-sdk";
+import { toast } from "sonner";
 
 interface ConnectPlatformDialogProps {
   open: boolean;
@@ -22,9 +23,54 @@ const ConnectPlatformDialog = ({ open, onOpenChange, onConnect }: ConnectPlatfor
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [fbSdkLoaded, setFbSdkLoaded] = useState(false);
 
-  const handleConnect = (platformId: string) => {
-    onConnect(platformId);
+  // Check if Facebook SDK is loaded when dialog opens
+  useEffect(() => {
+    if (open) {
+      const checkFbSdk = async () => {
+        try {
+          setFbSdkLoaded(isFacebookSdkLoaded());
+          if (!isFacebookSdkLoaded()) {
+            await initFacebookSdk();
+            setFbSdkLoaded(true);
+          }
+        } catch (error) {
+          console.error("Failed to load Facebook SDK:", error);
+        }
+      };
+      
+      checkFbSdk();
+    }
+  }, [open]);
+
+  const handleConnect = async (platformId: string) => {
+    setIsLoading(true);
+    
+    try {
+      // Use SDK for Facebook and Instagram
+      if (platformId === 'facebook') {
+        const success = await connectFacebookWithSdk();
+        if (success) {
+          onOpenChange(false);
+          onConnect(platformId);
+        }
+      } else if (platformId === 'instagram') {
+        const success = await connectInstagramWithSdk();
+        if (success) {
+          onOpenChange(false);
+          onConnect(platformId);
+        }
+      } else {
+        // Use standard OAuth flow for other platforms
+        onConnect(platformId);
+      }
+    } catch (error) {
+      console.error(`Error connecting to ${platformId}:`, error);
+      toast.error(`Failed to connect to ${platformId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleWordPressConnection = async (e: React.FormEvent) => {
@@ -72,8 +118,13 @@ const ConnectPlatformDialog = ({ open, onOpenChange, onConnect }: ConnectPlatfor
                   variant="outline" 
                   className="flex flex-col items-center justify-center h-24 space-y-2"
                   onClick={() => handleConnect('facebook')}
+                  disabled={isLoading || !fbSdkLoaded}
                 >
-                  <Facebook size={24} className="text-blue-600" />
+                  {isLoading ? (
+                    <Loader size={24} className="animate-spin text-blue-600" />
+                  ) : (
+                    <Facebook size={24} className="text-blue-600" />
+                  )}
                   <span>Facebook</span>
                 </Button>
                 
@@ -81,8 +132,13 @@ const ConnectPlatformDialog = ({ open, onOpenChange, onConnect }: ConnectPlatfor
                   variant="outline" 
                   className="flex flex-col items-center justify-center h-24 space-y-2"
                   onClick={() => handleConnect('instagram')}
+                  disabled={isLoading || !fbSdkLoaded}
                 >
-                  <Instagram size={24} className="text-pink-600" />
+                  {isLoading ? (
+                    <Loader size={24} className="animate-spin text-pink-600" />
+                  ) : (
+                    <Instagram size={24} className="text-pink-600" />
+                  )}
                   <span>Instagram</span>
                 </Button>
                 
@@ -90,6 +146,7 @@ const ConnectPlatformDialog = ({ open, onOpenChange, onConnect }: ConnectPlatfor
                   variant="outline" 
                   className="flex flex-col items-center justify-center h-24 space-y-2"
                   onClick={() => setIsWordPressTab(true)}
+                  disabled={isLoading}
                 >
                   <FileText size={24} className="text-gray-700" />
                   <span>WordPress</span>
@@ -115,9 +172,11 @@ const ConnectPlatformDialog = ({ open, onOpenChange, onConnect }: ConnectPlatfor
                 <div className="flex items-start gap-3">
                   <div className="text-blue-800 mt-1 flex-shrink-0">💡</div>
                   <div>
-                    <h4 className="font-medium text-blue-800">OAuth Authentication</h4>
+                    <h4 className="font-medium text-blue-800">Facebook Authentication</h4>
                     <p className="text-xs text-blue-800 mt-1">
-                      You'll be redirected to the platform's login page to authorize access. After connecting, you'll be able to post, manage comments, and track engagement from this dashboard.
+                      {fbSdkLoaded 
+                        ? "We'll use the Facebook SDK for a secure and reliable connection to your account." 
+                        : "Loading Facebook SDK... If this takes too long, try refreshing the page."}
                     </p>
                   </div>
                 </div>

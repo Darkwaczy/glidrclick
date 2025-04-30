@@ -1,6 +1,8 @@
+
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getPlatformName, getPlatformStatus, isPlatformSupported, getPlatformOAuthConfig } from "./helpers";
+import { connectFacebookWithSdk, connectInstagramWithSdk } from "./facebook-sdk";
 
 // Main function to initiate platform connection
 export const connectPlatform = async (platformId: string): Promise<void> => {
@@ -28,7 +30,28 @@ export const connectPlatform = async (platformId: string): Promise<void> => {
     // Let user know we're initiating auth
     toast.info(`Starting connection to ${getPlatformName(platformId)}...`);
     
-    // Create the OAuth URL based on platform
+    // For Facebook and Instagram, use SDK
+    if (platformId === 'facebook') {
+      try {
+        await connectFacebookWithSdk();
+        return;
+      } catch (error) {
+        console.error("Facebook SDK connection failed, falling back to OAuth:", error);
+        // Fall back to OAuth flow
+      }
+    }
+    
+    if (platformId === 'instagram') {
+      try {
+        await connectInstagramWithSdk();
+        return;
+      } catch (error) {
+        console.error("Instagram SDK connection failed, falling back to OAuth:", error);
+        // Fall back to OAuth flow
+      }
+    }
+    
+    // Create the OAuth URL based on platform for non-SDK platforms or fallback
     let authUrl;
     
     switch(platformId) {
@@ -272,6 +295,16 @@ export const disconnectPlatform = async (platformId: string): Promise<boolean> =
       .maybeSingle();
     
     if (platform && platform.access_token) {
+      // If facebook/instagram with SDK, try to logout
+      if ((platformId === 'facebook' || platformId === 'instagram') && typeof window !== 'undefined' && window.FB) {
+        try {
+          window.FB.logout();
+        } catch (fbLogoutErr) {
+          console.warn("Error logging out from Facebook SDK:", fbLogoutErr);
+          // Continue with disconnection even if FB logout fails
+        }
+      }
+      
       // Call the edge function to revoke the token
       try {
         await supabase.functions.invoke(`revoke-${platformId}`, {

@@ -19,10 +19,7 @@ serve(async (req) => {
       throw new Error("Access token is required");
     }
     
-    const FB_CLIENT_ID = "958890536078118";
-    const FB_CLIENT_SECRET = "75da7b482234f5bb9277aebd02f215ae";
-    
-    // Revoke the access token
+    // Revoke the access token by deleting permissions
     const response = await fetch(`https://graph.facebook.com/v18.0/me/permissions`, {
       method: 'DELETE',
       headers: {
@@ -43,7 +40,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: data.success || true,
-        message: "Permissions revoked successfully" 
+        message: "Facebook permissions revoked successfully" 
       }),
       {
         headers: {
