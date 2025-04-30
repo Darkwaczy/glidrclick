@@ -93,7 +93,7 @@ const SystemHealth: React.FC<SystemHealthProps> = ({ onHealthAction }) => {
         </div>
         
         {systemStatus.api.twitter.status === "degraded" && (
-          <Alert variant="warning" className="bg-amber-50 border-amber-200">
+          <Alert variant="destructive" className="bg-amber-50 border-amber-200">
             <AlertCircle className="h-4 w-4 text-amber-600" />
             <AlertTitle>Performance Warning</AlertTitle>
             <AlertDescription>

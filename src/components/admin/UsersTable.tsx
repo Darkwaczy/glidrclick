@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Table, TableHeader, TableHead, TableRow, TableCell, TableBody } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
@@ -81,7 +80,7 @@ const UsersTable = ({ onUserAction }: UsersTableProps) => {
       
       return { 
         users: filteredUsers, 
-        count: authUsers.count 
+        count: authUsers.users.length // Fixed: Using length as fallback if count is not available
       };
     }
   });
@@ -111,7 +110,8 @@ const UsersTable = ({ onUserAction }: UsersTableProps) => {
     user.id.includes(searchQuery)
   ) || [];
   
-  const totalPages = Math.ceil((users?.count || 0) / pageSize);
+  // Using optional chaining and providing a default value of 1 for totalPages
+  const totalPages = Math.ceil(((users?.count || 0) / pageSize) || 1);
 
   return (
     <div className="space-y-4">
