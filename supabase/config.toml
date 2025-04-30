@@ -33,3 +33,6 @@ verify_jwt = true
 
 [functions.revoke-wordpress]
 verify_jwt = true
+
+[functions.facebook-data-deletion]
+verify_jwt = false

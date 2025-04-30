@@ -1,5 +1,6 @@
 
 import { Twitter, Linkedin, Instagram } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -13,20 +14,20 @@ const Footer = () => {
           
           <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-8">
             <div className="flex space-x-8">
-              <a href="#" className="text-gray-600 hover:text-glidr-purple transition-colors">Terms</a>
-              <a href="#" className="text-gray-600 hover:text-glidr-purple transition-colors">Privacy</a>
-              <a href="#" className="text-gray-600 hover:text-glidr-purple transition-colors">Support</a>
-              <a href="#" className="text-gray-600 hover:text-glidr-purple transition-colors">Contact</a>
+              <Link to="/terms" className="text-gray-600 hover:text-glidr-purple transition-colors">Terms</Link>
+              <Link to="/privacy" className="text-gray-600 hover:text-glidr-purple transition-colors">Privacy</Link>
+              <a href="mailto:support@glidrclick.com" className="text-gray-600 hover:text-glidr-purple transition-colors">Support</a>
+              <a href="mailto:contact@glidrclick.com" className="text-gray-600 hover:text-glidr-purple transition-colors">Contact</a>
             </div>
             
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-600 hover:text-glidr-purple transition-colors">
+              <a href="https://twitter.com/glidrclick" className="text-gray-600 hover:text-glidr-purple transition-colors">
                 <Twitter size={20} />
               </a>
-              <a href="#" className="text-gray-600 hover:text-glidr-purple transition-colors">
+              <a href="https://linkedin.com/company/glidrclick" className="text-gray-600 hover:text-glidr-purple transition-colors">
                 <Linkedin size={20} />
               </a>
-              <a href="#" className="text-gray-600 hover:text-glidr-purple transition-colors">
+              <a href="https://instagram.com/glidrclick" className="text-gray-600 hover:text-glidr-purple transition-colors">
                 <Instagram size={20} />
               </a>
             </div>
@@ -34,7 +35,7 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-gray-200 mt-8 pt-8 text-center">
-          <p className="text-gray-600">© 2024 Glidrclick. All rights reserved.</p>
+          <p className="text-gray-600">© {new Date().getFullYear()} Glidrclick. All rights reserved.</p>
         </div>
       </div>
     </footer>
