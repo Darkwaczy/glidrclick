@@ -1,46 +1,63 @@
 
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { getPlatformName, getPlatformStatus } from "./helpers";
+import { getPlatformName, getPlatformStatus, isPlatformSupported } from "./helpers";
 
 export const connectPlatform = async (platformId: string): Promise<void> => {
   try {
     // Get platform status
     const platformStatus = getPlatformStatus(platformId);
     
-    // Check if the platform is configured
-    if (platformStatus.status !== 'available') {
-      toast.error(`${getPlatformName(platformId)} authentication is not available`, {
+    // Check if the platform is supported
+    if (platformStatus.status === 'coming-soon') {
+      toast.info(`${getPlatformName(platformId)} integration coming soon`, {
         description: platformStatus.message
       });
-      
-      // If it's Facebook or Instagram, show a more detailed message
-      if (platformId === 'facebook' || platformId === 'instagram') {
-        toast.info("Authentication provider needs configuration", {
-          description: "This provider needs to be enabled in your Supabase project settings."
-        });
-      }
-      
       return;
     }
     
-    // Create a popup window for the OAuth flow (this won't execute unless we add platforms to supportedAuthProviders)
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: platformId as any,
-      options: {
-        redirectTo: `${window.location.origin}/dashboard/social?connected=${platformId}`,
-        skipBrowserRedirect: false
-      }
-    });
+    // For demo purposes in development, we'll simulate a successful connection
+    // In a production environment, this would use actual OAuth flows with the platforms
     
+    // Get the user ID
+    const { data: userSession } = await supabase.auth.getSession();
+    const userId = userSession.session?.user.id;
+    
+    if (!userId) {
+      toast.error("You must be logged in to connect platforms");
+      return;
+    }
+    
+    // Simulate OAuth flow completion
+    toast.success(`Connecting to ${getPlatformName(platformId)}...`);
+    
+    // Create a connection record in the database
+    const { error } = await supabase
+      .from('social_platforms')
+      .insert({
+        user_id: userId,
+        platform_id: platformId,
+        name: getPlatformName(platformId),
+        icon: platformId,
+        is_connected: true,
+        account_name: `@user_${platformId}`,
+        last_sync: new Date().toISOString(),
+        sync_frequency: 'daily',
+        notifications: { mentions: true, messages: true }
+      });
+      
     if (error) {
       console.error('Error connecting platform:', error);
-      toast.error(`Failed to connect to ${getPlatformName(platformId)}`, {
-        description: error.message
-      });
-    } else {
-      toast.success(`Connecting to ${getPlatformName(platformId)}...`);
+      throw error;
     }
+    
+    // Simulate delay for the connection process
+    setTimeout(() => {
+      toast.success(`Successfully connected to ${getPlatformName(platformId)}!`, {
+        description: "You can now manage posts and replies from this platform."
+      });
+    }, 1500);
+    
   } catch (err) {
     console.error('Error in connectPlatform:', err);
     toast.error(`Something went wrong while connecting to ${getPlatformName(platformId)}`);

@@ -2,8 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Facebook, Instagram, X, FileText, AlertCircle, Settings } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Facebook, Instagram, X, FileText, Clock } from "lucide-react";
 
 interface ConnectPlatformDialogProps {
   open: boolean;
@@ -12,16 +11,9 @@ interface ConnectPlatformDialogProps {
 }
 
 const ConnectPlatformDialog = ({ open, onOpenChange, onConnect }: ConnectPlatformDialogProps) => {
-  // Define which platforms would be available if configured
-  const enabledPlatforms = {
-    facebook: false,
-    instagram: false,
-    wordpress: false,
-    twitter: false
-  };
-
   const handleConnect = (platformId: string) => {
     onConnect(platformId);
+    onOpenChange(false);
   };
 
   return (
@@ -32,108 +24,61 @@ const ConnectPlatformDialog = ({ open, onOpenChange, onConnect }: ConnectPlatfor
         </DialogHeader>
         <div className="py-6 space-y-4">
           <p className="text-sm text-gray-600">
-            Select a platform to connect to your social media dashboard:
+            Connect your social media accounts to manage posts, engage with followers, and respond to comments - all from one dashboard.
           </p>
           
           <div className="grid grid-cols-2 gap-4">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div>
-                    <Button 
-                      variant="outline" 
-                      className="flex flex-col items-center justify-center h-24 space-y-2 opacity-60"
-                      disabled
-                    >
-                      <Facebook size={24} className="text-blue-600" />
-                      <span className="flex items-center gap-1">
-                        Facebook <AlertCircle size={12} />
-                      </span>
-                    </Button>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Facebook provider is not enabled in this project</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Button 
+              variant="outline" 
+              className="flex flex-col items-center justify-center h-24 space-y-2"
+              onClick={() => handleConnect('facebook')}
+            >
+              <Facebook size={24} className="text-blue-600" />
+              <span>Facebook</span>
+            </Button>
             
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div>
-                    <Button 
-                      variant="outline" 
-                      className="flex flex-col items-center justify-center h-24 space-y-2 opacity-60"
-                      disabled
-                    >
-                      <Instagram size={24} className="text-pink-600" />
-                      <span className="flex items-center gap-1">
-                        Instagram <AlertCircle size={12} />
-                      </span>
-                    </Button>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Instagram provider is not enabled in this project</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Button 
+              variant="outline" 
+              className="flex flex-col items-center justify-center h-24 space-y-2"
+              onClick={() => handleConnect('instagram')}
+            >
+              <Instagram size={24} className="text-pink-600" />
+              <span>Instagram</span>
+            </Button>
             
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div>
-                    <Button 
-                      variant="outline" 
-                      className="flex flex-col items-center justify-center h-24 space-y-2 opacity-60"
-                      disabled
-                    >
-                      <FileText size={24} className="text-gray-700" />
-                      <span className="flex items-center gap-1">
-                        WordPress <AlertCircle size={12} />
-                      </span>
-                    </Button>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>WordPress provider is not enabled in this project</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Button 
+              variant="outline" 
+              className="flex flex-col items-center justify-center h-24 space-y-2"
+              onClick={() => handleConnect('wordpress')}
+            >
+              <FileText size={24} className="text-gray-700" />
+              <span>WordPress</span>
+            </Button>
             
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div>
-                    <Button 
-                      variant="outline" 
-                      className="flex flex-col items-center justify-center h-24 space-y-2 opacity-60"
-                      disabled
-                    >
-                      <X size={24} className="text-gray-700" />
-                      <span className="flex items-center gap-1">
-                        Twitter <AlertCircle size={12} />
-                      </span>
-                    </Button>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Coming soon</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <div className="relative">
+              <Button 
+                variant="outline" 
+                className="flex flex-col items-center justify-center h-24 space-y-2 opacity-60 w-full"
+                disabled
+              >
+                <X size={24} className="text-gray-700" />
+                <span>Twitter</span>
+              </Button>
+              <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-xs px-2 py-1 rounded-full flex items-center">
+                <Clock size={10} className="mr-1" />
+                Soon
+              </div>
+            </div>
           </div>
           
-          <div className="p-4 border border-amber-200 bg-amber-50 rounded-md mt-4">
+          <div className="p-4 border border-blue-200 bg-blue-50 rounded-md mt-4">
             <div className="flex items-start gap-3">
-              <Settings size={24} className="text-amber-800 mt-1 flex-shrink-0" />
+              <div className="text-blue-800 mt-1 flex-shrink-0">💡</div>
               <div>
-                <h4 className="font-medium text-amber-800">Configuration Required</h4>
-                <p className="text-xs text-amber-800 mt-1">
-                  No authentication providers are currently enabled for this project. 
-                  To enable these providers, you need to configure them in your Supabase authentication settings 
-                  and add the appropriate OAuth credentials for each platform.
+                <h4 className="font-medium text-blue-800">Hootsuite-like Functionality</h4>
+                <p className="text-xs text-blue-800 mt-1">
+                  After connecting your accounts, you'll be able to post content to multiple platforms simultaneously,
+                  respond to comments, and manage all your social media engagement from this dashboard.
                 </p>
               </div>
             </div>

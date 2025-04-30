@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Facebook, Instagram, FileText } from "lucide-react";
 
 interface CreatePostDialogProps {
   open: boolean;
@@ -38,27 +39,36 @@ const CreatePostDialog = ({ open, onOpenChange, platforms, onSubmit }: CreatePos
               />
             </div>
             
-            <div className="space-y-2">
-              <Label>Select Platforms</Label>
-              <div className="flex flex-wrap gap-4 py-2">
-                {platforms.filter(platform => platform.isConnected).map(platform => (
-                  <div key={platform.id} className="flex items-center space-x-2">
-                    <input 
-                      type="checkbox" 
-                      id={`platform-${platform.id}`} 
-                      name={`platform-${platform.id}`} 
-                      className="rounded" 
-                      defaultChecked
-                    />
-                    <Label htmlFor={`platform-${platform.id}`}>{platform.name}</Label>
-                  </div>
-                ))}
+            <div>
+              <Label className="mb-2 block">Publish to Platforms</Label>
+              <div className="bg-gray-50 p-4 rounded-md border">
+                <div className="text-sm font-medium mb-2">Select where to publish this content:</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {platforms.filter(platform => platform.isConnected).length > 0 ? (
+                    platforms.filter(platform => platform.isConnected).map(platform => (
+                      <div key={platform.id} className="flex items-center space-x-2 bg-white p-2 rounded border">
+                        <input 
+                          type="checkbox" 
+                          id={`platform-${platform.id}`} 
+                          name={`platform-${platform.id}`} 
+                          className="rounded" 
+                          defaultChecked
+                        />
+                        <Label htmlFor={`platform-${platform.id}`} className="flex items-center cursor-pointer">
+                          {platform.id === 'facebook' && <Facebook size={16} className="text-blue-600 mr-2" />}
+                          {platform.id === 'instagram' && <Instagram size={16} className="text-pink-600 mr-2" />}
+                          {platform.id === 'wordpress' && <FileText size={16} className="text-gray-700 mr-2" />}
+                          {platform.name}
+                        </Label>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="col-span-2 text-center py-4 text-amber-600">
+                      <p>No platforms connected. Please connect at least one platform to post content.</p>
+                    </div>
+                  )}
+                </div>
               </div>
-              {platforms.filter(platform => platform.isConnected).length === 0 && (
-                <p className="text-sm text-yellow-600">
-                  No platforms connected. Please connect at least one platform to post content.
-                </p>
-              )}
             </div>
             
             <div className="flex items-center space-x-2 py-2">
