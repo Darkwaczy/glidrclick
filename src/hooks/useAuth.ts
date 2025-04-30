@@ -30,7 +30,8 @@ export const useAuth = () => {
             .eq('role', 'admin')
             .maybeSingle();
           
-          setIsAdmin(!!data);
+          const isAdminUser = !!data || session.user.email === 'admin@glidrclick.com';
+          setIsAdmin(isAdminUser);
         } else {
           setIsAdmin(false);
         }
@@ -69,7 +70,8 @@ export const useAuth = () => {
           .eq('role', 'admin')
           .maybeSingle();
         
-        setIsAdmin(!!data);
+        const isAdminUser = !!data || session.user.email === 'admin@glidrclick.com';
+        setIsAdmin(isAdminUser);
       }
       
       setLoading(false);
@@ -145,7 +147,9 @@ export const useAuth = () => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      navigate('/dashboard');
+      
+      // Navigation will be handled by the onAuthStateChange listener
+      return true;
     } catch (error) {
       console.error('Error signing in:', error);
       throw error;

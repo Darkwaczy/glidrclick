@@ -32,8 +32,8 @@ import FacebookDataDeletion from "./pages/FacebookDataDeletion";
 const queryClient = new QueryClient();
 
 // Protected route component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.ReactNode, requireAdmin?: boolean }) => {
+  const { user, loading, isAdmin } = useAuth();
   
   // Show loading state while checking authentication
   if (loading) {
@@ -43,6 +43,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   // Redirect to login if not authenticated
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+  
+  // Redirect non-admin users from admin routes
+  if (requireAdmin && !isAdmin) {
+    return <Navigate to="/dashboard" replace />;
   }
   
   // Render children if authenticated
@@ -87,7 +92,7 @@ function AppContent() {
           </ProtectedRoute>
         } />
         <Route path="/admin-dashboard/*" element={
-          <ProtectedRoute>
+          <ProtectedRoute requireAdmin={true}>
             <AdminDashboard />
           </ProtectedRoute>
         } />

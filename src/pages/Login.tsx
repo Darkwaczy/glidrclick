@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -31,7 +31,19 @@ const formSchema = z.object({
 const LoginPage = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, user } = useAuth();
+  
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      // Check if user is admin to redirect to the appropriate dashboard
+      if (user.email === "admin@glidrclick.com") {
+        navigate("/admin-dashboard");
+      } else {
+        navigate("/dashboard");
+      }
+    }
+  }, [user, navigate]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,16 +58,16 @@ const LoginPage = () => {
     
     try {
       // Since we're using zod validation, we can be confident that email and password are defined
-      // The TypeScript error was occurring because the types weren't being properly narrowed
       const { email, password } = values;
       
       if (email === "admin@glidrclick.com" && password === "admin123") {
-        toast.success("Admin login successful! Redirecting to admin dashboard...");
-        setTimeout(() => navigate("/admin-dashboard"), 1500);
+        toast.success("Admin login successful!");
+        // Manually navigate for admin user
+        setTimeout(() => navigate("/admin-dashboard"), 1000);
       } else {
         await signIn({ email, password });
         toast.success("Login successful!");
-        // The useAuth hook will handle the redirect to dashboard
+        // Redirection for regular users will be handled by the useEffect above
       }
     } catch (error: any) {
       console.error("Login error:", error);

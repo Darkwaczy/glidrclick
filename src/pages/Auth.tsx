@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
@@ -28,7 +28,12 @@ const Auth = () => {
   // Redirect to dashboard if already logged in
   useEffect(() => {
     if (user && !loading) {
-      navigate("/dashboard");
+      // Check if admin user to redirect to appropriate dashboard
+      if (user.email === "admin@glidrclick.com") {
+        navigate("/admin-dashboard");
+      } else {
+        navigate("/dashboard");
+      }
     }
   }, [user, loading, navigate]);
 
@@ -43,9 +48,16 @@ const Auth = () => {
     setIsLoading(true);
     
     try {
-      await signIn({ email: loginEmail, password: loginPassword });
-      toast.success("Successfully logged in!");
-      navigate("/dashboard");
+      // Special handling for admin account
+      if (loginEmail === "admin@glidrclick.com" && loginPassword === "admin123") {
+        await signIn({ email: loginEmail, password: loginPassword });
+        toast.success("Admin login successful!");
+        navigate("/admin-dashboard");
+      } else {
+        await signIn({ email: loginEmail, password: loginPassword });
+        toast.success("Successfully logged in!");
+        navigate("/dashboard");
+      }
     } catch (error: any) {
       console.error("Login error:", error);
       toast.error(error?.message || "Failed to login. Please check your credentials.");
