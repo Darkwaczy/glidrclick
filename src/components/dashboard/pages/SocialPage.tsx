@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -861,3 +862,46 @@ const ConnectedPlatform = ({ platform, onSettings, onDisconnect }: ConnectedPlat
             <span className="font-medium">{platform.accountName}</span>
           </div>
           {platform.lastSync && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Last Synced</span>
+              <span>{new Date(platform.lastSync).toLocaleString()}</span>
+            </div>
+          )}
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-500">Sync Frequency</span>
+            <span>{platform.syncFrequency || "Daily"}</span>
+          </div>
+        </div>
+        
+        <div className="mt-4 pt-4 border-t flex justify-between">
+          <Button variant="outline" size="sm" onClick={onSettings}>
+            Settings
+          </Button>
+          <Button variant="outline" size="sm" className="text-red-600" onClick={onDisconnect}>
+            Disconnect
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Helper function to render platform icons
+const getPlatformIcon = (platform: string, size: number = 16) => {
+  switch (platform.toLowerCase()) {
+    case 'facebook':
+      return <Facebook size={size} className="text-blue-600" />;
+    case 'instagram':
+      return <Instagram size={size} className="text-pink-600" />;
+    case 'twitter':
+      return <Twitter size={size} className="text-blue-400" />;
+    case 'linkedin':
+      return <Linkedin size={size} className="text-blue-800" />;
+    case 'wordpress':
+      return <FileText size={size} className="text-gray-700" />;
+    default:
+      return <Link2 size={size} className="text-gray-500" />;
+  }
+};
+
+export default SocialPage;
