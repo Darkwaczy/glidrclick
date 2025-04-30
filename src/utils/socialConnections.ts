@@ -10,6 +10,16 @@ export const schedulePost = async (
   imageUrl?: string
 ) => {
   try {
+    // Get the current user ID
+    const userResponse = await supabase.auth.getUser();
+    const userId = userResponse.data.user?.id;
+    
+    if (!userId) {
+      console.error("No user ID found");
+      toast.error("Failed to schedule post. Please log in and try again.");
+      return false;
+    }
+    
     // Create the post in the database
     const { data: post, error: postError } = await supabase
       .from('posts')
@@ -19,7 +29,8 @@ export const schedulePost = async (
         type: 'social',
         status: 'scheduled',
         scheduled_for: scheduledDate.toISOString(),
-        image_url: imageUrl || null // Add the image URL to the post data
+        image_url: imageUrl || null, // Add the image URL to the post data
+        user_id: userId // Add the required user_id field
       })
       .select()
       .single();
