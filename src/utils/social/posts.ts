@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getPlatformName } from "./helpers";
@@ -84,24 +83,58 @@ export const schedulePost = async (
       
     if (postError) throw postError;
     
+    // First, fetch available platforms from the database
+    // This assumes we have a table called 'platforms' with platform UUIDs
+    const { data: availablePlatforms, error: platformsError } = await supabase
+      .from('platforms')
+      .select('id, name');
+      
+    if (platformsError) {
+      console.error("Error fetching platforms:", platformsError);
+      throw platformsError;
+    }
+    
+    // Create a mapping of platform names to UUIDs
+    const platformMap: Record<string, string> = {};
+    if (availablePlatforms) {
+      availablePlatforms.forEach(platform => {
+        platformMap[platform.name.toLowerCase()] = platform.id;
+      });
+    }
+    
     // Create post_platform relations for each platform
-    for (const platformId of platforms) {
-      const { error: platformError } = await supabase
-        .from('post_platforms')
-        .insert({
-          post_id: post.id,
-          platform_id: platformId,
-          status: 'scheduled'
-        });
+    for (const platformName of platforms) {
+      // Handle 'all' case by using all available platform IDs
+      const platformsToUse = platformName.toLowerCase() === 'all' 
+        ? availablePlatforms?.map(p => p.id) || [] 
+        : [platformMap[platformName.toLowerCase()]];
         
-      if (platformError) throw platformError;
+      for (const platformId of platformsToUse) {
+        if (!platformId) {
+          console.warn(`Platform not found: ${platformName}`);
+          continue;
+        }
+        
+        const { error: platformError } = await supabase
+          .from('post_platforms')
+          .insert({
+            post_id: post.id,
+            platform_id: platformId,
+            status: 'scheduled'
+          });
+          
+        if (platformError) {
+          console.error(`Error connecting post to platform ${platformName}:`, platformError);
+          throw platformError;
+        }
+      }
     }
     
     toast.success('Post scheduled successfully!');
     return true;
   } catch (error) {
     console.error('Error scheduling post:', error);
-    toast.error('Failed to schedule post');
+    toast.error('Failed to schedule post. Please try again.');
     return false;
   }
 };
