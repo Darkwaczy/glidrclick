@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -47,11 +48,21 @@ export const schedulePost = async (
 
 export const connectPlatform = async (platformType: string, authData: any) => {
   try {
+    const userId = supabase.auth.getUser().then(response => response.data.user?.id);
+    
+    if (!userId) {
+      console.error("No user ID found");
+      toast.error(`Failed to connect ${platformType}. Please try again.`);
+      return false;
+    }
+    
     const { error } = await supabase
       .from('social_platforms')
       .insert({
         platform_id: platformType,
-        user_id: supabase.auth.user()?.id,
+        user_id: await userId,
+        name: platformType.charAt(0).toUpperCase() + platformType.slice(1),
+        icon: platformType.toLowerCase(),
         access_token: authData.accessToken,
         refresh_token: authData.refreshToken,
         token_expires_at: authData.expiresIn ? new Date(Date.now() + authData.expiresIn * 1000).toISOString() : null,
@@ -102,10 +113,19 @@ export const disconnectPlatform = async (platformId: string) => {
 
 export const getConnectedPlatforms = async () => {
   try {
+    const userResponse = await supabase.auth.getUser();
+    const userId = userResponse.data.user?.id;
+    
+    if (!userId) {
+      console.error("No user ID found");
+      toast.error("Failed to fetch connected platforms.");
+      return [];
+    }
+    
     const { data, error } = await supabase
       .from('social_platforms')
       .select('*')
-      .eq('user_id', supabase.auth.user()?.id)
+      .eq('user_id', userId)
       .eq('is_connected', true);
 
     if (error) {
