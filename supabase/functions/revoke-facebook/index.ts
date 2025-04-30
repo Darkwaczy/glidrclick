@@ -30,7 +30,15 @@ serve(async (req) => {
       }
     });
     
+    // Check if the response is ok before parsing
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(`Failed to revoke token: ${JSON.stringify(errorData)}`);
+    }
+    
     const data = await response.json();
+    
+    console.log('Facebook token revocation response:', JSON.stringify(data));
     
     return new Response(
       JSON.stringify({ 

@@ -66,6 +66,7 @@ export const getPlatformDocUrl = (platformId: string): string => {
  * @returns OAuth app configuration
  */
 export const getPlatformOAuthConfig = (platformId: string) => {
+  // Hardcoded configuration instead of using process.env which is not available in browser
   const config: Record<string, { clientId: string, scopes: string[] }> = {
     facebook: { 
       clientId: '958890536078118', 
@@ -76,7 +77,7 @@ export const getPlatformOAuthConfig = (platformId: string) => {
       scopes: ['instagram_basic', 'instagram_content_publish', 'pages_show_list'] 
     },
     wordpress: { 
-      clientId: process.env.WORDPRESS_CLIENT_ID || '', 
+      clientId: 'your-wordpress-client-id', // This should be replaced with actual WordPress client ID
       scopes: ['global'] 
     }
   };
