@@ -2,6 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
+import TypeAnimation from "@/components/TypeAnimation";
 
 const Hero = () => {
   return (
@@ -21,7 +22,7 @@ const Hero = () => {
       <div className="container mx-auto px-4 relative z-10 text-center">
         <h1 className="text-4xl md:text-6xl font-bold mb-6">
           <span className="text-black">Automate Your Blog in </span>
-          <span className="text-[#9b87f5]">One Click</span>
+          <span className="text-[#9b87f5]"><TypeAnimation /></span>
         </h1>
         
         <p className="text-xl text-gray-700 mb-12 max-w-2xl mx-auto">
