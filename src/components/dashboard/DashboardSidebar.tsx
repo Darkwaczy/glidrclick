@@ -62,7 +62,10 @@ const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
   return (
     <div className="hidden md:flex w-64 flex-col bg-white border-r">
       <div className="p-4 flex items-center gap-2 border-b">
-        <h1 className="text-xl font-bold gradient-text">Glidrclick</h1>
+        <h1 className="text-xl font-bold">
+          <span className="text-[#9b87f5]">Glidr</span>
+          <span className="text-gray-800">click</span>
+        </h1>
       </div>
       <div className="flex flex-col flex-grow p-4 space-y-6">
         <div className="space-y-1">

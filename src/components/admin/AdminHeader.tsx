@@ -43,12 +43,11 @@ const AdminHeader = () => {
             <LayoutDashboard size={20} />
           </Button>
           <div className="flex items-center">
-            <img 
-              src="/lovable-uploads/558779ac-cf8b-4763-986c-b8e82bc29c03.png" 
-              alt="Glidrclick Logo" 
-              className="h-[150px] w-[250px] object-contain mr-2"
-            />
-            <span className="text-lg font-semibold">Admin</span>
+            <h1 className="text-xl font-bold">
+              <span className="text-[#9b87f5]">Glidr</span>
+              <span className="text-gray-800">click</span>
+              <span className="ml-2 font-semibold">Admin</span>
+            </h1>
           </div>
         </div>
         <div className="flex items-center gap-2">
