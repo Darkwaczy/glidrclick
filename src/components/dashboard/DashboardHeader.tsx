@@ -67,11 +67,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
             className="hidden sm:flex"
             onClick={() => navigate("/dashboard")}
           >
-            <img 
-              src="/lovable-uploads/558779ac-cf8b-4763-986c-b8e82bc29c03.png" 
-              alt="Glidrclick Logo" 
-              className="h-8"
-            />
+            <span className="text-lg sm:text-xl font-bold gradient-text ml-0">Glidrclick</span>
           </Button>
 
           <div className="hidden md:flex gap-2">
