@@ -12,6 +12,7 @@ import SchedulePage from '@/components/dashboard/pages/SchedulePage';
 import NewPostPage from '@/components/dashboard/pages/NewPostPage';
 import EditPostPage from '@/components/dashboard/pages/EditPostPage';
 import { useAuthContext } from '@/context/AuthContext';
+import { SocialSharing } from '@/pages/SocialSharing';
 
 const Dashboard: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);

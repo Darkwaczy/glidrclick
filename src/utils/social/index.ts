@@ -76,8 +76,8 @@ export default {
     const { getPlatformDocUrl } = require('./helpers');
     return getPlatformDocUrl(platformId);
   },
-  getPlatformOAuthConfig: (platformId: string) => {
+  getPlatformOAuthConfig: (platform: string) => {
     const { getPlatformOAuthConfig } = require('./helpers');
-    return getPlatformOAuthConfig(platformId);
+    return getPlatformOAuthConfig(platform);
   }
 };
