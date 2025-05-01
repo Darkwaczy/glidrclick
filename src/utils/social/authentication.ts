@@ -20,7 +20,11 @@ export const connectWithOAuth = async (platform: string): Promise<boolean> => {
     const authUrl = new URL(oauthConfig.authorizationUrl);
     authUrl.searchParams.append('client_id', oauthConfig.clientId);
     authUrl.searchParams.append('redirect_uri', oauthConfig.redirectUri);
-    authUrl.searchParams.append('scope', oauthConfig.scope.join(' '));
+    // Ensure scope is an array before joining
+    const scope = Array.isArray(oauthConfig.scope) 
+      ? oauthConfig.scope.join(' ') 
+      : oauthConfig.scope;
+    authUrl.searchParams.append('scope', scope);
     authUrl.searchParams.append('state', state);
     authUrl.searchParams.append('response_type', 'code');
     
@@ -82,5 +86,13 @@ export const connectWordPressSelfHosted = async (
   }
 };
 
-// Export connectPlatform from socialConnections for compatibility
-export { connectPlatform } from '@/utils/socialConnections';
+// Add placeholder for connectPlatform function to avoid import errors
+export const connectPlatform = async (platformId: string): Promise<boolean> => {
+  try {
+    return await import('./platforms').then(module => module.connectPlatform(platformId));
+  } catch (error) {
+    console.error(`Error connecting to platform ${platformId}:`, error);
+    toast.error(`Failed to connect to ${platformId}`);
+    return false;
+  }
+};

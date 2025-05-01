@@ -19,11 +19,17 @@ const Dashboard: React.FC = () => {
   const location = useLocation();
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   
+  // Extract the active page from the current path
+  const getActivePage = () => {
+    const path = location.pathname.split('/').pop() || '';
+    return path === 'dashboard' ? 'dashboard' : path;
+  };
+  
   return (
     <div className="min-h-screen flex">
-      <DashboardSidebar />
+      <DashboardSidebar activePage={getActivePage()} />
       <div className="flex-1 flex flex-col">
-        <DashboardHeader user={user} />
+        <DashboardHeader onWatchDemo={() => {}} />
         <main className="flex-1 p-6 bg-gray-50">
           <Routes>
             <Route index element={<Navigate to="content" replace />} />
