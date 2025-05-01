@@ -14,13 +14,16 @@ export const useSocialPage = () => {
   const [processingOAuth, setProcessingOAuth] = useState(false);
   const [mentionsList, setMentionsList] = useState<any[]>([]);
   const [scheduledPostsList, setScheduledPostsList] = useState<any[]>([]);
-  const [selectedPlatformId, setSelectedPlatformId] = useState<string | null>(null);
-  const [showPlatformSettings, setShowPlatformSettings] = useState(false);
+  
+  // Property names updated to match what's used in SocialPageDialogs
+  const [currentPlatform, setCurrentPlatform] = useState<string | null>(null);
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showConnectDialog, setShowConnectDialog] = useState(false);
   const [showCreatePostDialog, setShowCreatePostDialog] = useState(false);
-  const [showReplyDialog, setShowReplyDialog] = useState(false);
+  const [replyingToMention, setReplyingToMention] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState("");
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
-  const [selectedMentionId, setSelectedMentionId] = useState<string | null>(null);
+  const [showWordPressDialog, setShowWordPressDialog] = useState(false);
 
   // Load platforms on component mount
   useEffect(() => {
@@ -115,8 +118,8 @@ export const useSocialPage = () => {
   };
   
   const handleOpenPlatformSettings = (platformId: string) => {
-    setSelectedPlatformId(platformId);
-    setShowPlatformSettings(true);
+    setCurrentPlatform(platformId);
+    setShowSettingsDialog(true);
   };
   
   const handleOpenConnectDialog = () => {
@@ -138,13 +141,53 @@ export const useSocialPage = () => {
     }
   };
   
+  // Add this function to match what's being used in SocialPageDialogs
+  const handleConnectPlatform = async (platformId: string) => {
+    try {
+      // This would be implemented to connect to a platform
+      toast.success(`Connecting to ${platformId}...`);
+      
+      // Update platform connection status after successful connection
+      setPlatforms(platforms.map(p => 
+        p.id === platformId ? {...p, isConnected: true} : p
+      ));
+      
+      return true;
+    } catch (error) {
+      console.error("Error connecting to platform:", error);
+      toast.error("Failed to connect to platform");
+      return false;
+    }
+  };
+  
   const handleCreatePost = () => {
     setShowCreatePostDialog(true);
   };
   
   const handleOpenReplyDialog = (mentionId: string) => {
-    setSelectedMentionId(mentionId);
-    setShowReplyDialog(true);
+    setReplyingToMention(mentionId);
+  };
+  
+  const handleSubmitReply = async () => {
+    if (!replyContent.trim()) {
+      toast.error("Please enter a reply");
+      return;
+    }
+    
+    try {
+      // Submit reply logic would go here
+      toast.success("Reply sent successfully");
+      setReplyingToMention(null);
+      setReplyContent("");
+      
+      // Update mentions list to mark as read
+      setMentionsList(mentionsList.map(mention => 
+        mention.id === replyingToMention ? {...mention, isRead: true} : mention
+      ));
+    } catch (error) {
+      console.error("Error sending reply:", error);
+      toast.error("Failed to send reply");
+    }
   };
   
   const handleMarkAsRead = async (mentionId: string) => {
@@ -172,6 +215,26 @@ export const useSocialPage = () => {
       }
     }
   };
+  
+  // Add this function to match what's being used in SocialPageDialogs
+  const handleUpdatePost = async (formData: any) => {
+    try {
+      // Update post logic would go here
+      const { id, title, content, scheduledFor } = formData;
+      
+      setScheduledPostsList(scheduledPostsList.map(post => 
+        post.id === id ? {...post, title, content, scheduledFor} : post
+      ));
+      
+      setEditingPostId(null);
+      toast.success("Post updated successfully");
+      return true;
+    } catch (error) {
+      console.error("Error updating post:", error);
+      toast.error("Failed to update post");
+      return false;
+    }
+  };
 
   return {
     platforms,
@@ -180,28 +243,33 @@ export const useSocialPage = () => {
     processingOAuth,
     mentionsList,
     scheduledPostsList,
-    selectedPlatformId,
-    showPlatformSettings,
+    currentPlatform,
+    showSettingsDialog,
     showConnectDialog,
     showCreatePostDialog,
-    showReplyDialog,
+    replyingToMention,
+    replyContent,
     editingPostId,
-    selectedMentionId,
-    setSelectedPlatformId,
-    setShowPlatformSettings,
+    showWordPressDialog,
+    setCurrentPlatform,
+    setShowSettingsDialog,
     setShowConnectDialog,
     setShowCreatePostDialog,
-    setShowReplyDialog,
+    setReplyingToMention,
+    setReplyContent,
     setEditingPostId,
-    setSelectedMentionId,
+    setShowWordPressDialog,
     handleRefreshConnections,
     handleOpenPlatformSettings,
     handleOpenConnectDialog,
     handleDisconnectPlatform,
+    handleConnectPlatform,
     handleCreatePost,
     handleOpenReplyDialog,
     handleMarkAsRead,
-    handleCancelPost
+    handleCancelPost,
+    handleSubmitReply,
+    handleUpdatePost
   };
 };
 

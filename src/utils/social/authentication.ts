@@ -1,6 +1,6 @@
 
 import { toast } from "sonner";
-import { getPlatformOAuthConfig } from "./helpers";
+import { getPlatformOAuthConfig, getPlatformName } from "./helpers";
 import { supabase } from "@/integrations/supabase/client";
 
 // Simulate OAuth flow

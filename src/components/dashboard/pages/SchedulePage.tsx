@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Calendar, CheckCircle2, Clock, Edit2, Plus, Trash2, X } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -464,7 +463,7 @@ const SchedulePage: React.FC = () => {
                         <Badge 
                           variant={
                             post.status === 'published' 
-                              ? 'success' 
+                              ? 'secondary' 
                               : post.status === 'failed'
                               ? 'destructive'
                               : 'secondary'
