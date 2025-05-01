@@ -10,8 +10,12 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1">
-            <Link to="/" className="text-2xl font-bold gradient-text">
-              ContentScribe
+            <Link to="/" className="flex items-center">
+              <img 
+                src="/lovable-uploads/558779ac-cf8b-4763-986c-b8e82bc29c03.png" 
+                alt="Glidrclick Logo" 
+                className="h-8"
+              />
             </Link>
             <p className="mt-4 text-gray-400">
               Simplifying content creation and social media management for businesses of all sizes.
@@ -77,7 +81,7 @@ const Footer = () => {
 
         <div className="flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400">
-            © {currentYear} ContentScribe. All rights reserved.
+            © {currentYear} Glidrclick. All rights reserved.
           </p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <Link to="/terms" className="text-gray-400 hover:text-white transition-colors">

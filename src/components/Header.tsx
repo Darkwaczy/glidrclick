@@ -18,8 +18,12 @@ const Header = () => {
   return (
     <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? "bg-white shadow-md py-2" : "bg-transparent py-4"}`}>
       <div className="container mx-auto flex justify-between items-center px-4">
-        <Link to="/" className="text-2xl font-bold text-[#9b87f5]">
-          Glidrclick
+        <Link to="/" className="flex items-center">
+          <img 
+            src="/lovable-uploads/558779ac-cf8b-4763-986c-b8e82bc29c03.png" 
+            alt="Glidrclick Logo" 
+            className="h-8"
+          />
         </Link>
         
         <nav className="hidden md:flex items-center space-x-6">
