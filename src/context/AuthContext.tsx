@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useAuth } from '@/hooks/useAuth.tsx'; // Update import path with extension
+import { useAuth } from '@/hooks/useAuth'; // Remove the .tsx extension
 import { Loader2 } from 'lucide-react';
 import { User, Session } from '@supabase/supabase-js';
 
