@@ -1,4 +1,3 @@
-
 // Export all functionality from the social modules
 export * from './types';
 export * from './helpers';
@@ -16,10 +15,6 @@ export default {
   getSocialPlatforms: async () => {
     const { getSocialPlatforms } = await import('./platforms');
     return getSocialPlatforms();
-  },
-  connectPlatform: async (platformId: string) => {
-    const { connectPlatform } = await import('./platforms');
-    return connectPlatform(platformId);
   },
   disconnectPlatform: async (platformId: string) => {
     const { disconnectPlatform } = await import('./platforms');
@@ -42,6 +37,12 @@ export default {
   connectWordPressSelfHosted: async (siteUrl: string, username: string, password: string) => {
     const { connectWordPressSelfHosted } = await import('./authentication');
     return connectWordPressSelfHosted(siteUrl, username, password);
+  },
+  
+  // We're keeping this function but pointing it to authentication module's version
+  connectPlatform: async (platformId: string) => {
+    const { connectPlatform } = await import('./authentication');
+    return connectPlatform(platformId);
   },
   
   // Post management
