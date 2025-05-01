@@ -125,6 +125,35 @@ export const connectFacebookWithSdk = async (): Promise<boolean> => {
   }
 };
 
+// Add Instagram connection function
+export const connectInstagramWithSdk = async (): Promise<boolean> => {
+  try {
+    // First connect with Facebook, as Instagram integration requires Facebook
+    const fbAuthResponse = await loginWithFacebook('instagram_basic,instagram_content_publish,pages_show_list');
+    
+    if (!fbAuthResponse || !fbAuthResponse.accessToken) {
+      throw new Error("Failed to obtain Facebook access token for Instagram");
+    }
+    
+    const userInfo = await getFacebookUserInfo();
+    
+    // Store the connection
+    const success = await connectPlatform('instagram', {
+      accessToken: fbAuthResponse.accessToken,
+      userId: userInfo.id,
+      userName: userInfo.name,
+      expiresIn: fbAuthResponse.expiresIn
+    });
+    
+    return success;
+  } catch (error) {
+    console.error("Error connecting Instagram with SDK:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    toast.error(`Failed to connect Instagram: ${errorMessage}`);
+    return false;
+  }
+};
+
 // Get user information
 export const getFacebookUserInfo = (): Promise<any> => {
   return new Promise((resolve, reject) => {

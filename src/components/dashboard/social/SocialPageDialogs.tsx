@@ -18,44 +18,44 @@ const SocialPageDialogs: React.FC<SocialPageDialogsProps> = ({ social }) => {
   return (
     <>
       <PlatformSettingsDialog
-        open={social.showSettingsDialog}
-        onOpenChange={social.setShowSettingsDialog}
-        platform={social.currentPlatformObj}
-        onSaveSettings={social.handleSavePlatformSettings}
+        open={social.showPlatformSettings}
+        onOpenChange={social.setShowPlatformSettings}
+        platformId={social.selectedPlatformId}
+        platforms={social.platforms}
       />
       
       <ConnectPlatformDialog
         open={social.showConnectDialog}
         onOpenChange={social.setShowConnectDialog}
-        onConnect={social.handleConnectPlatform}
+        onConnect={social.handleOpenConnectDialog}
       />
       
       <ReplyMentionDialog
-        open={social.replyingToMention !== null}
-        onOpenChange={(open) => !open && social.setReplyingToMention(null)}
-        mention={social.currentReplyMention}
-        replyContent={social.replyContent}
-        onReplyContentChange={social.setReplyContent}
-        onSubmitReply={social.handleSubmitReply}
+        open={social.selectedMentionId !== null}
+        onOpenChange={(open) => !open && social.setSelectedMentionId(null)}
+        mention={social.mentionsList.find(m => m.id === social.selectedMentionId) || null}
+        replyContent=""
+        onReplyContentChange={() => {}}
+        onSubmitReply={() => {}}
       />
       
       <CreatePostDialog
         open={social.showCreatePostDialog}
         onOpenChange={social.setShowCreatePostDialog}
         platforms={social.platforms}
-        onSubmit={social.handleSubmitNewPost}
+        onSubmit={social.handleCreatePost}
       />
       
       <EditPostDialog
         open={social.editingPostId !== null}
         onOpenChange={() => social.setEditingPostId(null)}
-        post={social.currentEditingPost}
-        onSubmit={social.handleUpdatePost}
+        post={social.scheduledPostsList.find(p => p.id === social.editingPostId) || null}
+        onSubmit={() => {}}
       />
       
       <ConnectWordPressDialog
-        open={social.showWordPressDialog}
-        onOpenChange={social.setShowWordPressDialog}
+        open={false}
+        onOpenChange={() => {}}
       />
     </>
   );

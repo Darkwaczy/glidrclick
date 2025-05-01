@@ -21,13 +21,9 @@ const Dashboard: React.FC = () => {
   
   return (
     <div className="min-h-screen flex">
-      <DashboardSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+      <DashboardSidebar />
       <div className="flex-1 flex flex-col">
-        <DashboardHeader 
-          toggleSidebar={() => setSidebarOpen(!sidebarOpen)} 
-          isSidebarOpen={sidebarOpen}
-          user={user}
-        />
+        <DashboardHeader user={user} />
         <main className="flex-1 p-6 bg-gray-50">
           <Routes>
             <Route index element={<Navigate to="content" replace />} />
