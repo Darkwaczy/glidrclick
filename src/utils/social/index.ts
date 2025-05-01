@@ -1,10 +1,14 @@
 
 // Export all functionality from the social modules
 export * from './types';
-export * from './platforms';
+export * from './helpers';
 export * from './authentication';
 export * from './posts';
-export * from './helpers';
+
+// Re-export platforms module (except for connectPlatform which is already exported from authentication)
+import * as platformsModule from './platforms';
+const { connectPlatform: _connectPlatform, ...restPlatforms } = platformsModule;
+export { restPlatforms };
 
 // Default export all utilities
 export default {
