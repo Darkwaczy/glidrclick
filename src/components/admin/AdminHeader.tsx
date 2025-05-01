@@ -46,7 +46,7 @@ const AdminHeader = () => {
             <img 
               src="/lovable-uploads/558779ac-cf8b-4763-986c-b8e82bc29c03.png" 
               alt="Glidrclick Logo" 
-              className="h-[150px] w-[250px] object-contain mr-2"
+              className="h-8 mr-2"
             />
             <span className="text-lg font-semibold">Admin</span>
           </div>
