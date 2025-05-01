@@ -1,15 +1,14 @@
 
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
   LayoutDashboard, Settings, File, CalendarDays, BarChart, 
   Share, User, LogOut, ShieldAlert
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { useState, useEffect } from "react";
+import { useAuthContext } from '@/context/AuthContext';
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface DashboardSidebarProps {
   activePage: string;
@@ -17,33 +16,8 @@ interface DashboardSidebarProps {
 
 const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    const checkAdminRole = async () => {
-      if (!user?.id) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
-          .maybeSingle();
-        
-        setIsAdmin(!!data);
-        
-        if (error) {
-          console.error("Error checking admin role:", error);
-        }
-      } catch (err) {
-        console.error("Error checking user role:", err);
-      }
-    };
-    
-    checkAdminRole();
-  }, [user]);
+  const location = useLocation();
+  const { user, isAdmin, signOut } = useAuthContext();
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -59,6 +33,12 @@ const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
     }
   };
 
+  // Get user initials for avatar
+  const getInitials = () => {
+    if (!user?.email) return "U";
+    return user.email.substring(0, 2).toUpperCase();
+  };
+
   return (
     <div className="hidden md:flex w-64 flex-col bg-white border-r">
       <div className="p-4 flex items-center gap-2 border-b">
@@ -67,6 +47,23 @@ const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
           <span className="text-gray-800">click</span>
         </h1>
       </div>
+      
+      {user && (
+        <div className="p-4 border-b">
+          <div className="flex items-center gap-3">
+            <Avatar>
+              <AvatarFallback className="bg-glidr-purple/10 text-glidr-purple">
+                {getInitials()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="overflow-hidden">
+              <p className="font-medium truncate">{user.email}</p>
+              <p className="text-xs text-gray-500">{isAdmin ? 'Administrator' : 'User'}</p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="flex flex-col flex-grow p-4 space-y-6">
         <div className="space-y-1">
           <h3 className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Dashboard</h3>

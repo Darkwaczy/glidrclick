@@ -1,82 +1,66 @@
 
-/**
- * Helper functions for social media integration
- */
+import { supabase } from '@/integrations/supabase/client';
 
-/**
- * Get platform name from ID
- * @param platformId The platform ID
- * @returns The formatted platform name
- */
+// Get the current user ID from Supabase auth
+export const getCurrentUserId = async (): Promise<string | null> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user?.id || null;
+  } catch (error) {
+    console.error("Error getting current user:", error);
+    return null;
+  }
+};
+
+// Get platform name from platform ID
 export const getPlatformName = (platformId: string): string => {
   const platforms: Record<string, string> = {
     'facebook': 'Facebook',
+    'instagram': 'Instagram',
     'twitter': 'Twitter',
     'linkedin': 'LinkedIn',
-    'instagram': 'Instagram',
-    'pinterest': 'Pinterest',
     'wordpress': 'WordPress',
+    'wordpress_self': 'WordPress (Self-hosted)',
+    'medium': 'Medium',
+    'pinterest': 'Pinterest',
+    'tiktok': 'TikTok'
   };
   
-  return platforms[platformId] || platformId.charAt(0).toUpperCase() + platformId.slice(1);
+  return platforms[platformId] || platformId;
 };
 
-/**
- * Format date for display
- * @param date Date string
- * @returns Formatted date string
- */
-export const formatDate = (date: string | Date): string => {
-  if (!date) return '';
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleString();
-};
-
-/**
- * Get current user ID from Supabase auth
- * @returns User ID or null if not authenticated
- */
-export const getCurrentUserId = async () => {
-  const { supabase } = await import('@/integrations/supabase/client');
-  const { data } = await supabase.auth.getUser();
-  return data?.user?.id || null;
-};
-
-/**
- * Get platform documentation URL
- * @param platformId The platform ID (e.g., 'facebook', 'wordpress')
- * @returns URL to the platform documentation
- */
+// Get platform documentation URL
 export const getPlatformDocUrl = (platformId: string): string => {
   const docUrls: Record<string, string> = {
-    'facebook': 'https://developers.facebook.com/docs/pages/',
+    'facebook': 'https://developers.facebook.com/docs/',
     'instagram': 'https://developers.facebook.com/docs/instagram-api/',
     'twitter': 'https://developer.twitter.com/en/docs',
-    'linkedin': 'https://developer.linkedin.com/docs',
+    'linkedin': 'https://docs.microsoft.com/en-us/linkedin/',
     'wordpress': 'https://developer.wordpress.org/rest-api/',
+    'wordpress_self': 'https://developer.wordpress.org/rest-api/'
   };
   
   return docUrls[platformId] || '#';
 };
 
-/**
- * Get OAuth configuration for a platform
- * @param platformId The platform ID
- * @returns OAuth configuration object
- */
-export const getPlatformOAuthConfig = (platformId: string) => {
-  const configs: Record<string, any> = {
+// Get platform OAuth configuration
+export const getPlatformOAuthConfig = (platformId: string): Record<string, string> => {
+  const configs: Record<string, Record<string, string>> = {
     'facebook': {
-      appId: '1315958822809269',
-      scopes: 'pages_show_list,pages_read_engagement,pages_manage_posts',
+      scope: 'pages_show_list,pages_read_engagement,pages_manage_posts,public_profile',
+      authUrl: 'https://www.facebook.com/v18.0/dialog/oauth'
     },
     'instagram': {
-      appId: '1315958822809269',
-      scopes: 'instagram_basic,instagram_content_publish,pages_show_list',
+      scope: 'instagram_basic,instagram_content_publish,pages_show_list',
+      authUrl: 'https://www.facebook.com/v18.0/dialog/oauth'
     },
-    'wordpress': {
-      clientId: process.env.WORDPRESS_CLIENT_ID || '',
-      redirectUri: `${window.location.origin}/dashboard/social`,
+    'twitter': {
+      scope: 'tweet.read,tweet.write,users.read',
+      authUrl: 'https://twitter.com/i/oauth2/authorize'
+    },
+    'linkedin': {
+      scope: 'r_liteprofile,r_emailaddress,w_member_social',
+      authUrl: 'https://www.linkedin.com/oauth/v2/authorization'
     }
   };
   
