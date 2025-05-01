@@ -1,95 +1,152 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
+import { updatePlatformSettings } from "@/utils/social/platforms";
 
 interface PlatformSettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  platform: any | null;
-  onSaveSettings: (platformId: string, settings: any) => void;
+  platformId: string | null;
+  platforms: any[];
 }
 
 const PlatformSettingsDialog = ({ 
   open, 
   onOpenChange, 
-  platform, 
-  onSaveSettings 
+  platformId, 
+  platforms 
 }: PlatformSettingsDialogProps) => {
+  const platform = platforms.find(p => p.id === platformId);
+  
+  const [settings, setSettings] = useState({
+    notifyMentions: true,
+    notifyMessages: true,
+    syncFrequency: 'daily'
+  });
+  
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    
+    if (!platformId) return;
+    
+    try {
+      const result = await updatePlatformSettings(platformId, {
+        notifications: {
+          mentions: settings.notifyMentions,
+          messages: settings.notifyMessages
+        },
+        syncFrequency: settings.syncFrequency
+      });
+      
+      if (result) {
+        toast.success("Settings updated successfully");
+        onOpenChange(false);
+      } else {
+        toast.error("Failed to update settings");
+      }
+    } catch (error) {
+      console.error("Error updating settings:", error);
+      toast.error("An error occurred while updating settings");
+    }
+  };
+  
   if (!platform) return null;
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>
-            {platform.name} Settings
-          </DialogTitle>
+          <DialogTitle>{platform.name} Settings</DialogTitle>
         </DialogHeader>
-        <div className="py-4 space-y-4">
-          <div className="space-y-2">
-            <Label>Sync Frequency</Label>
-            <select
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              defaultValue={platform.syncFrequency || "daily"}
-              onChange={(e) => {
-                onSaveSettings(platform.id, {
-                  syncFrequency: e.target.value as "realtime" | "hourly" | "daily"
-                });
-              }}
-            >
-              <option value="realtime">Real-time</option>
-              <option value="hourly">Hourly</option>
-              <option value="daily">Daily</option>
-            </select>
-          </div>
-          
-          <div className="space-y-2">
-            <Label>Notification Preferences</Label>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="notify-mentions">Mentions & Comments</Label>
-                <input
-                  id="notify-mentions"
-                  type="checkbox"
-                  className="h-4 w-4"
-                  defaultChecked={platform.notifications?.mentions}
-                  onChange={(e) => {
-                    onSaveSettings(platform.id, {
-                      notifications: {
-                        ...platform.notifications,
-                        mentions: e.target.checked
-                      }
-                    });
-                  }}
-                />
+        <form onSubmit={handleSubmit}>
+          <div className="py-4">
+            <div className="mb-6">
+              <h3 className="text-sm font-medium mb-2">Notifications</h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="notify-mentions" className="flex-1">
+                    Notify about mentions
+                  </Label>
+                  <Switch 
+                    id="notify-mentions" 
+                    checked={settings.notifyMentions}
+                    onCheckedChange={(checked) => setSettings({...settings, notifyMentions: checked})}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="notify-messages" className="flex-1">
+                    Notify about messages
+                  </Label>
+                  <Switch 
+                    id="notify-messages" 
+                    checked={settings.notifyMessages}
+                    onCheckedChange={(checked) => setSettings({...settings, notifyMessages: checked})}
+                  />
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="notify-messages">Direct Messages</Label>
-                <input
-                  id="notify-messages"
-                  type="checkbox"
-                  className="h-4 w-4"
-                  defaultChecked={platform.notifications?.messages}
-                  onChange={(e) => {
-                    onSaveSettings(platform.id, {
-                      notifications: {
-                        ...platform.notifications,
-                        messages: e.target.checked
-                      }
-                    });
-                  }}
-                />
+            </div>
+            
+            <div className="mb-6">
+              <h3 className="text-sm font-medium mb-2">Data Synchronization</h3>
+              <div className="space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="sync-frequency">Sync Frequency</Label>
+                  <Select 
+                    value={settings.syncFrequency}
+                    onValueChange={(value) => setSettings({...settings, syncFrequency: value})}
+                  >
+                    <SelectTrigger id="sync-frequency">
+                      <SelectValue placeholder="Select frequency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="hourly">Hourly</SelectItem>
+                      <SelectItem value="daily">Daily</SelectItem>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-sm font-medium mb-2">Account Information</h3>
+              <div className="space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="account-name">Account Name</Label>
+                  <Input 
+                    id="account-name" 
+                    value={platform.accountName || 'Not available'} 
+                    disabled 
+                  />
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="last-sync">Last Synchronized</Label>
+                  <Input 
+                    id="last-sync" 
+                    value={platform.lastSync ? new Date(platform.lastSync).toLocaleString() : 'Never'} 
+                    disabled 
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit">
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

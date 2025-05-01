@@ -1,40 +1,64 @@
 
-/**
- * Type definitions for social media integration
- */
-
-export interface SocialPlatform {
+// Social Platform Types
+export type SocialPlatform = {
   id: string;
   name: string;
   icon: string;
   isConnected: boolean;
-  accountName?: string | null;
-  lastSync?: string | null;
-  userId?: string | null;
-}
+  accountName: string | null;
+  lastSync: string | null;
+  userId: string;
+};
 
-export interface PlatformSettings {
-  notifications: {
-    mentions: boolean;
-    messages: boolean;
-    comments?: boolean;
+// Social Connection Types
+export interface SocialConnection {
+  platformId: string;
+  accessToken: string;
+  refreshToken?: string;
+  expiresAt?: string;
+  userData: {
+    id: string;
+    name: string;
+    email?: string;
+    avatar?: string;
   };
-  syncFrequency: 'realtime' | 'hourly' | 'daily' | 'weekly';
-  autoPublish?: boolean;
 }
 
-export interface ScheduledPost {
+// Post Types
+export enum PostStatus {
+  DRAFT = 'draft',
+  SCHEDULED = 'scheduled',
+  PUBLISHED = 'published',
+  FAILED = 'failed'
+}
+
+export enum PostType {
+  SOCIAL = 'social',
+  BLOG = 'blog'
+}
+
+export interface Post {
   id: string;
+  userId: string;
   title: string;
   content: string;
-  scheduledFor: string;
+  status: PostStatus;
+  type: PostType;
+  imageUrl?: string;
+  scheduledFor?: string;
+  publishedAt?: string;
+  createdAt: string;
+  updatedAt: string;
   platforms: string[];
 }
 
-export interface Mention {
-  id: string;
-  platform: string;
-  username: string;
-  timeAgo: string;
-  content: string;
+// Analytics Types
+export interface PostAnalytics {
+  postId: string;
+  platformId: string;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  clicks: number;
 }

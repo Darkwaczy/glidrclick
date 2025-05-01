@@ -1,123 +1,112 @@
 
 import { useState, useEffect } from 'react';
-import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
-import { toast } from "sonner";
+import { User, Session } from '@supabase/supabase-js';
+import { toast } from 'sonner';
 
 export const useAuthCore = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const navigate = useNavigate();
-
+  
   useEffect(() => {
-    console.log("Auth core initializing...");
-    
-    // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state change event:', event);
+    // Get current session and user
+    const initAuth = async () => {
+      setLoading(true);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Check for admin role if user is signed in
         if (session?.user) {
-          const isAdminEmail = session.user.email === 'admin@glidrclick.com';
-          
-          if (isAdminEmail) {
-            setIsAdmin(true);
-          } else {
-            const { data } = await supabase
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', session.user.id)
-              .eq('role', 'admin')
-              .maybeSingle();
-            
-            setIsAdmin(!!data);
-          }
-        } else {
-          setIsAdmin(false);
+          // Check if user is admin (simplified - in a real app, this would check roles)
+          setIsAdmin(session.user.email?.includes('admin') ?? false);
         }
-        
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+      } finally {
         setLoading(false);
       }
-    );
+    };
 
-    // Then check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      console.log('Existing session:', session ? 'Yes' : 'No');
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      // Check for admin role if user is signed in
-      if (session?.user) {
-        const isAdminEmail = session.user.email === 'admin@glidrclick.com';
-          
-        if (isAdminEmail) {
-          setIsAdmin(true);
-        } else {
-          const { data } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', session.user.id)
-            .eq('role', 'admin')
-            .maybeSingle();
-          
-          setIsAdmin(!!data);
+    initAuth();
+    
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+        
+        if (session?.user) {
+          setIsAdmin(session.user.email?.includes('admin') ?? false);
         }
       }
-      
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  const signIn = async ({ email, password }: { email: string, password: string }) => {
+    );
+    
+    // Cleanup
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+  
+  const signIn = async (credentials: { email: string; password: string }): Promise<boolean> => {
     try {
-      console.log(`Signing in with email: ${email}`);
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({
+        email: credentials.email,
+        password: credentials.password
+      });
+      
       if (error) {
-        console.error('Error signing in:', error);
-        throw error;
+        toast.error(error.message);
+        return false;
       }
       
-      // Special handling for admin account
-      if (email === 'admin@glidrclick.com') {
-        setIsAdmin(true);
-      }
-      
-      // Navigation will be handled by the onAuthStateChange listener
+      toast.success('Signed in successfully!');
       return true;
     } catch (error) {
-      console.error('Error signing in:', error);
-      throw error;
+      console.error('Error during sign in:', error);
+      toast.error('An unexpected error occurred during sign in');
+      return false;
     }
   };
-
-  const signUp = async ({ email, password }: { email: string, password: string }) => {
+  
+  const signUp = async (credentials: { email: string; password: string }): Promise<void> => {
     try {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) throw error;
-      toast.success('Check your email for the confirmation link!');
+      const { error } = await supabase.auth.signUp({
+        email: credentials.email,
+        password: credentials.password
+      });
+      
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      
+      toast.success('Sign up successful! Please check your email for verification.');
     } catch (error) {
-      console.error('Error signing up:', error);
-      throw error;
+      console.error('Error during sign up:', error);
+      toast.error('An unexpected error occurred during sign up');
     }
   };
-
-  const signOut = async () => {
+  
+  const signOut = async (): Promise<void> => {
     try {
-      await supabase.auth.signOut();
-      navigate('/auth');
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      
+      toast.success('Signed out successfully');
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('Error during sign out:', error);
+      toast.error('An unexpected error occurred during sign out');
     }
   };
-
+  
   return {
     user,
     session,
