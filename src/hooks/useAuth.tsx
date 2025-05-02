@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { useAuthCore } from './auth/useAuthCore';
 import { useSocialConnections } from './auth/useSocialConnections';
 
