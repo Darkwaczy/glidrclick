@@ -39,10 +39,12 @@ serve(async (req) => {
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     
     if (userError || !userData.user) {
+      console.error("Authentication error:", userError);
       throw new Error("Authentication failed");
     }
     
     const user = userData.user;
+    console.log(`Creating payment for user: ${user.id}, plan: ${plan}, isAnnual: ${isAnnual}`);
     
     // Determine pricing based on plan and billing cycle
     let amount;
@@ -78,6 +80,8 @@ serve(async (req) => {
     // Create a unique reference for this payment
     const reference = `glidrclick-${plan}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
+    console.log(`Generated payment reference: ${reference}`);
+
     // Initialize Flutterwave payment
     const response = await fetch("https://api.flutterwave.com/v3/payments", {
       method: "POST",
@@ -109,7 +113,10 @@ serve(async (req) => {
 
     const paymentData = await response.json();
     
+    console.log("Flutterwave payment response:", JSON.stringify(paymentData));
+    
     if (!paymentData.status || paymentData.status !== "success") {
+      console.error("Payment initialization failed:", paymentData);
       throw new Error(paymentData.message || "Failed to initialize payment");
     }
 
@@ -120,7 +127,7 @@ serve(async (req) => {
     );
 
     // Record the pending subscription
-    await supabaseAdmin.from('subscriptions').insert({
+    const { data, error } = await supabaseAdmin.from('subscriptions').insert({
       user_id: user.id,
       plan: plan,
       billing_cycle: interval,
@@ -130,6 +137,13 @@ serve(async (req) => {
       currency: currency,
       next_billing_date: new Date(Date.now() + (isAnnual ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString()
     });
+
+    if (error) {
+      console.error("Error creating subscription record:", error);
+      // We still continue because the payment has been initialized successfully
+    } else {
+      console.log("Subscription record created");
+    }
 
     return new Response(
       JSON.stringify({ 

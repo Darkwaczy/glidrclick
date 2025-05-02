@@ -27,6 +27,8 @@ serve(async (req) => {
       throw new Error("Payment reference is required");
     }
 
+    console.log(`Verifying Flutterwave payment with reference: ${reference}`);
+
     // Verify the transaction
     const response = await fetch(`https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${reference}`, {
       method: "GET",
@@ -38,8 +40,11 @@ serve(async (req) => {
 
     const verificationData = await response.json();
     
+    console.log("Flutterwave verification response:", JSON.stringify(verificationData));
+    
     if (!verificationData.status || verificationData.status !== "success") {
-      throw new Error("Payment verification failed");
+      console.error("Payment verification failed:", verificationData);
+      throw new Error("Payment verification failed: " + (verificationData.message || "Unknown error"));
     }
 
     const paymentStatus = verificationData.data?.status;
@@ -59,11 +64,14 @@ serve(async (req) => {
       .single();
       
     if (fetchError || !subscriptionData) {
-      throw new Error("Subscription not found");
+      console.error("Subscription fetch error:", fetchError);
+      throw new Error("Subscription not found for reference: " + reference);
     }
 
+    console.log("Found subscription:", subscriptionData.id);
+
     // Update the subscription status
-    await supabaseAdmin
+    const { error: updateError } = await supabaseAdmin
       .from('subscriptions')
       .update({
         status: isSuccessful ? 'active' : 'failed',
@@ -71,6 +79,13 @@ serve(async (req) => {
         payment_details: verificationData.data
       })
       .eq('payment_reference', reference);
+    
+    if (updateError) {
+      console.error("Subscription update error:", updateError);
+      throw new Error("Failed to update subscription status");
+    }
+
+    console.log(`Subscription ${subscriptionData.id} updated to status: ${isSuccessful ? 'active' : 'failed'}`);
 
     return new Response(
       JSON.stringify({ 
