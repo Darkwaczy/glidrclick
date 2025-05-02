@@ -36,7 +36,7 @@ const SocialPage = () => {
   }, []);
 
   if (socialHook.processingOAuth) {
-    return <OAuthProcessingMessage />;
+    return <OAuthProcessingMessage processingOAuth={socialHook.processingOAuth} />;
   }
 
   // Mobile-optimized view
@@ -46,6 +46,8 @@ const SocialPage = () => {
         <SocialPageHeader 
           onRefresh={socialHook.handleRefreshConnections} 
           isRefreshing={socialHook.isRefreshing}
+          isLoading={socialHook.isLoading}
+          processingOAuth={socialHook.processingOAuth}
           onOpenConnectDialog={socialHook.handleOpenConnectDialog}
         />
         
@@ -85,26 +87,23 @@ const SocialPage = () => {
       <SocialPageHeader 
         onRefresh={socialHook.handleRefreshConnections} 
         isRefreshing={socialHook.isRefreshing}
+        isLoading={socialHook.isLoading}
+        processingOAuth={socialHook.processingOAuth}
         onOpenConnectDialog={socialHook.handleOpenConnectDialog}
       />
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
         <div className="md:col-span-2">
-          <SocialPageTabs 
-            scheduledPosts={socialHook.scheduledPostsList}
-            onCreatePost={socialHook.handleCreatePost}
-            onEditPost={socialHook.setEditingPostId}
-            onCancelPost={socialHook.handleCancelPost}
-          />
+          <SocialPageTabs social={socialHook} />
         </div>
         
         <div>
           <ConnectedPlatformsList 
             platforms={socialHook.platforms}
             isLoading={socialHook.isLoading} 
-            onConnectClick={socialHook.handleOpenConnectDialog}
-            onDisconnectClick={socialHook.handleDisconnectPlatform}
-            onSettingsClick={socialHook.handleOpenPlatformSettings}
+            onOpenConnectDialog={socialHook.handleOpenConnectDialog}
+            onDisconnectPlatform={socialHook.handleDisconnectPlatform}
+            onOpenPlatformSettings={socialHook.handleOpenPlatformSettings}
           />
           
           <div className="mt-6">

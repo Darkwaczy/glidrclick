@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { SocialPageHook } from "@/hooks/useSocialPage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -20,10 +19,40 @@ import EditPostDialog from "./dialogs/EditPostDialog";
 import ConnectWordPressDialog from "./dialogs/ConnectWordPressDialog";
 
 interface SocialPageDialogsProps {
-  social: SocialPageHook;
+  // Add the socialHook prop
+  socialHook: SocialPageHook;
+  // Keep other props for backwards compatibility
+  platforms: any[];
+  showSettingsDialog: boolean;
+  showConnectDialog: boolean;
+  showWordPressDialog: boolean;
+  showCreatePostDialog: boolean;
+  currentPlatform: any;
+  onSettingsDialogChange: (open: boolean) => void;
+  onConnectDialogChange: (open: boolean) => void;
+  onWordPressDialogChange: (open: boolean) => void;
+  onCreatePostDialogChange: (open: boolean) => void;
+  onConnectPlatform: (platformId: string) => void;
+  onSaveSettings: (platformId: string, settings: any) => void;
+  onSubmitPost: (e: React.FormEvent) => void;
 }
 
-const SocialPageDialogs: React.FC<SocialPageDialogsProps> = ({ social }) => {
+const SocialPageDialogs: React.FC<SocialPageDialogsProps> = ({ 
+  socialHook,
+  platforms,
+  showSettingsDialog,
+  showConnectDialog,
+  showWordPressDialog,
+  showCreatePostDialog,
+  currentPlatform,
+  onSettingsDialogChange,
+  onConnectDialogChange,
+  onWordPressDialogChange,
+  onCreatePostDialogChange,
+  onConnectPlatform,
+  onSaveSettings,
+  onSubmitPost
+}) => {
   const [postType, setPostType] = useState<"standard" | "image" | "link" | "video">("standard");
   const [postContent, setPostContent] = useState("");
   const [postTitle, setPostTitle] = useState("");
@@ -72,7 +101,7 @@ const SocialPageDialogs: React.FC<SocialPageDialogsProps> = ({ social }) => {
     setScheduleTime("");
     setIsScheduled(false);
     setPostType("standard");
-    social.setShowCreatePostDialog(false);
+    onCreatePostDialogChange(false);
   };
 
   // Toggle platform selection
@@ -87,28 +116,28 @@ const SocialPageDialogs: React.FC<SocialPageDialogsProps> = ({ social }) => {
   return (
     <>
       <PlatformSettingsDialog
-        open={social.showSettingsDialog}
-        onOpenChange={social.setShowSettingsDialog}
-        platformId={social.currentPlatform}
-        platforms={social.platforms}
+        open={showSettingsDialog}
+        onOpenChange={onSettingsDialogChange}
+        platformId={socialHook.currentPlatform}
+        platforms={socialHook.platforms}
       />
       
       <ConnectPlatformDialog
-        open={social.showConnectDialog}
-        onOpenChange={social.setShowConnectDialog}
-        onConnect={social.handleConnectPlatform}
+        open={showConnectDialog}
+        onOpenChange={onConnectDialogChange}
+        onConnect={onConnectPlatform}
       />
       
       <ReplyMentionDialog
-        open={social.replyingToMention !== null}
-        onOpenChange={(open) => !open && social.setReplyingToMention(null)}
-        mention={social.mentionsList.find(m => m.id === social.replyingToMention) || null}
-        replyContent={social.replyContent}
-        onReplyContentChange={social.setReplyContent}
-        onSubmitReply={social.handleSubmitReply}
+        open={socialHook.replyingToMention !== null}
+        onOpenChange={(open) => !open && socialHook.setReplyingToMention(null)}
+        mention={socialHook.mentionsList.find(m => m.id === socialHook.replyingToMention) || null}
+        replyContent={socialHook.replyContent}
+        onReplyContentChange={socialHook.setReplyContent}
+        onSubmitReply={socialHook.handleSubmitReply}
       />
       
-      <Dialog open={social.showCreatePostDialog} onOpenChange={social.setShowCreatePostDialog}>
+      <Dialog open={showCreatePostDialog} onOpenChange={onCreatePostDialogChange}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Create New Post</DialogTitle>
@@ -117,7 +146,7 @@ const SocialPageDialogs: React.FC<SocialPageDialogsProps> = ({ social }) => {
             </DialogDescription>
           </DialogHeader>
           
-          <form onSubmit={handleSubmitNewPost} className="space-y-6">
+          <form onSubmit={onSubmitPost} className="space-y-6">
             <div className="space-y-1">
               <Label htmlFor="post-type">Post Type</Label>
               <Tabs defaultValue="standard" value={postType} onValueChange={(v) => setPostType(v as any)}>
@@ -262,7 +291,7 @@ const SocialPageDialogs: React.FC<SocialPageDialogsProps> = ({ social }) => {
             <div>
               <Label className="block mb-2">Select Platforms</Label>
               <div className="grid grid-cols-2 gap-4">
-                {social.platforms.map((platform) => (
+                {platforms.map((platform) => (
                   <div key={platform.id} className="flex items-center space-x-2">
                     <Checkbox
                       id={`platform-${platform.id}`}
@@ -278,15 +307,15 @@ const SocialPageDialogs: React.FC<SocialPageDialogsProps> = ({ social }) => {
                   </div>
                 ))}
               </div>
-              {social.platforms.length === 0 && (
+              {platforms.length === 0 && (
                 <div className="text-center py-2 border rounded-md bg-gray-50">
                   <p className="text-sm text-gray-500">No platforms connected</p>
                   <Button 
                     variant="link" 
                     type="button" 
                     onClick={() => {
-                      social.setShowCreatePostDialog(false);
-                      social.setShowConnectDialog(true);
+                      onCreatePostDialogChange(false);
+                      onConnectDialogChange(true);
                     }}
                   >
                     Connect a platform
@@ -353,15 +382,15 @@ const SocialPageDialogs: React.FC<SocialPageDialogsProps> = ({ social }) => {
       </Dialog>
       
       <EditPostDialog
-        open={social.editingPostId !== null}
-        onOpenChange={() => social.setEditingPostId(null)}
-        post={social.scheduledPostsList.find(p => p.id === social.editingPostId) || null}
-        onSubmit={social.handleUpdatePost}
+        open={socialHook.editingPostId !== null}
+        onOpenChange={() => socialHook.setEditingPostId(null)}
+        post={socialHook.scheduledPostsList.find(p => p.id === socialHook.editingPostId) || null}
+        onSubmit={socialHook.handleUpdatePost}
       />
       
       <ConnectWordPressDialog
-        open={social.showWordPressDialog}
-        onOpenChange={social.setShowWordPressDialog}
+        open={showWordPressDialog}
+        onOpenChange={onWordPressDialogChange}
       />
     </>
   );

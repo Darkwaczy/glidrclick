@@ -8,13 +8,15 @@ interface SocialPageHeaderProps {
   isLoading: boolean;
   processingOAuth: boolean;
   onRefresh: () => void;
+  onOpenConnectDialog?: () => void; // Added this prop
 }
 
 const SocialPageHeader: React.FC<SocialPageHeaderProps> = ({
   isRefreshing,
   isLoading,
   processingOAuth,
-  onRefresh
+  onRefresh,
+  onOpenConnectDialog
 }) => {
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -23,10 +25,17 @@ const SocialPageHeader: React.FC<SocialPageHeaderProps> = ({
         <p className="text-gray-600">Connect and manage your social media accounts</p>
       </div>
       
-      <Button onClick={onRefresh} disabled={isRefreshing || isLoading || processingOAuth}>
-        <RefreshCw size={16} className={`mr-2 ${isRefreshing || processingOAuth ? 'animate-spin' : ''}`} /> 
-        {processingOAuth ? 'Processing...' : isRefreshing ? 'Refreshing...' : 'Refresh Connections'}
-      </Button>
+      <div className="flex gap-2">
+        {onOpenConnectDialog && (
+          <Button variant="outline" onClick={onOpenConnectDialog}>
+            Connect Platform
+          </Button>
+        )}
+        <Button onClick={onRefresh} disabled={isRefreshing || isLoading || processingOAuth}>
+          <RefreshCw size={16} className={`mr-2 ${isRefreshing || processingOAuth ? 'animate-spin' : ''}`} /> 
+          {processingOAuth ? 'Processing...' : isRefreshing ? 'Refreshing...' : 'Refresh Connections'}
+        </Button>
+      </div>
     </div>
   );
 };
