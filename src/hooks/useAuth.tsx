@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { useAuthCore } from './auth/useAuthCore';
 
 export const useAuth = () => {

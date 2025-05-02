@@ -36,17 +36,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => clearTimeout(timer);
   }, [auth.loading]);
 
-  const value = {
-    isAuthenticated: !!auth.user,
-    isAdmin: auth.isAdmin,
-    user: auth.user,
-    session: auth.session,
-    loading: auth.loading,
-    signIn: auth.signIn,
-    signUp: auth.signUp,
-    signOut: auth.signOut
-  };
-
   if (isInitializing) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -57,6 +46,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       </div>
     );
   }
+
+  const value = {
+    isAuthenticated: !!auth.user,
+    isAdmin: auth.isAdmin,
+    user: auth.user,
+    session: auth.session,
+    loading: auth.loading,
+    signIn: auth.signIn,
+    signUp: auth.signUp,
+    signOut: auth.signOut
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
