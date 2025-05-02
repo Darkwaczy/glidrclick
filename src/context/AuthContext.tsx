@@ -18,8 +18,8 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const auth = useAuth();
   const [isInitializing, setIsInitializing] = useState(true);
+  const auth = useAuth();
   
   useEffect(() => {
     // Set a timeout to prevent UI flickering for fast auth loads
