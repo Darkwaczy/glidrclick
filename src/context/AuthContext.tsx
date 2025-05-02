@@ -13,6 +13,7 @@ type AuthContextType = {
   signIn: (credentials: { email: string; password: string }) => Promise<boolean>;
   signUp: (credentials: { email: string; password: string }) => Promise<void>;
   signOut: () => Promise<void>;
+  socialConnections?: ReturnType<typeof useAuth>['socialConnections'];
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,7 +56,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading: auth.loading,
     signIn: auth.signIn,
     signUp: auth.signUp,
-    signOut: auth.signOut
+    signOut: auth.signOut,
+    socialConnections: auth.socialConnections
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
