@@ -19,6 +19,11 @@ serve(async (req) => {
     if (!FLUTTERWAVE_SECRET_KEY) {
       throw new Error("Flutterwave secret key not configured");
     }
+    
+    // Remove any trailing 'X' or '-X' if present in the key
+    const cleanKey = FLUTTERWAVE_SECRET_KEY.replace(/-X$/, '');
+    
+    console.log("Using Flutterwave API with properly formatted key");
 
     // Extract request details
     const { reference } = await req.json();
@@ -33,7 +38,7 @@ serve(async (req) => {
     const response = await fetch(`https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${reference}`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${FLUTTERWAVE_SECRET_KEY}`,
+        "Authorization": `Bearer ${cleanKey}`,
         "Content-Type": "application/json"
       }
     });

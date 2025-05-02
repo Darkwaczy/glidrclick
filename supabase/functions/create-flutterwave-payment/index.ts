@@ -20,6 +20,11 @@ serve(async (req) => {
       throw new Error("Flutterwave secret key not configured");
     }
 
+    // Remove any trailing 'X' or '-X' if present in the key
+    const cleanKey = FLUTTERWAVE_SECRET_KEY.replace(/-X$/, '');
+    
+    console.log("Using Flutterwave API with properly formatted key");
+
     // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? "",
@@ -86,7 +91,7 @@ serve(async (req) => {
     const response = await fetch("https://api.flutterwave.com/v3/payments", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${FLUTTERWAVE_SECRET_KEY}`,
+        "Authorization": `Bearer ${cleanKey}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
