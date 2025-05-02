@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { ArrowLeft, Loader } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import AIContentGenerator from "@/components/dashboard/content/AIContentGenerator";
 import PlatformSelector from "@/components/dashboard/content/PlatformSelector";
 import CategorySelector from "@/components/dashboard/content/CategorySelector";
@@ -16,6 +17,7 @@ import ContentEditor from "@/components/dashboard/content/ContentEditor";
 import ImageGenerator from "@/components/dashboard/content/ImageGenerator";
 import ImageUploader from "@/components/dashboard/content/ImageUploader";
 import RssFeedSelector from "@/components/dashboard/content/RssFeedSelector";
+import AIAdvancedAnalysis from "@/components/dashboard/content/AIAdvancedAnalysis";
 import { generateContent, generateTitle } from "@/services/aiService";
 import { schedulePost } from "@/utils/socialConnections";
 
@@ -34,6 +36,7 @@ const NewPostPage = () => {
   const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeImageTab, setActiveImageTab] = useState<string>("generator");
+  const [showAdvancedAnalysis, setShowAdvancedAnalysis] = useState(false);
 
   const handleGenerateContent = async () => {
     if (!selectedCategory || !selectedTone) {
@@ -124,6 +127,20 @@ const NewPostPage = () => {
       setIsSubmitting(false);
     }
   };
+  
+  const handleAdvancedAnalysis = () => {
+    setShowAdvancedAnalysis(true);
+  };
+  
+  const handleApplySuggestion = (type: string, value: string) => {
+    if (type === 'title') {
+      setTitle(value);
+      toast.success("Title updated with AI suggestion");
+    } else if (type === 'content') {
+      setContent(prev => value + "\n\n" + prev);
+      toast.success("Content updated with AI suggestion");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -186,6 +203,7 @@ const NewPostPage = () => {
                         <AIContentGenerator 
                           selectedModel={aiModel}
                           onSelectModel={setAiModel}
+                          onRequestAdvancedAnalysis={handleAdvancedAnalysis}
                         />
                         
                         <CategorySelector 
@@ -364,6 +382,18 @@ const NewPostPage = () => {
           </Card>
         </div>
       </div>
+      
+      <Dialog open={showAdvancedAnalysis} onOpenChange={setShowAdvancedAnalysis}>
+        <DialogContent className="max-w-5xl p-0">
+          <AIAdvancedAnalysis
+            title={title}
+            content={content} 
+            platforms={selectedPlatforms}
+            onApplySuggestion={handleApplySuggestion}
+            onClose={() => setShowAdvancedAnalysis(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

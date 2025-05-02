@@ -1,17 +1,29 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Button } from "@/components/ui/button";
+import { Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface AIContentGeneratorProps {
   selectedModel: string;
   onSelectModel: (model: string) => void;
+  onRequestAdvancedAnalysis?: () => void;
 }
 
 const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({ 
   selectedModel, 
-  onSelectModel 
+  onSelectModel,
+  onRequestAdvancedAnalysis
 }) => {
+  const [showAdvancedFeatures, setShowAdvancedFeatures] = useState(false);
+  
   const aiModels = [
     { id: "llama", name: "LLaMA 3", description: "Meta's powerful 70B language model" },
     { id: "claude", name: "Claude", description: "Anthropic's advanced AI assistant" },
@@ -19,9 +31,24 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({
     { id: "gemini", name: "Gemini", description: "Google's multimodal AI model" }
   ];
 
+  const toggleAdvancedFeatures = () => {
+    setShowAdvancedFeatures(!showAdvancedFeatures);
+  };
+
   return (
-    <div className="space-y-3">
-      <Label>Choose AI Model</Label>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <Label>Choose AI Model</Label>
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={toggleAdvancedFeatures}
+          className="text-xs"
+        >
+          {showAdvancedFeatures ? "Hide" : "Show"} Advanced Features
+        </Button>
+      </div>
+      
       <RadioGroup 
         value={selectedModel} 
         onValueChange={onSelectModel}
@@ -37,6 +64,70 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({
           </div>
         ))}
       </RadioGroup>
+      
+      {showAdvancedFeatures && (
+        <div className="mt-4 space-y-3 border-t pt-4">
+          <h3 className="font-medium flex items-center gap-2">
+            Advanced AI Analysis
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Info className="h-4 w-4 text-gray-500" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="max-w-xs">Using audience data and platform analytics to provide intelligent recommendations</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Button 
+              variant="outline" 
+              className="justify-start h-auto py-3"
+              onClick={onRequestAdvancedAnalysis}
+            >
+              <div className="text-left">
+                <div className="font-medium">Audience Analysis</div>
+                <p className="text-xs text-gray-500">Recommend optimal posting times</p>
+              </div>
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="justify-start h-auto py-3"
+              onClick={onRequestAdvancedAnalysis}
+            >
+              <div className="text-left">
+                <div className="font-medium">Content Personalization</div>
+                <p className="text-xs text-gray-500">Adapt to platform analytics</p>
+              </div>
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="justify-start h-auto py-3"
+              onClick={onRequestAdvancedAnalysis}
+            >
+              <div className="text-left">
+                <div className="font-medium">A/B Testing</div>
+                <p className="text-xs text-gray-500">Test headlines and content variations</p>
+              </div>
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="justify-start h-auto py-3"
+              onClick={onRequestAdvancedAnalysis}
+            >
+              <div className="text-left">
+                <div className="font-medium">SEO Optimization</div>
+                <p className="text-xs text-gray-500">Improve content for search engines</p>
+              </div>
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
