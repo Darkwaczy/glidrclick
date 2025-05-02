@@ -2,20 +2,12 @@
 import { useState, useEffect } from 'react';
 
 interface TypeAnimationProps {
-  texts?: string[];  
+  texts: string[];  // Changed from single text to array of texts
   speed?: number;
   className?: string;
 }
 
-const TypeAnimation = ({ 
-  texts = [
-    "Ideate. Create. Share. Engage.",
-    "Write. Schedule. Share. Succeed.",
-    "Plan. Write. Post. Repeat."
-  ], 
-  speed = 100, 
-  className = '' 
-}: TypeAnimationProps) => {
+const TypeAnimation = ({ texts, speed = 100, className = '' }: TypeAnimationProps) => {
   const [displayText, setDisplayText] = useState('');
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
@@ -60,8 +52,8 @@ const TypeAnimation = ({
 
   return (
     <div className={`inline-block ${className}`}>
-      <span className="text-xl text-gray-600">{displayText}</span>
-      <span className="border-r-2 border-[#9b87f5] ml-1 animate-blink-caret">&nbsp;</span>
+      <span>{displayText}</span>
+      <span className="border-r-2 border-glidr-bright-purple ml-1 animate-blink-caret">&nbsp;</span>
     </div>
   );
 };

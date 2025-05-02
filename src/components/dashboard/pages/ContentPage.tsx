@@ -1,67 +1,18 @@
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { FileText, Plus, Eye, Edit, Trash2, Loader2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { usePosts, type Post } from "@/hooks/usePosts";
-import { supabase } from "@/integrations/supabase/client";
+import { FileText, Plus, Eye, Edit, Trash2 } from "lucide-react";
 
 const ContentPage = () => {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
-  const [viewContent, setViewContent] = useState<Post | null>(null);
-  const [editContent, setEditContent] = useState<Post | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   
-  const { posts, isLoading, deletePost, updatePost } = usePosts(activeTab === 'all' ? undefined : activeTab);
-  
-  const handleCreateContent = () => {
-    navigate("/dashboard/new-post");
+  const handleAction = (action: string, id: number) => {
+    toast.success(`${action} content ${id}`);
   };
 
-  const handleAction = (action: string, post: Post) => {
-    switch (action) {
-      case "view":
-        setViewContent(post);
-        break;
-      case "edit":
-        setEditContent(post);
-        break;
-      case "delete":
-        setDeleteConfirm(post.id);
-        break;
-      default:
-        break;
-    }
-  };
-  
-  const handleSaveEdit = () => {
-    if (!editContent) return;
-    
-    updatePost({
-      id: editContent.id,
-      data: {
-        title: editContent.title,
-        content: editContent.content
-      }
-    });
-    
-    setEditContent(null);
-  };
-  
-  const handleDeleteConfirm = () => {
-    if (!deleteConfirm) return;
-    
-    deletePost(deleteConfirm);
-    setDeleteConfirm(null);
-  };
-  
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -70,7 +21,7 @@ const ContentPage = () => {
           <p className="text-gray-600">Manage all your content in one place</p>
         </div>
         
-        <Button onClick={handleCreateContent}>
+        <Button onClick={() => toast.success("Creating new content...")}>
           <Plus size={16} className="mr-2" /> Create Content
         </Button>
       </div>
@@ -79,147 +30,92 @@ const ContentPage = () => {
         <TabsList>
           <TabsTrigger value="all">All Content</TabsTrigger>
           <TabsTrigger value="published">Published</TabsTrigger>
-          <TabsTrigger value="draft">Drafts</TabsTrigger>
+          <TabsTrigger value="drafts">Drafts</TabsTrigger>
           <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
           <TabsTrigger value="archived">Archived</TabsTrigger>
         </TabsList>
         
         <TabsContent value="all" className="mt-6">
           <ContentList 
-            items={posts}
-            isLoading={isLoading}
-            onView={(post) => handleAction("view", post)}
-            onEdit={(post) => handleAction("edit", post)}
-            onDelete={(post) => handleAction("delete", post)}
+            items={[
+              { id: 1, title: "10 Social Media Tips for 2025", type: "blog", status: "published", date: "Apr 25, 2025" },
+              { id: 2, title: "Email Marketing Strategies", type: "newsletter", status: "draft", date: "Apr 24, 2025" },
+              { id: 3, title: "Instagram Growth Tactics", type: "social", status: "scheduled", date: "Apr 28, 2025" },
+              { id: 4, title: "SEO Best Practices", type: "blog", status: "published", date: "Apr 22, 2025" },
+              { id: 5, title: "Content Calendar Template", type: "resource", status: "archived", date: "Apr 10, 2025" }
+            ]}
+            onView={(id) => handleAction("Viewing", id)}
+            onEdit={(id) => handleAction("Editing", id)}
+            onDelete={(id) => handleAction("Deleting", id)}
           />
         </TabsContent>
         
         <TabsContent value="published" className="mt-6">
           <ContentList 
-            items={posts}
-            isLoading={isLoading}
-            onView={(post) => handleAction("view", post)}
-            onEdit={(post) => handleAction("edit", post)}
-            onDelete={(post) => handleAction("delete", post)}
+            items={[
+              { id: 1, title: "10 Social Media Tips for 2025", type: "blog", status: "published", date: "Apr 25, 2025" },
+              { id: 4, title: "SEO Best Practices", type: "blog", status: "published", date: "Apr 22, 2025" },
+            ]}
+            onView={(id) => handleAction("Viewing", id)}
+            onEdit={(id) => handleAction("Editing", id)}
+            onDelete={(id) => handleAction("Deleting", id)}
           />
         </TabsContent>
         
-        <TabsContent value="draft" className="mt-6">
+        <TabsContent value="drafts" className="mt-6">
           <ContentList 
-            items={posts}
-            isLoading={isLoading}
-            onView={(post) => handleAction("view", post)}
-            onEdit={(post) => handleAction("edit", post)}
-            onDelete={(post) => handleAction("delete", post)}
+            items={[
+              { id: 2, title: "Email Marketing Strategies", type: "newsletter", status: "draft", date: "Apr 24, 2025" },
+            ]}
+            onView={(id) => handleAction("Viewing", id)}
+            onEdit={(id) => handleAction("Editing", id)}
+            onDelete={(id) => handleAction("Deleting", id)}
           />
         </TabsContent>
         
         <TabsContent value="scheduled" className="mt-6">
           <ContentList 
-            items={posts}
-            isLoading={isLoading}
-            onView={(post) => handleAction("view", post)}
-            onEdit={(post) => handleAction("edit", post)}
-            onDelete={(post) => handleAction("delete", post)}
+            items={[
+              { id: 3, title: "Instagram Growth Tactics", type: "social", status: "scheduled", date: "Apr 28, 2025" },
+            ]}
+            onView={(id) => handleAction("Viewing", id)}
+            onEdit={(id) => handleAction("Editing", id)}
+            onDelete={(id) => handleAction("Deleting", id)}
           />
         </TabsContent>
         
         <TabsContent value="archived" className="mt-6">
           <ContentList 
-            items={posts}
-            isLoading={isLoading}
-            onView={(post) => handleAction("view", post)}
-            onEdit={(post) => handleAction("edit", post)}
-            onDelete={(post) => handleAction("delete", post)}
+            items={[
+              { id: 5, title: "Content Calendar Template", type: "resource", status: "archived", date: "Apr 10, 2025" },
+            ]}
+            onView={(id) => handleAction("Viewing", id)}
+            onEdit={(id) => handleAction("Editing", id)}
+            onDelete={(id) => handleAction("Deleting", id)}
           />
         </TabsContent>
       </Tabs>
-      
-      {/* View Content Dialog */}
-      <Dialog open={viewContent !== null} onOpenChange={() => setViewContent(null)}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>{viewContent?.title}</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p>{viewContent?.content || "No content available."}</p>
-          </div>
-          <DialogFooter>
-            <Button onClick={() => setViewContent(null)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Edit Content Dialog */}
-      <Dialog open={editContent !== null} onOpenChange={() => setEditContent(null)}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Edit Content</DialogTitle>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-title">Title</Label>
-              <Input 
-                id="edit-title" 
-                value={editContent?.title || ""}
-                onChange={(e) => setEditContent(prev => prev ? {...prev, title: e.target.value} : prev)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-content">Content</Label>
-              <textarea 
-                id="edit-content"
-                className="w-full min-h-[200px] p-2 border rounded-md"
-                value={editContent?.content || ""}
-                onChange={(e) => setEditContent(prev => prev ? {...prev, content: e.target.value} : prev)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditContent(null)}>Cancel</Button>
-            <Button onClick={handleSaveEdit}>Save Changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteConfirm !== null} onOpenChange={() => setDeleteConfirm(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-          </DialogHeader>
-          <p>Are you sure you want to delete this content? This action cannot be undone.</p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteConfirm(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDeleteConfirm}>Delete</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
 
-interface ContentListProps {
-  items?: Post[];
-  isLoading: boolean;
-  onView: (post: Post) => void;
-  onEdit: (post: Post) => void;
-  onDelete: (post: Post) => void;
+interface ContentItem {
+  id: number;
+  title: string;
+  type: string;
+  status: string;
+  date: string;
 }
 
-const ContentList = ({ items, isLoading, onView, onEdit, onDelete }: ContentListProps) => {
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="p-6 text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-gray-400" />
-          <p className="text-gray-500 mt-2">Loading content...</p>
-        </CardContent>
-      </Card>
-    );
-  }
+interface ContentListProps {
+  items: ContentItem[];
+  onView: (id: number) => void;
+  onEdit: (id: number) => void;
+  onDelete: (id: number) => void;
+}
 
-  if (!items?.length) {
+const ContentList = ({ items, onView, onEdit, onDelete }: ContentListProps) => {
+  if (items.length === 0) {
     return (
       <Card>
         <CardContent className="p-6 text-center">
@@ -258,18 +154,16 @@ const ContentList = ({ items, isLoading, onView, onEdit, onDelete }: ContentList
                   <td className="p-4">
                     <StatusBadge status={item.status} />
                   </td>
-                  <td className="p-4">
-                    {new Date(item.created_at).toLocaleDateString()}
-                  </td>
+                  <td className="p-4">{item.date}</td>
                   <td className="p-4">
                     <div className="flex justify-end gap-2">
-                      <Button size="icon" variant="ghost" onClick={() => onView(item)}>
+                      <Button size="icon" variant="ghost" onClick={() => onView(item.id)}>
                         <Eye size={16} />
                       </Button>
-                      <Button size="icon" variant="ghost" onClick={() => onEdit(item)}>
+                      <Button size="icon" variant="ghost" onClick={() => onEdit(item.id)}>
                         <Edit size={16} />
                       </Button>
-                      <Button size="icon" variant="ghost" onClick={() => onDelete(item)}>
+                      <Button size="icon" variant="ghost" onClick={() => onDelete(item.id)}>
                         <Trash2 size={16} />
                       </Button>
                     </div>

@@ -10,11 +10,8 @@ import {
   Users,
   BarChart,
   Shield,
-  LogOut,
-  ChevronRight
+  LogOut
 } from "lucide-react";
-import { useAuthContext } from '@/context/AuthContext';
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface AdminSidebarProps {
   activePage: string;
@@ -23,7 +20,6 @@ interface AdminSidebarProps {
 const AdminSidebar = ({ activePage }: AdminSidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, signOut } = useAuthContext();
 
   const handleNavigation = (path: string, tab?: string) => {
     if (tab) {
@@ -35,43 +31,17 @@ const AdminSidebar = ({ activePage }: AdminSidebarProps) => {
     }
   };
 
-  const handleLogout = async () => {
-    await signOut();
+  const handleLogout = () => {
     toast.success("Logged out successfully");
-  };
-
-  // Get user initials for avatar
-  const getInitials = () => {
-    if (!user?.email) return "A";
-    return user.email.substring(0, 2).toUpperCase();
+    navigate("/");
   };
 
   return (
     <div className="hidden md:flex w-64 flex-col bg-white border-r">
       <div className="p-4 flex items-center gap-2 border-b">
-        <h1 className="text-xl font-bold">
-          <span className="text-[#9b87f5]">Glidr</span>
-          <span className="text-gray-800">click</span>
-        </h1>
+        <h1 className="text-xl font-bold gradient-text">Glidrclick</h1>
         <Badge variant="outline" className="ml-auto bg-gray-100">Admin</Badge>
       </div>
-      
-      {user && (
-        <div className="p-4 border-b">
-          <div className="flex items-center gap-3">
-            <Avatar>
-              <AvatarFallback className="bg-purple-100 text-purple-700">
-                {getInitials()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="overflow-hidden">
-              <p className="font-medium truncate">{user.email}</p>
-              <p className="text-xs text-gray-500">Administrator</p>
-            </div>
-          </div>
-        </div>
-      )}
-      
       <div className="flex flex-col flex-grow p-4 space-y-6">
         <div className="space-y-1">
           <h3 className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Admin</h3>
@@ -115,14 +85,6 @@ const AdminSidebar = ({ activePage }: AdminSidebarProps) => {
             <Settings size={18} /> System Settings
           </Button>
         </div>
-        
-        <Button
-          variant="ghost"
-          className="w-full justify-start gap-2 text-glidr-purple border border-dashed border-glidr-purple/50 hover:bg-glidr-purple/10"
-          onClick={() => handleNavigation("/dashboard")}
-        >
-          <ChevronRight size={18} /> Back to User Dashboard
-        </Button>
 
         <div className="mt-auto space-y-1">
           <Button 

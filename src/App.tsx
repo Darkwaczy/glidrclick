@@ -1,41 +1,46 @@
 
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import './App.css';
-import Index from './pages/Index';
-import Dashboard from './pages/Dashboard';
-import AdminDashboard from './pages/AdminDashboard';
-import Auth from './pages/Auth';
-import { Toaster } from './components/ui/toaster';
-import SocialSharing from './pages/features/SocialSharing';
-import PaymentSuccess from './pages/PaymentSuccess';
-import { AuthProvider } from './context/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
+import AIWriting from "./pages/features/AIWriting";
+import AutoPosting from "./pages/features/AutoPosting";
+import SocialSharing from "./pages/features/SocialSharing";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 
-function App() {
-  return (
-    <Router>
-      <AuthProvider>
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
+          <Route path="/features/ai-writing" element={<AIWriting />} />
+          <Route path="/features/auto-posting" element={<AutoPosting />} />
           <Route path="/features/social-sharing" element={<SocialSharing />} />
-          <Route path="/payment-success" element={<PaymentSuccess />} />
-          <Route path="/dashboard/*" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/admin-dashboard/*" element={
-            <ProtectedRoute requireAdmin>
-              <AdminDashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          
+          {/* Dashboard routes */}
+          <Route path="/dashboard/*" element={<Dashboard />} />
+          
+          {/* Admin dashboard routes */}
+          <Route path="/admin-dashboard/*" element={<AdminDashboard />} />
+          
+          <Route path="*" element={<NotFound />} />
         </Routes>
-        <Toaster />
-      </AuthProvider>
-    </Router>
-  );
-}
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;

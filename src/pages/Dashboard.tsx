@@ -1,53 +1,150 @@
 
-import React, { useState } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
-import ContentPage from '@/components/dashboard/pages/ContentPage';
-import SocialPage from '@/components/dashboard/pages/SocialPage';
-import AnalyticsPage from '@/components/dashboard/pages/AnalyticsPage';
-import SettingsPage from '@/components/dashboard/pages/SettingsPage';
-import ProfilePage from '@/components/dashboard/pages/ProfilePage';
-import SchedulePage from '@/components/dashboard/pages/SchedulePage';
-import NewPostPage from '@/components/dashboard/pages/NewPostPage';
-import EditPostPage from '@/components/dashboard/pages/EditPostPage';
-import BillingPage from '@/components/dashboard/pages/BillingPage';
-import { useAuthContext } from '@/context/AuthContext';
-import SocialSharing from '@/pages/SocialSharing';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation, useSearchParams, Routes, Route, Navigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Plus } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import DashboardTabContent from "@/components/dashboard/content/DashboardTabContent";
+import ContentPage from "@/components/dashboard/pages/ContentPage";
+import SchedulePage from "@/components/dashboard/pages/SchedulePage";
+import AnalyticsPage from "@/components/dashboard/pages/AnalyticsPage";
+import SocialPage from "@/components/dashboard/pages/SocialPage";
+import ProfilePage from "@/components/dashboard/pages/ProfilePage";
+import SettingsPage from "@/components/dashboard/pages/SettingsPage";
+import NewPostPage from "@/components/dashboard/pages/NewPostPage";
+import WatchDemoModal from "@/components/dashboard/WatchDemoModal";
+import EditPostPage from "@/components/dashboard/pages/EditPostPage";
 
-const Dashboard: React.FC = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const { user } = useAuthContext();
+const Dashboard = () => {
+  const navigate = useNavigate();
   const location = useLocation();
-  const [editingPostId, setEditingPostId] = useState<string | null>(null);
-  
-  // Extract the active page from the current path
-  const getActivePage = () => {
-    const path = location.pathname.split('/').pop() || '';
-    return path === 'dashboard' ? 'dashboard' : path;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState("posts");
+  const [activePage, setActivePage] = useState("dashboard");
+  const [demoModalOpen, setDemoModalOpen] = useState(false);
+  const [editingPostId, setEditingPostId] = useState<number | null>(null);
+
+  // Update active page based on current route
+  useEffect(() => {
+    const path = location.pathname.split('/').pop();
+    if (path && path !== 'dashboard') {
+      setActivePage(path);
+    } else {
+      setActivePage("dashboard");
+    }
+  }, [location.pathname]);
+
+  // Get tab from URL if available
+  useEffect(() => {
+    const tabFromUrl = searchParams.get("tab");
+    if (tabFromUrl && ["posts", "analytics", "platforms", "settings"].includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams]);
+
+  const createPost = () => {
+    navigate("/dashboard/new-post");
   };
   
+  const editPost = (id: number) => {
+    setEditingPostId(id);
+    navigate(`/dashboard/edit-post/${id}`);
+  };
+  
+  const cancelPost = (id: number) => {
+    toast.success(`Post ${id} has been cancelled`);
+  };
+  
+  const viewAllScheduled = () => {
+    navigate("/dashboard/schedule");
+  };
+  
+  const viewStats = (id: number) => {
+    navigate(`/dashboard/analytics?postId=${id}`);
+    toast.success(`Viewing statistics for post ${id}`);
+  };
+  
+  const republishPost = (id: number) => {
+    toast.success(`Post ${id} has been scheduled for republishing`);
+  };
+  
+  const viewAllPublished = () => {
+    navigate("/dashboard/content?filter=published");
+  };
+  
+  const viewAllDrafts = () => {
+    navigate("/dashboard/content?filter=drafts");
+  };
+
+  const watchDemo = () => {
+    setDemoModalOpen(true);
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setSearchParams({ tab: value });
+    toast.info(`Switched to ${value} tab`);
+  };
+
+  // Get the current path to determine what to render
+  const path = location.pathname;
+  const isEditingPost = path.includes('/edit-post/');
+
   return (
-    <div className="min-h-screen flex">
-      <DashboardSidebar activePage={getActivePage()} />
+    <div className="min-h-screen bg-gray-50 flex">
+      <DashboardSidebar activePage={activePage} />
       <div className="flex-1 flex flex-col">
-        <DashboardHeader onWatchDemo={() => {}} />
-        <main className="flex-1 p-6 bg-gray-50">
-          <Routes>
-            <Route index element={<Navigate to="content" replace />} />
-            <Route path="content" element={<ContentPage />} />
-            <Route path="social" element={<SocialPage />} />
-            <Route path="new-post" element={<NewPostPage />} />
-            <Route path="edit-post" element={<EditPostPage postId={editingPostId} />} />
-            <Route path="schedule" element={<SchedulePage />} />
-            <Route path="analytics" element={<AnalyticsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="billing" element={<BillingPage />} />
-            <Route path="*" element={<Navigate to="content" replace />} />
-          </Routes>
+        <DashboardHeader onWatchDemo={watchDemo} />
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto">
+          {path === "/dashboard" && (
+            <>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div>
+                  <h1 className="text-2xl font-bold">Welcome back, User!</h1>
+                  <p className="text-gray-600">Here's what's happening with your content</p>
+                </div>
+                <Button className="gradient-button text-white" onClick={createPost}>
+                  <Plus size={18} className="mr-2" /> Create New Post
+                </Button>
+              </div>
+
+              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                <TabsList className="mb-6">
+                  <TabsTrigger value="posts">Posts</TabsTrigger>
+                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                  <TabsTrigger value="platforms">Platforms</TabsTrigger>
+                  <TabsTrigger value="settings">Settings</TabsTrigger>
+                </TabsList>
+                
+                <DashboardTabContent 
+                  activeTab={activeTab} 
+                  onEdit={editPost}
+                  onCancel={cancelPost}
+                  onViewAllScheduled={viewAllScheduled}
+                  onViewStats={viewStats}
+                  onRepublish={republishPost}
+                  onViewAllPublished={viewAllPublished}
+                  onViewAllDrafts={viewAllDrafts}
+                />
+              </Tabs>
+            </>
+          )}
+          
+          {path === "/dashboard/content" && <ContentPage />}
+          {path === "/dashboard/schedule" && <SchedulePage />}
+          {path === "/dashboard/analytics" && <AnalyticsPage />}
+          {path === "/dashboard/social" && <SocialPage />}
+          {path === "/dashboard/profile" && <ProfilePage />}
+          {path === "/dashboard/settings" && <SettingsPage />}
+          {path === "/dashboard/new-post" && <NewPostPage />}
+          {isEditingPost && <EditPostPage postId={editingPostId} />}
         </main>
       </div>
+      
+      <WatchDemoModal open={demoModalOpen} onOpenChange={setDemoModalOpen} />
     </div>
   );
 };

@@ -5,20 +5,15 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Bold, Italic, Link, Youtube } from "lucide-react";
 import { toast } from "sonner";
-import { Input } from "@/components/ui/input";
 
 interface ContentEditorProps {
   content: string;
   onChange: (content: string) => void;
-  title?: string;
-  setTitle?: (title: string) => void;
 }
 
 const ContentEditor: React.FC<ContentEditorProps> = ({
   content,
-  onChange,
-  title,
-  setTitle
+  onChange
 }) => {
   const handleFormatting = (formatType: 'bold' | 'italic' | 'link' | 'youtube') => {
     const textarea = document.getElementById('content-editor') as HTMLTextAreaElement;
@@ -62,18 +57,6 @@ const ContentEditor: React.FC<ContentEditorProps> = ({
 
   return (
     <div className="space-y-3">
-      {setTitle && (
-        <div className="mb-4">
-          <Label htmlFor="post-title">Title</Label>
-          <Input
-            id="post-title"
-            placeholder="Enter post title..."
-            value={title || ""}
-            onChange={(e) => setTitle(e.target.value)}
-            className="font-medium text-lg"
-          />
-        </div>
-      )}
       <div className="flex flex-wrap gap-2 mb-2">
         <Button 
           type="button"

@@ -4,7 +4,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Image, Loader } from "lucide-react";
 
 interface ImageGeneratorProps {
   onImageGenerated: (imageUrl: string) => void;
@@ -16,7 +15,14 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   
-  const handleGenerateImage = async () => {
+  // Placeholder image URLs for demo purposes
+  const placeholderImages = [
+    "https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8YnVzaW5lc3MlMjBtYXJrZXRpbmd8ZW58MHx8MHx8&auto=format&fit=crop&w=800&q=60",
+    "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8M3x8YnVzaW5lc3MlMjBtYXJrZXRpbmd8ZW58MHx8MHx8&auto=format&fit=crop&w=800&q=60",
+    "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8YnVzaW5lc3MlMjBtYXJrZXRpbmd8ZW58MHx8MHx8&auto=format&fit=crop&w=800&q=60"
+  ];
+
+  const handleGenerateImage = () => {
     if (!prompt.trim()) {
       toast.error("Please enter an image description");
       return;
@@ -25,31 +31,13 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({
     setIsGenerating(true);
     toast.info("Generating image...");
     
-    try {
-      // Use specific high-quality placeholder images based on the prompt
-      const placeholderImages = [
-        "https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
-        "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
-        "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
-        "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60",
-        "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60"
-      ];
-      
-      // Select a placeholder image based on the prompt length for consistency
-      const randomIndex = Math.floor(Math.random() * placeholderImages.length);
-      const imageUrl = placeholderImages[randomIndex];
-      
-      // Short delay to simulate generation
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      onImageGenerated(imageUrl);
-      toast.success("Image generated successfully!");
-    } catch (error) {
-      console.error("Image generation error:", error);
-      toast.error("Failed to generate image. Please try again.");
-    } finally {
+    // Simulate image generation with a timeout
+    setTimeout(() => {
+      const randomImage = placeholderImages[Math.floor(Math.random() * placeholderImages.length)];
+      onImageGenerated(randomImage);
       setIsGenerating(false);
-    }
+      toast.success("Image generated successfully!");
+    }, 1500);
   };
 
   return (
@@ -68,15 +56,7 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({
           disabled={isGenerating || !prompt.trim()}
           className="w-full"
         >
-          {isGenerating ? (
-            <>
-              <Loader size={16} className="mr-2 animate-spin" /> Generating...
-            </>
-          ) : (
-            <>
-              <Image size={16} className="mr-2" /> Generate Image
-            </>
-          )}
+          {isGenerating ? "Generating..." : "Generate Image"}
         </Button>
       </div>
       <p className="text-xs text-gray-500">

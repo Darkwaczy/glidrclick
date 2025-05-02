@@ -89,7 +89,7 @@ const RegisterPage = () => {
                 <Button 
                   variant="link" 
                   className="w-full text-glidr-purple"
-                  onClick={() => navigate("/auth")}
+                  onClick={() => navigate("/login")}
                 >
                   Back to Login
                 </Button>
@@ -168,7 +168,7 @@ const RegisterPage = () => {
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
               <a
-                href="/auth"
+                href="/login"
                 className="font-medium text-glidr-purple hover:text-glidr-purple-dark"
               >
                 Sign in

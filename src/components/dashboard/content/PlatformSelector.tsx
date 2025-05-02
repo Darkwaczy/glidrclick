@@ -2,7 +2,7 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Facebook, Twitter, Instagram, Linkedin, FileText } from "lucide-react";
+import { Facebook, Twitter, Instagram, Linkedin, Blog } from "lucide-react";
 
 interface PlatformSelectorProps {
   selectedPlatforms: string[];
@@ -15,7 +15,7 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
 }) => {
   const platforms = [
     { id: "all", name: "All Platforms", icon: null },
-    { id: "blog", name: "Blog", icon: FileText },
+    { id: "blog", name: "Blog", icon: Blog },
     { id: "facebook", name: "Facebook", icon: Facebook },
     { id: "twitter", name: "Twitter", icon: Twitter },
     { id: "instagram", name: "Instagram", icon: Instagram },

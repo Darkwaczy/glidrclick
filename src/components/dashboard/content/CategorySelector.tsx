@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
@@ -16,30 +16,16 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   selectedCategory,
   onSelectCategory
 }) => {
-  const defaultCategories = [
+  const [categories, setCategories] = useState([
     "Marketing", 
     "Social Media", 
     "Technology", 
     "Business", 
     "Lifestyle",
     "Health & Wellness"
-  ];
-  
-  const [categories, setCategories] = useState<string[]>([]);
+  ]);
   const [newCategory, setNewCategory] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
-
-  // Load categories from localStorage on component mount
-  useEffect(() => {
-    const savedCategories = localStorage.getItem("userCategories");
-    if (savedCategories) {
-      setCategories(JSON.parse(savedCategories));
-    } else {
-      // Set default categories if none exist
-      setCategories(defaultCategories);
-      localStorage.setItem("userCategories", JSON.stringify(defaultCategories));
-    }
-  }, []);
 
   const handleAddCategory = () => {
     if (!newCategory.trim()) {
@@ -52,12 +38,7 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
       return;
     }
     
-    const updatedCategories = [...categories, newCategory.trim()];
-    setCategories(updatedCategories);
-    
-    // Save to localStorage
-    localStorage.setItem("userCategories", JSON.stringify(updatedCategories));
-    
+    setCategories([...categories, newCategory.trim()]);
     onSelectCategory(newCategory.trim());
     setNewCategory("");
     setShowAddForm(false);

@@ -1,127 +1,110 @@
 
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { useAuthContext } from '@/context/AuthContext';
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Menu, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Header = () => {
-  const [scrolled, setScrolled] = useState(false);
-  const { isAuthenticated, signOut } = useAuthContext();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
-      const isScrolled = window.scrollY > 50;
-      if (isScrolled !== scrolled) {
-        setScrolled(isScrolled);
-      }
+      const scrollPosition = window.scrollY;
+      setIsScrolled(scrollPosition > 10);
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [scrolled]);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  const handleLogin = () => {
-    navigate("/auth");
+  const scrollToSection = (sectionId: string) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+    setIsMobileMenuOpen(false);
   };
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-white shadow-md py-2" : "bg-transparent py-4"
+      className={`fixed w-full z-50 transition-all duration-300 ${
+        isScrolled ? 'bg-white/95 shadow-md py-4' : 'bg-transparent py-6'
       }`}
     >
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center">
-            <h1 className="text-2xl font-bold">
-              <span className="text-[#9b87f5]">Glidr</span>
-              <span className="text-gray-800">click</span>
-            </h1>
-          </Link>
-
-          <div className="flex items-center space-x-6">
-            <div className="hidden md:flex items-center space-x-6 text-gray-600">
-              <NavigationMenu>
-                <NavigationMenuList>
-                  <NavigationMenuItem>
-                    <NavigationMenuTrigger className="hover:text-[#9b87f5] transition-colors">
-                      Features
-                    </NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <div className="grid gap-2 p-4 w-[200px]">
-                        <Link
-                          to="/features/ai-writing"
-                          className="block p-2 hover:bg-slate-100 rounded-md"
-                        >
-                          AI Writing
-                        </Link>
-                        <Link
-                          to="/features/auto-posting"
-                          className="block p-2 hover:bg-slate-100 rounded-md"
-                        >
-                          Auto Posting
-                        </Link>
-                        <Link
-                          to="/features/social-sharing"
-                          className="block p-2 hover:bg-slate-100 rounded-md"
-                        >
-                          Social Sharing
-                        </Link>
-                      </div>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
-                </NavigationMenuList>
-              </NavigationMenu>
-              
-              <Link
-                to="/pricing"
-                className="hover:text-[#9b87f5] transition-colors"
-              >
-                Pricing
-              </Link>
+      <div className="container mx-auto flex justify-between items-center">
+        <Link to="/" className="flex items-center">
+          <h1 className="text-2xl font-bold gradient-text">Glidrclick</h1>
+        </Link>
+        
+        {/* Desktop Menu */}
+        <nav className="hidden md:flex items-center space-x-8">
+          <div className="relative group">
+            <button className="text-gray-700 hover:text-glidr-purple transition-colors">
+              Features
+            </button>
+            <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+              <div className="py-2 px-4">
+                <Link to="/features/ai-writing" className="block py-2 text-sm text-gray-700 hover:text-glidr-purple">AI Writing</Link>
+                <Link to="/features/auto-posting" className="block py-2 text-sm text-gray-700 hover:text-glidr-purple">Auto-Posting</Link>
+                <Link to="/features/social-sharing" className="block py-2 text-sm text-gray-700 hover:text-glidr-purple">Social Sharing</Link>
+              </div>
             </div>
-
-            <div className="flex items-center space-x-4">
-              {isAuthenticated ? (
-                <Button 
-                  variant="outline" 
-                  onClick={() => navigate("/dashboard")}
-                  className="border-[#9b87f5] text-[#9b87f5] hover:bg-[#9b87f5]/10"
-                >
-                  Dashboard
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={handleLogin}
-                    className="border-[#9b87f5] text-[#9b87f5] hover:bg-[#9b87f5]/10"
-                  >
-                    Login
-                  </Button>
-                  <Button
-                    onClick={() => navigate("/auth", { state: { initialTab: "sign-up" } })}
-                    className="bg-[#9b87f5] hover:bg-[#7E69AB] text-white rounded-full px-6"
-                  >
-                    Try Free for 7 Days
-                  </Button>
-                </>
-              )}
+          </div>
+          <button 
+            className="text-gray-700 hover:text-glidr-purple transition-colors"
+            onClick={() => scrollToSection('pricing')}
+          >
+            Pricing
+          </button>
+          <Link to="/login" className="text-gray-700 hover:text-glidr-purple transition-colors">
+            Login
+          </Link>
+          <Button onClick={() => navigate('/register')} className="gradient-button text-white rounded-full px-8">
+            Try Free for 7 Days
+          </Button>
+        </nav>
+        
+        {/* Mobile Menu Button */}
+        <button 
+          className="md:hidden text-gray-700"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          {isMobileMenuOpen ? <X /> : <Menu />}
+        </button>
+      </div>
+      
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-lg py-4 animate-fade-in">
+          <div className="container mx-auto flex flex-col space-y-4">
+            <button className="text-left px-4 py-2 text-gray-700 hover:bg-gray-100">
+              Features
+            </button>
+            <div className="px-8 py-2 flex flex-col space-y-2 text-sm">
+              <Link to="/features/ai-writing" className="text-gray-700 hover:text-glidr-purple">AI Writing</Link>
+              <Link to="/features/auto-posting" className="text-gray-700 hover:text-glidr-purple">Auto-Posting</Link>
+              <Link to="/features/social-sharing" className="text-gray-700 hover:text-glidr-purple">Social Sharing</Link>
+            </div>
+            <button 
+              className="text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+              onClick={() => scrollToSection('pricing')}
+            >
+              Pricing
+            </button>
+            <Link to="/login" className="text-left px-4 py-2 text-gray-700 hover:bg-gray-100">
+              Login
+            </Link>
+            <div className="px-4 pt-2">
+              <Button onClick={() => navigate('/register')} className="w-full gradient-button text-white rounded-full">
+                Try Free for 7 Days
+              </Button>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </header>
   );
 };
