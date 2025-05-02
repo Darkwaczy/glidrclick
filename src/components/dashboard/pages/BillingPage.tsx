@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,6 +26,7 @@ type Transaction = {
   status: string;
   created_at: string;
   description: string;
+  plan: string; // Add the plan property that was missing
 };
 
 const BillingPage = () => {
