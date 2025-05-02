@@ -19,6 +19,10 @@ const NewPostPage = () => {
   const [selectedModel, setSelectedModel] = useState("llama");
   const [content, setContent] = useState("");
   const [title, setTitle] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedTone, setSelectedTone] = useState("professional");
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+  const [featuredImage, setFeaturedImage] = useState("");
   const [showAIAdvancedAnalysis, setShowAIAdvancedAnalysis] = useState(false);
   const [showTeamCollaboration, setShowTeamCollaboration] = useState(false);
   const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
@@ -36,6 +40,34 @@ const NewPostPage = () => {
     // For demonstration, we'll show the approval dialog instead of publishing directly
     setApprovalDialogOpen(true);
   };
+
+  const handleContentChange = (newContent: string) => {
+    setContent(newContent);
+  };
+
+  const handleSelectNews = (newsContent: string) => {
+    setContent(prevContent => prevContent + "\n\n" + newsContent);
+    toast.success("News content added to the editor");
+  };
+  
+  const handleImageGenerated = (imageUrl: string) => {
+    setFeaturedImage(imageUrl);
+    toast.success("Generated image set as featured image");
+  };
+
+  const handleImageUploaded = (imageUrl: string) => {
+    setFeaturedImage(imageUrl);
+    toast.success("Uploaded image set as featured image");
+  };
+
+  const handleApplySuggestion = (type: string, value: string) => {
+    if (type === 'content') {
+      setContent(value);
+    } else if (type === 'title') {
+      setTitle(value);
+    }
+    toast.success(`Applied ${type} suggestion`);
+  };
   
   return (
     <div className="space-y-8">
@@ -45,9 +77,7 @@ const NewPostPage = () => {
         <div className="lg:col-span-2 space-y-6">
           <ContentEditor 
             content={content} 
-            setContent={setContent}
-            title={title}
-            setTitle={setTitle}
+            onChange={handleContentChange}
           />
           
           <div className="flex justify-end gap-3">
@@ -73,16 +103,31 @@ const NewPostPage = () => {
             </TabsContent>
             <TabsContent value="content" className="p-4 border rounded-md mt-2">
               <div className="space-y-6">
-                <CategorySelector />
-                <ToneSelector />
-                <RssFeedSelector />
+                <CategorySelector 
+                  selectedCategory={selectedCategory}
+                  onSelectCategory={setSelectedCategory}
+                />
+                <ToneSelector 
+                  selectedTone={selectedTone}
+                  onSelectTone={setSelectedTone}
+                />
+                <RssFeedSelector 
+                  onSelectNews={handleSelectNews}
+                />
               </div>
             </TabsContent>
             <TabsContent value="media" className="p-4 border rounded-md mt-2">
               <div className="space-y-6">
-                <ImageGenerator />
-                <ImageUploader />
-                <PlatformSelector />
+                <ImageGenerator 
+                  onImageGenerated={handleImageGenerated}
+                />
+                <ImageUploader 
+                  onImageUploaded={handleImageUploaded}
+                />
+                <PlatformSelector 
+                  selectedPlatforms={selectedPlatforms}
+                  onSelectPlatforms={setSelectedPlatforms}
+                />
               </div>
             </TabsContent>
           </Tabs>
@@ -99,7 +144,13 @@ const NewPostPage = () => {
                   Hide
                 </Button>
               </div>
-              <AIAdvancedAnalysis />
+              <AIAdvancedAnalysis 
+                content={content}
+                title={title}
+                platforms={selectedPlatforms}
+                onApplySuggestion={handleApplySuggestion}
+                onClose={() => setShowAIAdvancedAnalysis(false)}
+              />
             </div>
           )}
           
