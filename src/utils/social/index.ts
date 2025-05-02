@@ -3,11 +3,7 @@ export * from './types';
 export * from './helpers';
 export * from './authentication';
 export * from './posts';
-
-// Re-export platforms module (except for connectPlatform which is already exported from authentication)
-import * as platformsModule from './platforms';
-const { connectPlatform: _connectPlatform, ...restPlatforms } = platformsModule;
-export { restPlatforms };
+export * from './platforms';
 
 // Default export all utilities
 export default {
