@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useAuth } from '@/hooks/useAuth'; // Remove the .tsx extension
+import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 import { User, Session } from '@supabase/supabase-js';
 
@@ -18,7 +18,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, session, loading, isAdmin, signIn, signUp, signOut } = useAuth();
+  const auth = useAuth();
   const [isInitializing, setIsInitializing] = useState(true);
   
   useEffect(() => {
@@ -28,23 +28,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, 1000);
     
     // If auth finishes loading before timeout, clear the timeout
-    if (!loading) {
+    if (!auth.loading) {
       clearTimeout(timer);
       setIsInitializing(false);
     }
     
     return () => clearTimeout(timer);
-  }, [loading]);
+  }, [auth.loading]);
 
   const value = {
-    isAuthenticated: !!user,
-    isAdmin,
-    user,
-    session,
-    loading,
-    signIn,
-    signUp,
-    signOut
+    isAuthenticated: !!auth.user,
+    isAdmin: auth.isAdmin,
+    user: auth.user,
+    session: auth.session,
+    loading: auth.loading,
+    signIn: auth.signIn,
+    signUp: auth.signUp,
+    signOut: auth.signOut
   };
 
   if (isInitializing) {

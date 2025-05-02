@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -11,16 +10,31 @@ export const useAuthCore = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   
   useEffect(() => {
-    // Get current session and user
+    // First set up the auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          setIsAdmin(session.user.email?.includes('admin') ?? false);
+        } else {
+          setIsAdmin(false);
+        }
+        
+        setLoading(false);
+      }
+    );
+    
+    // Then get the current session
     const initAuth = async () => {
-      setLoading(true);
       try {
+        setLoading(true);
         const { data: { session } } = await supabase.auth.getSession();
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Check if user is admin (simplified - in a real app, this would check roles)
           setIsAdmin(session.user.email?.includes('admin') ?? false);
         }
       } catch (error) {
@@ -31,19 +45,6 @@ export const useAuthCore = () => {
     };
 
     initAuth();
-    
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-        
-        if (session?.user) {
-          setIsAdmin(session.user.email?.includes('admin') ?? false);
-        }
-      }
-    );
     
     // Cleanup
     return () => {
