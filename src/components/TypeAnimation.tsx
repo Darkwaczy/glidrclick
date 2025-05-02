@@ -2,17 +2,16 @@
 import { useState, useEffect } from 'react';
 
 interface TypeAnimationProps {
-  texts?: string[];  // Made optional with ?
+  texts?: string[];  
   speed?: number;
   className?: string;
 }
 
 const TypeAnimation = ({ 
   texts = [
-    "Streamline your content marketing workflow",
-    "Schedule posts across multiple platforms",
-    "Generate AI-powered content ideas",
-    "Analyze performance with detailed metrics"
+    "Ideate. Create. Share. Engage.",
+    "Write. Schedule. Share. Succeed.",
+    "Plan. Write. Post. Repeat."
   ], 
   speed = 100, 
   className = '' 
@@ -61,8 +60,8 @@ const TypeAnimation = ({
 
   return (
     <div className={`inline-block ${className}`}>
-      <span>{displayText}</span>
-      <span className="border-r-2 border-glidr-bright-purple ml-1 animate-blink-caret">&nbsp;</span>
+      <span className="text-xl text-gray-600">{displayText}</span>
+      <span className="border-r-2 border-[#9b87f5] ml-1 animate-blink-caret">&nbsp;</span>
     </div>
   );
 };
