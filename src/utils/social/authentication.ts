@@ -93,17 +93,34 @@ export const handleOAuthCallback = async (platform: string, code: string): Promi
 
 // Platform-specific OAuth handlers
 const handleTwitterOAuth = async (code: string, userId: string) => {
-  // Implement Twitter OAuth token exchange
-  // This would call your backend API or Supabase Edge Function
-  console.log("Processing Twitter OAuth with code", code.substring(0, 10));
-  
-  // Mock successful response for now
-  return {
-    success: true,
-    access_token: "mock_token",
-    user_id: "twitter_123456",
-    account_name: "@twitteruser"
-  };
+  // Call the oauth-twitter edge function
+  try {
+    // Retrieve the code verifier from session storage (if saved in connect step)
+    const codeVerifier = sessionStorage.getItem('twitter_code_verifier') || 'challenge';
+    
+    const response = await fetch('/api/oauth-twitter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        code,
+        code_verifier: codeVerifier,
+        redirect_uri: `${window.location.origin}/dashboard/social?connected=twitter` 
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to exchange Twitter token');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Twitter OAuth error:", error);
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
+  } finally {
+    // Clean up
+    sessionStorage.removeItem('twitter_code_verifier');
+  }
 };
 
 const handleFacebookOAuth = async (code: string, userId: string) => {
@@ -131,16 +148,28 @@ const handleFacebookOAuth = async (code: string, userId: string) => {
 };
 
 const handleLinkedInOAuth = async (code: string, userId: string) => {
-  // Implement LinkedIn OAuth token exchange
-  console.log("Processing LinkedIn OAuth with code", code.substring(0, 10));
-  
-  // Mock successful response for now
-  return {
-    success: true,
-    access_token: "mock_token",
-    user_id: "linkedin_123456",
-    account_name: "LinkedIn User"
-  };
+  // Call the oauth-linkedin edge function
+  try {
+    const response = await fetch('/api/oauth-linkedin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        code,
+        redirect_uri: `${window.location.origin}/dashboard/social?connected=linkedin` 
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to exchange LinkedIn token');
+    }
+    
+    const result = await response.json();
+    return { ...result, success: true };
+  } catch (error) {
+    console.error("LinkedIn OAuth error:", error);
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
+  }
 };
 
 const handleInstagramOAuth = async (code: string, userId: string) => {
@@ -175,7 +204,7 @@ const handleWordPressOAuth = async (code: string, userId: string) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         code,
-        redirect_uri: `${window.location.origin}/dashboard/social?platform=wordpress` 
+        redirect_uri: `${window.location.origin}/dashboard/social?connected=wordpress` 
       })
     });
     
@@ -297,6 +326,77 @@ const saveSocialPlatformConnection = async (
 // Add placeholder for connectPlatform function to avoid import errors
 export const connectPlatform = async (platformId: string): Promise<boolean> => {
   try {
+    // For LinkedIn
+    if (platformId === 'linkedin') {
+      try {
+        // Call the connect-linkedin edge function
+        const response = await fetch('/api/connect-linkedin', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to get LinkedIn authorization URL');
+        }
+        
+        const data = await response.json();
+        
+        if (data.state) {
+          sessionStorage.setItem('linkedin_oauth_state', data.state);
+        }
+        
+        if (data.authUrl) {
+          window.location.href = data.authUrl;
+          return true;
+        }
+        
+        throw new Error('No authorization URL returned');
+      } catch (error) {
+        console.error('LinkedIn connect error:', error);
+        toast.error(`Failed to connect to LinkedIn: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        return false;
+      }
+    }
+    
+    // For Twitter
+    if (platformId === 'twitter' || platformId === 'x') {
+      try {
+        // Call the connect-twitter edge function
+        const response = await fetch('/api/connect-twitter', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to get Twitter authorization URL');
+        }
+        
+        const data = await response.json();
+        
+        if (data.state) {
+          sessionStorage.setItem('twitter_oauth_state', data.state);
+        }
+        
+        if (data.codeVerifier) {
+          sessionStorage.setItem('twitter_code_verifier', data.codeVerifier);
+        }
+        
+        if (data.authUrl) {
+          window.location.href = data.authUrl;
+          return true;
+        }
+        
+        throw new Error('No authorization URL returned');
+      } catch (error) {
+        console.error('Twitter connect error:', error);
+        toast.error(`Failed to connect to Twitter: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        return false;
+      }
+    }
+    
+    // For other platforms, use the original implementation
     return await import('./platforms').then(module => module.connectPlatform(platformId));
   } catch (error) {
     console.error(`Error connecting to platform ${platformId}:`, error);

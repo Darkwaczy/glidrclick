@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Facebook, Instagram, X, FileText, Clock, Info, Loader } from "lucide-react";
+import { Facebook, Instagram, X, FileText, Clock, Info, Loader, Linkedin } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -180,20 +181,25 @@ const ConnectPlatformDialog = ({ open, onOpenChange, onConnect }: ConnectPlatfor
                   <span>WordPress</span>
                 </Button>
                 
-                <div className="relative">
-                  <Button 
-                    variant="outline" 
-                    className="flex flex-col items-center justify-center h-24 space-y-2 opacity-60 w-full"
-                    disabled
-                  >
-                    <X size={24} className="text-gray-700" />
-                    <span>Twitter</span>
-                  </Button>
-                  <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-xs px-2 py-1 rounded-full flex items-center">
-                    <Clock size={10} className="mr-1" />
-                    Soon
-                  </div>
-                </div>
+                <Button 
+                  variant="outline" 
+                  className="flex flex-col items-center justify-center h-24 space-y-2"
+                  onClick={() => handleConnect('twitter')}
+                  disabled={isLoading}
+                >
+                  <X size={24} className="text-gray-700" />
+                  <span>Twitter</span>
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="flex flex-col items-center justify-center h-24 space-y-2 mt-4"
+                  onClick={() => handleConnect('linkedin')}
+                  disabled={isLoading}
+                >
+                  <Linkedin size={24} className="text-blue-700" />
+                  <span>LinkedIn</span>
+                </Button>
               </div>
               
               <div className="p-4 border border-blue-200 bg-blue-50 rounded-md mt-4">
