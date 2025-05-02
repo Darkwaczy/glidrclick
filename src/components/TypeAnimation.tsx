@@ -2,15 +2,14 @@
 import { useState, useEffect } from 'react';
 
 interface TypeAnimationProps {
-  texts: string[];  // Changed from single text to array of texts
+  text: string;
   speed?: number;
   className?: string;
 }
 
-const TypeAnimation = ({ texts, speed = 100, className = '' }: TypeAnimationProps) => {
+const TypeAnimation = ({ text, speed = 100, className = '' }: TypeAnimationProps) => {
   const [displayText, setDisplayText] = useState('');
-  const [currentTextIndex, setCurrentTextIndex] = useState(0);
-  const [currentCharIndex, setCurrentCharIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const pauseDelay = 2000;
@@ -28,27 +27,26 @@ const TypeAnimation = ({ texts, speed = 100, className = '' }: TypeAnimationProp
     if (isDeleting) {
       if (displayText.length === 0) {
         setIsDeleting(false);
-        setCurrentTextIndex((prevIndex) => (prevIndex + 1) % texts.length);
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % text.length);
       } else {
         const timeout = setTimeout(() => {
-          setDisplayText(displayText.substring(0, displayText.length - 1));
+          setDisplayText(text.substring(0, displayText.length - 1));
         }, speed / 2);
         
         return () => clearTimeout(timeout);
       }
     } else {
-      const currentText = texts[currentTextIndex];
-      if (displayText === currentText) {
+      if (displayText === text) {
         setIsPaused(true);
       } else {
         const timeout = setTimeout(() => {
-          setDisplayText(currentText.substring(0, displayText.length + 1));
+          setDisplayText(text.substring(0, displayText.length + 1));
         }, speed);
         
         return () => clearTimeout(timeout);
       }
     }
-  }, [displayText, texts, currentTextIndex, isDeleting, isPaused, speed]);
+  }, [displayText, text, isDeleting, isPaused, speed]);
 
   return (
     <div className={`inline-block ${className}`}>
