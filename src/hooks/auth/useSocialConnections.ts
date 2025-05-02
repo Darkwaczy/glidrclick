@@ -1,6 +1,5 @@
 
-import * as React from 'react';
-const { useState, useEffect } = React;
+import React from 'react';
 
 type Connection = {
   platform: string;
@@ -8,11 +7,11 @@ type Connection = {
 };
 
 export const useSocialConnections = () => {
-  const [connections, setConnections] = useState<Connection[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [connections, setConnections] = React.useState<Connection[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     // Mock implementation since we don't have a real API endpoint
     const fetchConnections = async () => {
       try {
