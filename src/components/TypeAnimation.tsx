@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface TypeAnimationProps {
   texts: string[];  // Changed from single text to array of texts
