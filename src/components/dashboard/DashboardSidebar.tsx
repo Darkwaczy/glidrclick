@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
   FileEdit,
@@ -65,7 +66,7 @@ const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
                 className={cn(
                   "group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100 transition-colors",
                   activePage === link.name
-                    ? "bg-gray-100 text-glidr-purple"
+                    ? "bg-gray-100 text-[#9b87f5]"
                     : "text-gray-700"
                 )}
               >
