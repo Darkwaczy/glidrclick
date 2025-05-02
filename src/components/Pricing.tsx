@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Check, X, Loader2 } from 'lucide-react';
@@ -53,13 +52,22 @@ const Pricing = () => {
         return;
       }
       
+      // Ensure user is authenticated before proceeding
+      if (!user) {
+        throw new Error("User authentication required");
+      }
+      
+      console.log("Making payment request for plan:", plan, "isAnnual:", isAnnual);
+      
       // Initiate payment with Flutterwave
       const { data, error } = await supabase.functions.invoke('create-flutterwave-payment', {
         body: { plan, isAnnual },
       });
       
+      console.log("Payment response:", data, "Error:", error);
+      
       if (error) {
-        throw new Error(error.message);
+        throw new Error(error.message || "Failed to initiate payment");
       }
       
       if (data?.payment_url) {

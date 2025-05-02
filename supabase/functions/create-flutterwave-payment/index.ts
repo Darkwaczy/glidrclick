@@ -25,12 +25,6 @@ serve(async (req) => {
     
     console.log("Using Flutterwave API with properly formatted key");
 
-    // Create Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? "",
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ""
-    );
-
     // Extract request details
     const { plan, isAnnual } = await req.json();
     
@@ -39,6 +33,12 @@ serve(async (req) => {
     if (!authHeader) {
       throw new Error("Not authenticated");
     }
+    
+    // Create Supabase client with the appropriate API key and URL
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') || '';
+    
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
     
     const token = authHeader.replace('Bearer ', '');
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
