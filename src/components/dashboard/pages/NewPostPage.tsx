@@ -1,399 +1,132 @@
 
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import { ArrowLeft, Loader } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import AIContentGenerator from "@/components/dashboard/content/AIContentGenerator";
-import PlatformSelector from "@/components/dashboard/content/PlatformSelector";
-import CategorySelector from "@/components/dashboard/content/CategorySelector";
-import ToneSelector from "@/components/dashboard/content/ToneSelector";
-import ContentEditor from "@/components/dashboard/content/ContentEditor";
-import ImageGenerator from "@/components/dashboard/content/ImageGenerator";
-import ImageUploader from "@/components/dashboard/content/ImageUploader";
-import RssFeedSelector from "@/components/dashboard/content/RssFeedSelector";
-import AIAdvancedAnalysis from "@/components/dashboard/content/AIAdvancedAnalysis";
-import { generateContent, generateTitle } from "@/services/aiService";
-import { schedulePost } from "@/utils/socialConnections";
+import React, { useState } from 'react';
+import ContentEditor from '@/components/dashboard/content/ContentEditor';
+import AIContentGenerator from '@/components/dashboard/content/AIContentGenerator';
+import CategorySelector from '@/components/dashboard/content/CategorySelector';
+import ToneSelector from '@/components/dashboard/content/ToneSelector';
+import PlatformSelector from '@/components/dashboard/content/PlatformSelector';
+import ImageGenerator from '@/components/dashboard/content/ImageGenerator';
+import ImageUploader from '@/components/dashboard/content/ImageUploader';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from 'sonner';
+import RssFeedSelector from '../content/RssFeedSelector';
+import AIAdvancedAnalysis from '../content/AIAdvancedAnalysis';
+import TeamCollaboration from '../collaboration/TeamCollaboration';
+import ContentApprovalDialog from '../content/ContentApprovalDialog';
 
 const NewPostPage = () => {
-  const navigate = useNavigate();
-  const [title, setTitle] = useState("");
+  const [selectedModel, setSelectedModel] = useState("llama");
   const [content, setContent] = useState("");
-  const [generatedImage, setGeneratedImage] = useState("");
-  const [uploadedImage, setUploadedImage] = useState("");
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(["all"]);
-  const [scheduledDate, setScheduledDate] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedTone, setSelectedTone] = useState("professional");
-  const [aiModel, setAiModel] = useState("llama");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeImageTab, setActiveImageTab] = useState<string>("generator");
-  const [showAdvancedAnalysis, setShowAdvancedAnalysis] = useState(false);
-
-  const handleGenerateContent = async () => {
-    if (!selectedCategory || !selectedTone) {
-      toast.error("Please select a category and tone first");
-      return;
-    }
-
-    setIsGenerating(true);
-    toast.info("Generating content with AI...");
-    
-    try {
-      const generated = await generateContent(selectedCategory, selectedTone);
-      setTitle(generated.title);
-      setContent(generated.content);
-      toast.success("Content generated successfully!");
-    } catch (error) {
-      console.error("Content generation error:", error);
-      toast.error("Failed to generate content. You can still write content manually.");
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const handleGenerateTitle = async () => {
-    if (!content) {
-      toast.error("Please write or generate content first");
-      return;
-    }
-
-    setIsGeneratingTitle(true);
-    toast.info("Generating title based on content...");
-    
-    try {
-      const newTitle = await generateTitle(content);
-      setTitle(newTitle);
-      toast.success("Title generated successfully!");
-    } catch (error) {
-      console.error("Title generation error:", error);
-      toast.error("Failed to generate title. You can still write a title manually.");
-    } finally {
-      setIsGeneratingTitle(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!title || !content) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-
-    if (!scheduledDate) {
-      toast.error("Please select a schedule date");
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
-    try {
-      // Filter platforms if "all" is selected
-      const platformsToUse = selectedPlatforms[0] === "all" 
-        ? ["facebook", "instagram", "wordpress"] 
-        : selectedPlatforms;
-      
-      // Use either the generated or the uploaded image, prioritizing uploaded
-      const imageUrl = uploadedImage || generatedImage;
-      
-      const scheduled = await schedulePost(
-        title,
-        content,
-        platformsToUse,
-        new Date(scheduledDate),
-        imageUrl // Add the image URL to the post data
-      );
-      
-      if (scheduled) {
-        toast.success("Post created and scheduled successfully!");
-        // Navigate back to dashboard after a short delay to allow toast to be seen
-        setTimeout(() => navigate("/dashboard"), 1000);
-      } else {
-        throw new Error("Failed to schedule post");
-      }
-    } catch (error) {
-      console.error("Error scheduling post:", error);
-      toast.error("Failed to schedule post. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
+  const [title, setTitle] = useState("");
+  const [showAIAdvancedAnalysis, setShowAIAdvancedAnalysis] = useState(false);
+  const [showTeamCollaboration, setShowTeamCollaboration] = useState(false);
+  const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
+  
+  const handleRequestAdvancedAnalysis = () => {
+    setShowAIAdvancedAnalysis(true);
+    toast.success("Generating advanced AI analysis");
   };
   
-  const handleAdvancedAnalysis = () => {
-    setShowAdvancedAnalysis(true);
+  const handleToggleCollaboration = () => {
+    setShowTeamCollaboration(!showTeamCollaboration);
   };
   
-  const handleApplySuggestion = (type: string, value: string) => {
-    if (type === 'title') {
-      setTitle(value);
-      toast.success("Title updated with AI suggestion");
-    } else if (type === 'content') {
-      setContent(prev => value + "\n\n" + prev);
-      toast.success("Content updated with AI suggestion");
-    }
+  const handlePublish = () => {
+    // For demonstration, we'll show the approval dialog instead of publishing directly
+    setApprovalDialogOpen(true);
   };
-
+  
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={() => navigate("/dashboard")}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <h1 className="text-2xl font-bold">Create New Post</h1>
-      </div>
+    <div className="space-y-8">
+      <h1 className="text-2xl font-bold">Create New Post</h1>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Post Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Post Title</Label>
-                  <div className="flex gap-2">
-                    <Input 
-                      id="title" 
-                      placeholder="Enter title" 
-                      value={title} 
-                      onChange={(e) => setTitle(e.target.value)}
-                      required
-                    />
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={handleGenerateTitle}
-                      disabled={isGeneratingTitle || !content}
-                    >
-                      {isGeneratingTitle ? (
-                        <>
-                          <Loader size={16} className="mr-2 animate-spin" /> Generating...
-                        </>
-                      ) : (
-                        "Generate Title"
-                      )}
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <Label>Content Creator</Label>
-                  <Tabs defaultValue="ai">
-                    <TabsList className="grid grid-cols-2">
-                      <TabsTrigger value="ai">AI Writer</TabsTrigger>
-                      <TabsTrigger value="manual">Manual Writing</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="ai" className="space-y-4 mt-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <AIContentGenerator 
-                          selectedModel={aiModel}
-                          onSelectModel={setAiModel}
-                          onRequestAdvancedAnalysis={handleAdvancedAnalysis}
-                        />
-                        
-                        <CategorySelector 
-                          selectedCategory={selectedCategory}
-                          onSelectCategory={setSelectedCategory}
-                        />
-                      </div>
-                      
-                      <ToneSelector
-                        selectedTone={selectedTone}
-                        onSelectTone={setSelectedTone}
-                      />
-                      
-                      <div className="mt-4">
-                        <Button 
-                          type="button" 
-                          onClick={handleGenerateContent}
-                          disabled={isGenerating || !selectedCategory || !selectedTone}
-                          className="w-full"
-                        >
-                          {isGenerating ? (
-                            <>
-                              <Loader size={16} className="mr-2 animate-spin" /> Generating...
-                            </>
-                          ) : (
-                            "Generate Content"
-                          )}
-                        </Button>
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="manual" className="space-y-4 mt-4">
-                      <ContentEditor
-                        content={content}
-                        onChange={setContent}
-                      />
-                    </TabsContent>
-                  </Tabs>
-                </div>
-                
-                <div className="space-y-4">
-                  <Label>Images</Label>
-                  <Tabs defaultValue="generator" value={activeImageTab} onValueChange={setActiveImageTab}>
-                    <TabsList className="grid grid-cols-2">
-                      <TabsTrigger value="generator">AI Generator</TabsTrigger>
-                      <TabsTrigger value="upload">Upload Image</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="generator" className="space-y-4 mt-4">
-                      <ImageGenerator 
-                        onImageGenerated={setGeneratedImage} 
-                      />
-                    </TabsContent>
-                    
-                    <TabsContent value="upload" className="space-y-4 mt-4">
-                      <ImageUploader
-                        onImageUploaded={setUploadedImage}
-                      />
-                    </TabsContent>
-                  </Tabs>
-                  
-                  <div className="mt-4">
-                    <RssFeedSelector
-                      onSelectNews={(newsItem) => {
-                        setContent(prev => prev + "\n\n" + newsItem);
-                        toast.success("News item added to your content!");
-                      }}
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>Publishing Platforms</Label>
-                  <PlatformSelector 
-                    selectedPlatforms={selectedPlatforms}
-                    onSelectPlatforms={setSelectedPlatforms}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="scheduledDate">Schedule Date</Label>
-                  <Input 
-                    id="scheduledDate" 
-                    type="datetime-local" 
-                    value={scheduledDate}
-                    onChange={(e) => setScheduledDate(e.target.value)}
-                    required
-                  />
-                </div>
-                
-                <div className="flex justify-end gap-3">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => navigate("/dashboard")}
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    type="submit"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader size={16} className="mr-2 animate-spin" /> Scheduling...
-                      </>
-                    ) : (
-                      "Schedule Post"
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+          <ContentEditor 
+            content={content} 
+            setContent={setContent}
+            title={title}
+            setTitle={setTitle}
+          />
+          
+          <div className="flex justify-end gap-3">
+            <Button variant="outline">Save Draft</Button>
+            <Button onClick={handlePublish}>Submit for Approval</Button>
+          </div>
         </div>
         
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Preview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <h3 className="font-bold text-lg">{title || "Your Title Here"}</h3>
-                
-                {uploadedImage ? (
-                  <div className="rounded-md overflow-hidden">
-                    <img 
-                      src={uploadedImage} 
-                      alt="Uploaded Preview"
-                      className="w-full h-auto"
-                    />
-                  </div>
-                ) : generatedImage ? (
-                  <div className="rounded-md overflow-hidden">
-                    <img 
-                      src={generatedImage} 
-                      alt="Generated Preview"
-                      className="w-full h-auto"
-                    />
-                  </div>
-                ) : null}
-                
-                <div className="prose max-w-none">
-                  {content ? (
-                    <div dangerouslySetInnerHTML={{ 
-                      __html: content
-                        .split('\n')
-                        .slice(0, Math.ceil(content.split('\n').length / 2)) // Only show 50% of the content
-                        .join('\n')
-                        .replace(/\n/g, '<br/>') 
-                    }} />
-                  ) : (
-                    <p className="text-gray-400 italic">Your content will appear here...</p>
-                  )}
-                  
-                  {content && (
-                    <p className="text-blue-600 mt-2">
-                      ... [Preview shows first 50% of content]
-                    </p>
-                  )}
-                </div>
-                
-                {selectedPlatforms.length > 0 && selectedPlatforms[0] !== "all" && (
-                  <div className="flex flex-wrap gap-2 pt-4 border-t">
-                    <span className="text-sm font-medium">Publishing to:</span>
-                    {selectedPlatforms.map(platform => (
-                      <span key={platform} className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                        {platform}
-                      </span>
-                    ))}
-                  </div>
-                )}
+        <div className="space-y-6">
+          <Tabs defaultValue="ai">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="ai">AI Tools</TabsTrigger>
+              <TabsTrigger value="content">Content</TabsTrigger>
+              <TabsTrigger value="media">Media</TabsTrigger>
+            </TabsList>
+            <TabsContent value="ai" className="p-4 border rounded-md mt-2">
+              <AIContentGenerator 
+                selectedModel={selectedModel} 
+                onSelectModel={setSelectedModel}
+                onRequestAdvancedAnalysis={handleRequestAdvancedAnalysis}
+                onToggleCollaboration={handleToggleCollaboration}
+              />
+            </TabsContent>
+            <TabsContent value="content" className="p-4 border rounded-md mt-2">
+              <div className="space-y-6">
+                <CategorySelector />
+                <ToneSelector />
+                <RssFeedSelector />
               </div>
-            </CardContent>
-          </Card>
+            </TabsContent>
+            <TabsContent value="media" className="p-4 border rounded-md mt-2">
+              <div className="space-y-6">
+                <ImageGenerator />
+                <ImageUploader />
+                <PlatformSelector />
+              </div>
+            </TabsContent>
+          </Tabs>
+          
+          {showAIAdvancedAnalysis && (
+            <div className="border rounded-md p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-medium">Advanced AI Analysis</h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowAIAdvancedAnalysis(false)}
+                >
+                  Hide
+                </Button>
+              </div>
+              <AIAdvancedAnalysis />
+            </div>
+          )}
+          
+          {showTeamCollaboration && (
+            <div className="border rounded-md p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-medium">Team Collaboration</h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowTeamCollaboration(false)}
+                >
+                  Hide
+                </Button>
+              </div>
+              <TeamCollaboration />
+            </div>
+          )}
         </div>
       </div>
       
-      <Dialog open={showAdvancedAnalysis} onOpenChange={setShowAdvancedAnalysis}>
-        <DialogContent className="max-w-5xl p-0">
-          <AIAdvancedAnalysis
-            title={title}
-            content={content} 
-            platforms={selectedPlatforms}
-            onApplySuggestion={handleApplySuggestion}
-            onClose={() => setShowAdvancedAnalysis(false)}
-          />
-        </DialogContent>
-      </Dialog>
+      <ContentApprovalDialog
+        open={approvalDialogOpen}
+        onOpenChange={setApprovalDialogOpen}
+        contentTitle={title || "Untitled Post"}
+        contentType="post"
+      />
     </div>
   );
 };
