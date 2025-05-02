@@ -17,7 +17,10 @@ import ContentApprovalDialog from '../content/ContentApprovalDialog';
 import ContentDiscovery from '../content/ContentDiscovery';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Newspaper, TrendingUp, FileText } from 'lucide-react';
+import { Newspaper, TrendingUp, FileText, Calendar } from 'lucide-react';
+import ContentGenerationHelper from '../content/ContentGenerationHelper';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Input } from '@/components/ui/input';
 
 const NewPostPage = () => {
   const [selectedModel, setSelectedModel] = useState("llama");
@@ -31,6 +34,11 @@ const NewPostPage = () => {
   const [showTeamCollaboration, setShowTeamCollaboration] = useState(false);
   const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
   const [curatingSources, setCuratingSources] = useState<string[]>([]);
+  const [showScheduling, setShowScheduling] = useState(false);
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleTime, setScheduleTime] = useState('');
+  
+  const isMobile = useIsMobile();
   
   const handleRequestAdvancedAnalysis = () => {
     setShowAIAdvancedAnalysis(true);
@@ -39,6 +47,10 @@ const NewPostPage = () => {
   
   const handleToggleCollaboration = () => {
     setShowTeamCollaboration(!showTeamCollaboration);
+  };
+  
+  const handleToggleScheduling = () => {
+    setShowScheduling(!showScheduling);
   };
   
   const handlePublish = () => {
@@ -98,11 +110,11 @@ const NewPostPage = () => {
   };
   
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <h1 className="text-2xl font-bold">Create New Post</h1>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      <div className={`grid grid-cols-1 ${isMobile ? '' : 'lg:grid-cols-3'} gap-6`}>
+        <div className={`${isMobile ? 'order-2' : 'lg:col-span-2'} space-y-6`}>
           <ContentEditor 
             content={content} 
             onChange={handleContentChange}
@@ -133,14 +145,56 @@ const NewPostPage = () => {
             </div>
           )}
           
-          <div className="flex justify-end gap-3">
+          {/* Scheduling UI */}
+          {showScheduling && (
+            <Card className="p-4 border border-blue-100 bg-blue-50">
+              <h3 className="text-lg font-medium mb-4 flex items-center">
+                <Calendar size={18} className="mr-2 text-blue-600" /> Schedule Post
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="schedule-date" className="text-sm font-medium">Date</label>
+                  <Input
+                    type="date"
+                    id="schedule-date"
+                    value={scheduleDate}
+                    onChange={(e) => setScheduleDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="schedule-time" className="text-sm font-medium">Time</label>
+                  <Input
+                    type="time"
+                    id="schedule-time"
+                    value={scheduleTime}
+                    onChange={(e) => setScheduleTime(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            </Card>
+          )}
+          
+          <div className="flex flex-wrap justify-end gap-3">
             <Button variant="outline">Save Draft</Button>
-            <Button onClick={handlePublish}>Submit for Approval</Button>
+            <Button onClick={handlePublish}>
+              {showScheduling && scheduleDate && scheduleTime ? 'Schedule Post' : 'Submit for Approval'}
+            </Button>
           </div>
         </div>
         
-        <div className="space-y-6">
-          <Tabs defaultValue="ai">
+        <div className={`${isMobile ? 'order-1' : ''} space-y-6`}>
+          {/* Content Generation Helper - New Component */}
+          <ContentGenerationHelper
+            onContentGenerated={setContent}
+            onTitleGenerated={setTitle}
+            onToggleSchedule={handleToggleScheduling}
+            showScheduling={showScheduling}
+          />
+          
+          <Tabs defaultValue="ai" className={isMobile ? "mt-4" : ""}>
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="ai">AI Tools</TabsTrigger>
               <TabsTrigger value="content">Content</TabsTrigger>

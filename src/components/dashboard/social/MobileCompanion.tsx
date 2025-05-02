@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageSquare, Bell, ChartBar, Settings } from 'lucide-react';
+import { MessageSquare, Bell, ChartBar, Settings, PlusSquare } from 'lucide-react';
 import MobileMentionsMonitor from './MobileMentionsMonitor';
 import MobileAnalyticsDashboard from './MobileAnalyticsDashboard';
 import MobileNotificationSettings from './MobileNotificationSettings';
 import { SocialPageHook } from '@/hooks/useSocialPage';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface MobileCompanionProps {
   socialHook: SocialPageHook;
@@ -14,10 +16,15 @@ interface MobileCompanionProps {
 
 const MobileCompanion: React.FC<MobileCompanionProps> = ({ socialHook }) => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   
   if (!isMobile) {
     return null;
   }
+  
+  const handleCreateNewContent = () => {
+    navigate('/dashboard/new-post');
+  };
   
   return (
     <div className="w-full">
@@ -40,6 +47,15 @@ const MobileCompanion: React.FC<MobileCompanionProps> = ({ socialHook }) => {
             <span className="text-xs mt-1">Settings</span>
           </TabsTrigger>
         </TabsList>
+        
+        {/* Floating action button for quick content creation */}
+        <Button
+          onClick={handleCreateNewContent}
+          className="fixed bottom-20 right-4 z-50 rounded-full w-14 h-14 shadow-lg"
+          size="icon"
+        >
+          <PlusSquare className="h-6 w-6" />
+        </Button>
         
         <div className="pb-16">
           <TabsContent value="mentions" className="pt-2">
