@@ -1,146 +1,90 @@
-
-import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import {
-  LayoutDashboard, Settings, File, CalendarDays, BarChart, 
-  Share, User, LogOut, ShieldAlert
+  LayoutDashboard,
+  FileEdit,
+  Share2,
+  Calendar,
+  BarChartBig,
+  Settings,
+  CreditCard
 } from "lucide-react";
 import { useAuthContext } from '@/context/AuthContext';
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface DashboardSidebarProps {
   activePage: string;
 }
 
 const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const { user, isAdmin, signOut } = useAuthContext();
-
-  const handleNavigation = (path: string) => {
-    navigate(path);
-  };
-
-  const handleLogout = async () => {
+  const { user, signOut } = useAuthContext();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  
+  const sidebarLinks = [
+    { name: 'dashboard', icon: <LayoutDashboard size={18} />, text: 'Dashboard', path: '/dashboard/content' },
+    { name: 'content', icon: <FileEdit size={18} />, text: 'Content', path: '/dashboard/content' },
+    { name: 'social', icon: <Share2 size={18} />, text: 'Social', path: '/dashboard/social' },
+    { name: 'schedule', icon: <Calendar size={18} />, text: 'Schedule', path: '/dashboard/schedule' },
+    { name: 'analytics', icon: <BarChartBig size={18} />, text: 'Analytics', path: '/dashboard/analytics' },
+    { name: 'billing', icon: <CreditCard size={18} />, text: 'Billing', path: '/dashboard/billing' },
+    { name: 'settings', icon: <Settings size={18} />, text: 'Settings', path: '/dashboard/settings' },
+  ];
+  
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
     try {
       await signOut();
-      toast.success("Logged out successfully");
     } catch (error) {
-      console.error("Error logging out:", error);
-      toast.error("Failed to log out");
+      console.error("Sign out failed:", error);
+    } finally {
+      setIsSigningOut(false);
     }
   };
 
-  // Get user initials for avatar
-  const getInitials = () => {
-    if (!user?.email) return "U";
-    return user.email.substring(0, 2).toUpperCase();
-  };
-
   return (
-    <div className="hidden md:flex w-64 flex-col bg-white border-r">
-      <div className="p-4 flex items-center gap-2 border-b">
-        <h1 className="text-xl font-bold">
-          <span className="text-[#9b87f5]">Glidr</span>
-          <span className="text-gray-800">click</span>
-        </h1>
+    <div className="flex flex-col border-r w-64 bg-white">
+      <div className="flex items-center gap-4 p-4 border-b">
+        <Avatar>
+          <AvatarImage src={user?.user_metadata?.avatar_url as string} />
+          <AvatarFallback>{user?.email?.charAt(0).toUpperCase()}</AvatarFallback>
+        </Avatar>
+        <div className="flex flex-col">
+          <span className="font-semibold">{user?.user_metadata?.full_name || user?.email}</span>
+          <span className="text-sm text-gray-500">{user?.email}</span>
+        </div>
       </div>
-      
-      {user && (
-        <div className="p-4 border-b">
-          <div className="flex items-center gap-3">
-            <Avatar>
-              <AvatarFallback className="bg-glidr-purple/10 text-glidr-purple">
-                {getInitials()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="overflow-hidden">
-              <p className="font-medium truncate">{user.email}</p>
-              <p className="text-xs text-gray-500">{isAdmin ? 'Administrator' : 'User'}</p>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      <div className="flex flex-col flex-grow p-4 space-y-6">
-        <div className="space-y-1">
-          <h3 className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Dashboard</h3>
-          <Button 
-            variant={activePage === "dashboard" ? "default" : "ghost"} 
-            className={`w-full justify-start gap-2`}
-            onClick={() => handleNavigation("/dashboard")}
-          >
-            <LayoutDashboard size={18} className="text-glidr-purple" /> Overview
-          </Button>
-          <Button 
-            variant={activePage === "content" ? "default" : "ghost"} 
-            className={`w-full justify-start gap-2`}
-            onClick={() => handleNavigation("/dashboard/content")}
-          >
-            <File size={18} /> Content
-          </Button>
-          <Button 
-            variant={activePage === "schedule" ? "default" : "ghost"} 
-            className={`w-full justify-start gap-2`}
-            onClick={() => handleNavigation("/dashboard/schedule")}
-          >
-            <CalendarDays size={18} /> Schedule
-          </Button>
-          <Button 
-            variant={activePage === "analytics" ? "default" : "ghost"} 
-            className={`w-full justify-start gap-2`}
-            onClick={() => handleNavigation("/dashboard/analytics")}
-          >
-            <BarChart size={18} /> Analytics
-          </Button>
-          <Button 
-            variant={activePage === "social" ? "default" : "ghost"} 
-            className={`w-full justify-start gap-2`}
-            onClick={() => handleNavigation("/dashboard/social")}
-          >
-            <Share size={18} /> Social
-          </Button>
-        </div>
-
-        <div className="space-y-1">
-          <h3 className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Settings</h3>
-          <Button 
-            variant={activePage === "profile" ? "default" : "ghost"} 
-            className={`w-full justify-start gap-2`}
-            onClick={() => handleNavigation("/dashboard/profile")}
-          >
-            <User size={18} /> Profile
-          </Button>
-          <Button 
-            variant={activePage === "settings" ? "default" : "ghost"} 
-            className={`w-full justify-start gap-2`}
-            onClick={() => handleNavigation("/dashboard/settings")}
-          >
-            <Settings size={18} /> Settings
-          </Button>
-          
-          {isAdmin && (
-            <Button 
-              variant={activePage === "admin-dashboard" ? "default" : "ghost"}
-              className="w-full justify-start gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
-              onClick={() => handleNavigation("/admin-dashboard")}
-            >
-              <ShieldAlert size={18} /> Admin Dashboard
-            </Button>
-          )}
-        </div>
-
-        <div className="mt-auto space-y-1">
-          <Button 
-            variant="outline" 
-            className="w-full justify-start gap-2" 
-            onClick={handleLogout}
-          >
-            <LogOut size={18} /> Logout
-          </Button>
-        </div>
+      <div className="flex-1 p-4">
+        <ul className="space-y-1">
+          {sidebarLinks.map((link) => (
+            <li key={link.name}>
+              <Link
+                to={link.path}
+                className={cn(
+                  "group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100 transition-colors",
+                  activePage === link.name
+                    ? "bg-gray-100 text-glidr-purple"
+                    : "text-gray-700"
+                )}
+              >
+                {link.icon}
+                <span className="ml-2">{link.text}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="p-4 border-t">
+        <Button 
+          variant="outline" 
+          className="w-full"
+          onClick={handleSignOut}
+          disabled={isSigningOut}
+        >
+          {isSigningOut ? "Signing Out..." : "Sign Out"}
+        </Button>
       </div>
     </div>
   );

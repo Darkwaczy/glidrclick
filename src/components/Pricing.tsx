@@ -1,8 +1,11 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Check, X } from 'lucide-react';
+import { Check, X, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from '@/hooks/use-toast';
+import { useAuthContext } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PricingFeature {
   title: string;
@@ -20,7 +23,9 @@ const pricingFeatures: PricingFeature[] = [
 
 const Pricing = () => {
   const [isAnnual, setIsAnnual] = useState(false);
+  const [isLoading, setIsLoading] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuthContext();
   
   const renderFeature = (value: boolean | string) => {
     if (typeof value === 'boolean') {
@@ -33,8 +38,49 @@ const Pricing = () => {
     return <span>{value}</span>;
   };
 
-  const handlePlanSelection = (plan: 'free' | 'pro' | 'elite') => {
-    navigate('/register', { state: { selectedPlan: plan } });
+  const handlePlanSelection = async (plan: 'free' | 'pro' | 'elite') => {
+    if (!isAuthenticated) {
+      navigate('/auth', { state: { selectedPlan: plan } });
+      return;
+    }
+    
+    try {
+      setIsLoading(plan);
+      
+      if (plan === 'free') {
+        // For free plan, just redirect to registration/dashboard
+        navigate('/dashboard');
+        return;
+      }
+      
+      // Initiate payment with Flutterwave
+      const { data, error } = await supabase.functions.invoke('create-flutterwave-payment', {
+        body: { plan, isAnnual },
+      });
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      if (data?.payment_url) {
+        // Redirect to Flutterwave payment page
+        window.location.href = data.payment_url;
+      } else if (data?.redirectUrl) {
+        // For free plan or other direct redirects
+        navigate(data.redirectUrl);
+      } else {
+        throw new Error('No payment URL returned');
+      }
+    } catch (error) {
+      console.error('Payment initiation error:', error);
+      toast({
+        title: 'Payment Error',
+        description: error instanceof Error ? error.message : 'Failed to initiate payment',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(null);
+    }
   };
 
   return (
@@ -77,9 +123,15 @@ const Pricing = () => {
               </div>
               <Button 
                 onClick={() => handlePlanSelection('free')}
+                disabled={isLoading !== null}
                 className="w-full mt-6 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-full"
               >
-                Try Free
+                {isLoading === 'free' ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : 'Try Free'}
               </Button>
             </div>
             <div className="bg-gray-50 p-8">
@@ -107,9 +159,15 @@ const Pricing = () => {
               </div>
               <Button 
                 onClick={() => handlePlanSelection('pro')}
+                disabled={isLoading !== null}
                 className="w-full mt-6 gradient-button text-white rounded-full"
               >
-                Get Pro
+                {isLoading === 'pro' ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : 'Get Pro'}
               </Button>
             </div>
             <div className="bg-glidr-soft-purple p-8">
@@ -134,9 +192,15 @@ const Pricing = () => {
               </div>
               <Button 
                 onClick={() => handlePlanSelection('elite')}
+                disabled={isLoading !== null}
                 className="w-full mt-6 bg-gray-800 hover:bg-black text-white rounded-full"
               >
-                Go Elite
+                {isLoading === 'elite' ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : 'Go Elite'}
               </Button>
             </div>
             <div className="bg-gray-50 p-8">

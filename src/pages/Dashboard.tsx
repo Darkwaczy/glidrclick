@@ -11,6 +11,7 @@ import ProfilePage from '@/components/dashboard/pages/ProfilePage';
 import SchedulePage from '@/components/dashboard/pages/SchedulePage';
 import NewPostPage from '@/components/dashboard/pages/NewPostPage';
 import EditPostPage from '@/components/dashboard/pages/EditPostPage';
+import BillingPage from '@/components/dashboard/pages/BillingPage';
 import { useAuthContext } from '@/context/AuthContext';
 import SocialSharing from '@/pages/SocialSharing';
 
@@ -42,6 +43,7 @@ const Dashboard: React.FC = () => {
             <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="profile" element={<ProfilePage />} />
+            <Route path="billing" element={<BillingPage />} />
             <Route path="*" element={<Navigate to="content" replace />} />
           </Routes>
         </main>
