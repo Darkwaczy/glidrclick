@@ -18,6 +18,14 @@ export interface CompetitorContent {
   url: string;
 }
 
+// Mobile notification settings interface
+export interface NotificationSettings {
+  enableMentions: boolean;
+  enableEngagement: boolean;
+  enableContentApproval: boolean;
+  enableAnalytics: boolean;
+}
+
 // Sample trending topics data (in a real app, this would come from an API)
 const TRENDING_TOPICS: Record<string, string[]> = {
   world: [
@@ -136,4 +144,65 @@ export const getTopicAnalytics = async (topic: string): Promise<{
       });
     }, 600);
   });
+};
+
+// Get user notification settings for mobile
+export const getUserNotificationSettings = async (userId: string): Promise<NotificationSettings> => {
+  try {
+    // In a real implementation, this would fetch from the database
+    // For demo purposes, check if settings exist or use defaults
+    const { data, error } = await supabase
+      .from('user_settings')
+      .select('notification_settings')
+      .eq('user_id', userId)
+      .single();
+    
+    if (error) {
+      console.error("Error fetching notification settings:", error);
+      // Return default settings if there's an error
+      return {
+        enableMentions: true,
+        enableEngagement: true,
+        enableContentApproval: false,
+        enableAnalytics: false
+      };
+    }
+    
+    return data?.notification_settings || {
+      enableMentions: true,
+      enableEngagement: true,
+      enableContentApproval: false,
+      enableAnalytics: false
+    };
+  } catch (error) {
+    console.error("Error fetching user notification settings:", error);
+    return {
+      enableMentions: true,
+      enableEngagement: true,
+      enableContentApproval: false,
+      enableAnalytics: false
+    };
+  }
+};
+
+// Save user notification settings
+export const saveUserNotificationSettings = async (
+  userId: string, 
+  settings: NotificationSettings
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('user_settings')
+      .upsert({ 
+        user_id: userId, 
+        notification_settings: settings,
+        updated_at: new Date().toISOString()
+      });
+    
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error("Error saving notification settings:", error);
+    return false;
+  }
 };

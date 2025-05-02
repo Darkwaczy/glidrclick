@@ -12,6 +12,34 @@ export const useSocialPage = () => {
   const mentions = useMentions();
   const posts = useScheduledPosts();
   const oauth = useOAuth();
+  const [isMobileView, setIsMobileView] = useState(false);
+
+  // Check for mobile view
+  useEffect(() => {
+    const checkMobileView = () => {
+      setIsMobileView(window.innerWidth < 768);
+    };
+    
+    checkMobileView();
+    window.addEventListener('resize', checkMobileView);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobileView);
+    };
+  }, []);
+
+  // Register service worker for push notifications
+  useEffect(() => {
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(registration => {
+          console.log('ServiceWorker registration successful:', registration.scope);
+        })
+        .catch(error => {
+          console.error('ServiceWorker registration failed:', error);
+        });
+    }
+  }, []);
 
   // Set up WordPress dialog event listener
   useEffect(() => {
@@ -53,6 +81,9 @@ export const useSocialPage = () => {
 
   // Return all hooks combined into a single API
   return {
+    // Mobile state
+    isMobileView,
+    
     // Platform state and methods
     platforms: platforms.platforms,
     isLoading: platforms.isLoading,

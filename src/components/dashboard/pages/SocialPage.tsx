@@ -1,68 +1,150 @@
 
-import React, { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useSocialPage } from "@/hooks/useSocialPage";
-import { useFacebookAuth } from "@/hooks/useFacebookAuth";
-
-// Import components
-import SocialPageHeader from "../social/SocialPageHeader";
-import SocialPageTabs from "../social/SocialPageTabs";
-import SocialPageDialogs from "../social/SocialPageDialogs";
-import FacebookSdkWarning from "../social/FacebookSdkWarning";
-import OAuthProcessingMessage from "../social/OAuthProcessingMessage";
-import MentionsMonitor from "../social/MentionsMonitor";
+import React, { useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import SocialPageHeader from '../social/SocialPageHeader';
+import ConnectedPlatformsList from '../social/ConnectedPlatformsList';
+import OAuthProcessingMessage from '../social/OAuthProcessingMessage';
+import SocialPageDialogs from '../social/SocialPageDialogs';
+import MentionsList from '../social/MentionsList';
+import SocialPageTabs from '../social/SocialPageTabs';
+import ScheduledPostsList from '../social/ScheduledPostsList';
+import MentionsMonitor from '../social/MentionsMonitor';
+import MobileCompanion from '../social/MobileCompanion';  
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useSocialPage } from '@/hooks/useSocialPage';
+import ReplyDialog from '../social/dialogs/ReplyDialog';
 
 const SocialPage = () => {
-  const social = useSocialPage();
-  const { error: facebookSdkError } = useFacebookAuth();
-  const [activeTab, setActiveTab] = useState("accounts");
+  const socialHook = useSocialPage();
+  const isMobile = useIsMobile();
+  const showMobileView = isMobile && window.innerWidth < 768;
 
+  // Register service worker for PWA
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js').then(
+          registration => {
+            console.log('ServiceWorker registration successful');
+          },
+          err => {
+            console.error('ServiceWorker registration failed:', err);
+          }
+        );
+      });
+    }
+  }, []);
+
+  if (socialHook.processingOAuth) {
+    return <OAuthProcessingMessage />;
+  }
+
+  // Mobile-optimized view
+  if (showMobileView) {
+    return (
+      <div className="p-4">
+        <SocialPageHeader 
+          onRefresh={socialHook.handleRefreshConnections} 
+          isRefreshing={socialHook.isRefreshing}
+          onOpenConnectDialog={socialHook.handleOpenConnectDialog}
+        />
+        
+        <MobileCompanion socialHook={socialHook} />
+        
+        {/* Include necessary dialogs */}
+        <SocialPageDialogs
+          socialHook={socialHook}
+          platforms={socialHook.platforms}
+          showSettingsDialog={socialHook.showSettingsDialog}
+          showConnectDialog={socialHook.showConnectDialog} 
+          showWordPressDialog={socialHook.showWordPressDialog}
+          showCreatePostDialog={socialHook.showCreatePostDialog}
+          currentPlatform={socialHook.currentPlatformObj}
+          onSettingsDialogChange={socialHook.setShowSettingsDialog}
+          onConnectDialogChange={socialHook.setShowConnectDialog}
+          onWordPressDialogChange={socialHook.setShowWordPressDialog}
+          onCreatePostDialogChange={socialHook.setShowCreatePostDialog}
+          onConnectPlatform={socialHook.handleConnectPlatform}
+          onSaveSettings={socialHook.handleSavePlatformSettings}
+          onSubmitPost={socialHook.handleSubmitNewPost}
+        />
+        
+        <ReplyDialog 
+          open={Boolean(socialHook.replyingToMention)}
+          onOpenChange={() => socialHook.setReplyingToMention(null)}
+          mentionId={socialHook.replyingToMention}
+          mentions={socialHook.mentionsList}
+        />
+      </div>
+    );
+  }
+
+  // Regular desktop view
   return (
-    <div className="space-y-6">
-      <SocialPageHeader
-        isRefreshing={social.isRefreshing}
-        isLoading={social.isLoading}
-        processingOAuth={social.processingOAuth}
-        onRefresh={social.handleRefreshConnections}
+    <div className="p-6">
+      <SocialPageHeader 
+        onRefresh={socialHook.handleRefreshConnections} 
+        isRefreshing={socialHook.isRefreshing}
+        onOpenConnectDialog={socialHook.handleOpenConnectDialog}
       />
       
-      {/* Display Facebook SDK warning if there's an error */}
-      {facebookSdkError && <FacebookSdkWarning error={facebookSdkError} />}
-      
-      <OAuthProcessingMessage processingOAuth={social.processingOAuth} />
-      
-      <Tabs defaultValue="accounts" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="accounts">Connected Accounts</TabsTrigger>
-          <TabsTrigger value="mentions">Engagement Monitor</TabsTrigger>
-          <TabsTrigger value="publish">Multi-Platform Publishing</TabsTrigger>
-        </TabsList>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+        <div className="md:col-span-2">
+          <SocialPageTabs 
+            scheduledPosts={socialHook.scheduledPostsList}
+            onCreatePost={socialHook.handleCreatePost}
+            onEditPost={socialHook.setEditingPostId}
+            onCancelPost={socialHook.handleCancelPost}
+          />
+        </div>
         
-        <TabsContent value="accounts" className="mt-6">
-          <SocialPageTabs social={social} />
-        </TabsContent>
-        
-        <TabsContent value="mentions" className="mt-6">
-          <MentionsMonitor />
-        </TabsContent>
-        
-        <TabsContent value="publish" className="mt-6">
-          <div className="bg-gray-50 border rounded-lg p-8 text-center">
-            <h3 className="text-xl font-medium mb-2">Multi-Platform Publishing</h3>
-            <p className="text-gray-600 mb-4">
-              Create and schedule content for multiple social media platforms at once.
-            </p>
-            <button 
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-              onClick={social.handleCreatePost}
-            >
-              Create New Post
-            </button>
+        <div>
+          <ConnectedPlatformsList 
+            platforms={socialHook.platforms}
+            isLoading={socialHook.isLoading} 
+            onConnectClick={socialHook.handleOpenConnectDialog}
+            onDisconnectClick={socialHook.handleDisconnectPlatform}
+            onSettingsClick={socialHook.handleOpenPlatformSettings}
+          />
+          
+          <div className="mt-6">
+            {socialHook.mentionsList.length > 0 ? (
+              <MentionsList 
+                mentions={socialHook.mentionsList}
+                onReply={socialHook.handleOpenReplyDialog}
+                onMarkAsRead={socialHook.handleMarkAsRead}
+              />
+            ) : (
+              <MentionsMonitor />
+            )}
           </div>
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
       
-      <SocialPageDialogs social={social} />
+      {/* Include necessary dialogs */}
+      <SocialPageDialogs
+        socialHook={socialHook}
+        platforms={socialHook.platforms}
+        showSettingsDialog={socialHook.showSettingsDialog}
+        showConnectDialog={socialHook.showConnectDialog} 
+        showWordPressDialog={socialHook.showWordPressDialog}
+        showCreatePostDialog={socialHook.showCreatePostDialog}
+        currentPlatform={socialHook.currentPlatformObj}
+        onSettingsDialogChange={socialHook.setShowSettingsDialog}
+        onConnectDialogChange={socialHook.setShowConnectDialog}
+        onWordPressDialogChange={socialHook.setShowWordPressDialog}
+        onCreatePostDialogChange={socialHook.setShowCreatePostDialog}
+        onConnectPlatform={socialHook.handleConnectPlatform}
+        onSaveSettings={socialHook.handleSavePlatformSettings}
+        onSubmitPost={socialHook.handleSubmitNewPost}
+      />
+      
+      <ReplyDialog 
+        open={Boolean(socialHook.replyingToMention)}
+        onOpenChange={() => socialHook.setReplyingToMention(null)}
+        mentionId={socialHook.replyingToMention}
+        mentions={socialHook.mentionsList}
+      />
     </div>
   );
 };
