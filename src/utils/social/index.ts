@@ -1,9 +1,21 @@
+
 // Export all functionality from the social modules
 export * from './types';
 export * from './helpers';
-export * from './authentication';
 export * from './posts';
-export * from './platforms';
+
+// Handle the connectPlatform conflict by explicitly re-exporting from authentication
+// and renaming the platforms version
+export * from './authentication';
+
+// Export everything from platforms except connectPlatform (which would conflict)
+import * as platformsModule from './platforms';
+export const connectPlatformDirectly = platformsModule.connectPlatform; // Renamed export
+export const { 
+  disconnectPlatform, 
+  updatePlatformSettings, 
+  getSocialPlatforms 
+} = platformsModule;
 
 // Default export all utilities
 export default {

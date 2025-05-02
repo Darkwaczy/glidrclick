@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getPlatformName } from "@/utils/social/helpers";
-import { connectPlatform } from "@/utils/social";
+import { connectPlatform } from "@/utils/social/authentication";
 import { disconnectPlatform, updatePlatformSettings } from "@/utils/social/platforms";
 
 export const usePlatforms = () => {
