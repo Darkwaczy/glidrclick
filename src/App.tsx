@@ -33,6 +33,7 @@ const App = () => (
               <SocialPage />
             </SocialProvider>
           } />
+          <Route path="/dashboard/social/callback" element={<NotFound />} />
           {/* Auth routes */}
           <Route path="/login" element={<NotFound />} />
           <Route path="/register" element={<NotFound />} />

@@ -46,8 +46,8 @@ const SocialPage = () => {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Default Post Format</label>
                 <Input 
-                  placeholder="Check out my new blog post: {title} - {url}"
-                  defaultValue="Check out my new blog post: {title} - {url}"
+                  placeholder='Check out my new blog post: {"{title}"} - {"{url}"}'
+                  defaultValue='Check out my new blog post: {"{title}"} - {"{url}"}'
                 />
                 <p className="text-xs text-gray-500">
                   Use {"{title}"}, {"{url}"}, {"{excerpt}"} as placeholders

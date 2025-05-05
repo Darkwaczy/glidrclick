@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { toast } from "sonner";
 
 type SocialPlatform = 'Facebook' | 'Twitter' | 'LinkedIn' | 'Instagram';
 
@@ -67,6 +68,7 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.log(`Successfully connected to ${platform}`);
     } catch (error) {
       console.error(`Error connecting to ${platform}:`, error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -94,9 +96,12 @@ export const SocialProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         });
       });
       
+      toast.success(`Successfully disconnected account`);
       console.log(`Successfully disconnected account ${accountId}`);
     } catch (error) {
       console.error(`Error disconnecting account ${accountId}:`, error);
+      toast.error(`Error disconnecting account`);
+      throw error;
     } finally {
       setIsLoading(false);
     }
