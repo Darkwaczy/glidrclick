@@ -53,7 +53,7 @@ const SocialPage = () => {
                   defaultValue="Check out my new blog post: {title} - {url}"
                 />
                 <p className="text-xs text-gray-500">
-                  Use {"{title}"}, {"{url}"}, {"{excerpt}"} as placeholders
+                  Use {title}, {url}, {excerpt} as placeholders
                 </p>
               </div>
               
