@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -29,7 +29,6 @@ const formSchema = z.object({
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -41,22 +40,10 @@ const LoginPage = () => {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
-    setIsSubmitting(true);
-    
     // In a real app, this would connect to Supabase or another auth provider
-    setTimeout(() => {
-      setIsSubmitting(false);
-      
-      // Check if this is an admin login
-      if (values.email === "admin@glidrclick.com" && values.password === "admin123") {
-        toast.success("Admin login successful! Redirecting to admin dashboard...");
-        setTimeout(() => navigate("/admin-dashboard"), 1500);
-      } else {
-        toast.success("Login successful! Redirecting to dashboard...");
-        // Navigate to dashboard after successful login
-        setTimeout(() => navigate("/dashboard"), 1500);
-      }
-    }, 1500);
+    toast.success("Login successful! Redirecting to dashboard...");
+    // Navigate to dashboard after successful login
+    setTimeout(() => navigate("/dashboard"), 1500);
   }
 
   return (
@@ -109,12 +96,8 @@ const LoginPage = () => {
                 </div>
               </div>
               
-              <Button 
-                type="submit" 
-                className="w-full gradient-button text-white" 
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Signing In..." : "Sign In"}
+              <Button type="submit" className="w-full gradient-button text-white">
+                Sign In
               </Button>
             </form>
           </Form>

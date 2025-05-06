@@ -1,77 +1,73 @@
+# Welcome to your Lovable project
 
-# Social Media Integration Project
+## Project info
 
-This project demonstrates a social media OAuth integration with a React frontend and Node.js backend.
+**URL**: https://lovable.dev/projects/3bf590a1-0c27-45a4-ad9e-601ed5295d10
 
-## Project Structure
+## How can I edit this code?
 
-- `/src` - React frontend application
-- `/server` - Node.js Express backend for OAuth and API handling
+There are several ways of editing your application.
 
-## Running the Application
+**Use Lovable**
 
-This app can be run in two modes:
+Simply visit the [Lovable Project](https://lovable.dev/projects/3bf590a1-0c27-45a4-ad9e-601ed5295d10) and start prompting.
 
-### Mock Mode (Default)
+Changes made via Lovable will be committed automatically to this repo.
 
-The application currently defaults to "Mock Mode" since connecting to a real backend server requires setup. In this mode:
+**Use your preferred IDE**
 
-- No actual backend server is required
-- Social platform connections are simulated
-- Posts are stored in-memory during the session
-- All functionality works but doesn't persist between page refreshes
+If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
-### Backend Server Mode (Optional)
+The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-To use a real backend server:
+Follow these steps:
 
-1. Navigate to the server directory:
-   ```
-   cd server
-   ```
+```sh
+# Step 1: Clone the repository using the project's Git URL.
+git clone <YOUR_GIT_URL>
 
-2. Install dependencies:
-   ```
-   npm install
-   ```
+# Step 2: Navigate to the project directory.
+cd <YOUR_PROJECT_NAME>
 
-3. Create a `.env` file with your OAuth credentials:
-   ```
-   FACEBOOK_APP_ID=958890536078118
-   FACEBOOK_APP_SECRET=your_facebook_app_secret_here
-   PORT=5000
-   CLIENT_URL=http://localhost:3000
-   SESSION_SECRET=your_session_secret_here
-   ```
+# Step 3: Install the necessary dependencies.
+npm i
 
-4. Start the backend server:
-   ```
-   npm run dev
-   ```
+# Step 4: Start the development server with auto-reloading and an instant preview.
+npm run dev
+```
 
-5. Update the `USE_MOCK_API` constant in `src/utils/socialConnections.ts` to `false`
+**Edit a file directly in GitHub**
 
-The server will run on `http://localhost:5000`.
+- Navigate to the desired file(s).
+- Click the "Edit" button (pencil icon) at the top right of the file view.
+- Make your changes and commit the changes.
 
-## Using the Application
+**Use GitHub Codespaces**
 
-1. Navigate to the Social page in your dashboard
-2. Click "Connect Platform" to initiate the OAuth flow
-3. Authorize the application to access your social media account
-4. Once connected, you can post content to your social media accounts
+- Navigate to the main page of your repository.
+- Click on the "Code" button (green button) near the top right.
+- Select the "Codespaces" tab.
+- Click on "New codespace" to launch a new Codespace environment.
+- Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## Security Notes
+## What technologies are used for this project?
 
-- Access tokens are stored securely on the backend
-- OAuth flows are handled properly with secure redirects
-- HTTPS is recommended for production deployments
+This project is built with:
 
-## Supported Platforms
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
 
-Currently implemented:
-- Facebook
+## How can I deploy this project?
 
-Coming soon:
-- Twitter
-- Instagram
-- WordPress Blog
+Simply open [Lovable](https://lovable.dev/projects/3bf590a1-0c27-45a4-ad9e-601ed5295d10) and click on Share -> Publish.
+
+## Can I connect a custom domain to my Lovable project?
+
+Yes, you can!
+
+To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+
+Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)

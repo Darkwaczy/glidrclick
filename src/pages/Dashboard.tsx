@@ -1,164 +1,61 @@
 
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import DashboardTabContent from "@/components/dashboard/content/DashboardTabContent";
-import ContentPage from "@/components/dashboard/pages/ContentPage";
-import SchedulePage from "@/components/dashboard/pages/SchedulePage";
-import AnalyticsPage from "@/components/dashboard/pages/AnalyticsPage";
-import SocialPage from "@/components/dashboard/pages/SocialPage";
-import ProfilePage from "@/components/dashboard/pages/ProfilePage";
-import SettingsPage from "@/components/dashboard/pages/SettingsPage";
-import NewPostPage from "@/components/dashboard/pages/NewPostPage";
-import WatchDemoModal from "@/components/dashboard/WatchDemoModal";
-import EditPostPage from "@/components/dashboard/pages/EditPostPage";
-import { usePosts } from "@/hooks/usePosts";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState("posts");
-  const [activePage, setActivePage] = useState("dashboard");
-  const [demoModalOpen, setDemoModalOpen] = useState(false);
-  const [editingPostId, setEditingPostId] = useState<string | null>(null);
-  const { posts, isLoading, deletePost, updatePost } = usePosts();
 
-  // Update active page based on current route
-  useEffect(() => {
-    const path = location.pathname.split('/').pop();
-    if (path && path !== 'dashboard') {
-      setActivePage(path);
-    } else {
-      setActivePage("dashboard");
-    }
-  }, [location.pathname]);
-
-  // Get tab from URL if available
-  useEffect(() => {
-    const tabFromUrl = searchParams.get("tab");
-    if (tabFromUrl && ["posts", "analytics", "platforms", "settings"].includes(tabFromUrl)) {
-      setActiveTab(tabFromUrl);
-    }
-  }, [searchParams]);
-
-  const createPost = () => {
-    navigate("/dashboard/new-post");
+  const handleLogout = () => {
+    toast.success("Logged out successfully!");
+    setTimeout(() => navigate("/"), 1500);
   };
-  
-  const editPost = (id: string | number) => {
-    const stringId = String(id);
-    setEditingPostId(stringId);
-    navigate(`/dashboard/edit-post/${stringId}`);
-    toast.info(`Editing post ${stringId}`);
-  };
-  
-  const cancelPost = (id: string | number) => {
-    const stringId = String(id);
-    if (window.confirm(`Are you sure you want to cancel post ${stringId}?`)) {
-      deletePost(stringId);
-      toast.success(`Post ${stringId} has been canceled`);
-    }
-  };
-  
-  const viewAllScheduled = () => {
-    navigate("/dashboard/schedule");
-  };
-  
-  const viewStats = (id: string | number) => {
-    const stringId = String(id);
-    navigate(`/dashboard/analytics?postId=${stringId}`);
-  };
-  
-  const republishPost = (id: string | number) => {
-    const stringId = String(id);
-    updatePost({ 
-      id: stringId, 
-      data: { 
-        status: 'scheduled',
-        scheduled_for: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-      } 
-    });
-  };
-  
-  const viewAllPublished = () => {
-    navigate("/dashboard/content?filter=published");
-  };
-  
-  const viewAllDrafts = () => {
-    navigate("/dashboard/content?filter=drafts");
-  };
-
-  const watchDemo = () => {
-    setDemoModalOpen(true);
-  };
-
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    setSearchParams({ tab: value });
-  };
-
-  // Get the current path to determine what to render
-  const path = location.pathname;
-  const isEditingPost = path.includes('/edit-post/');
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <DashboardSidebar activePage={activePage} />
-      <div className="flex-1 flex flex-col">
-        <DashboardHeader onWatchDemo={watchDemo} />
-        <main className="flex-1 p-4 md:p-8 overflow-y-auto">
-          {path === "/dashboard" && (
-            <>
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                <div>
-                  <h1 className="text-2xl font-bold">Welcome back!</h1>
-                  <p className="text-gray-600">Here's what's happening with your content</p>
-                </div>
-                <Button className="gradient-button text-white" onClick={createPost}>
-                  <Plus size={18} className="mr-2" /> Create New Post
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow-sm">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <h1 className="text-2xl font-bold gradient-text">Glidrclick</h1>
+          <Button variant="outline" onClick={handleLogout}>
+            Logout
+          </Button>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+        <div className="bg-white shadow rounded-lg">
+          <div className="px-4 py-5 sm:p-6">
+            <h2 className="text-xl font-semibold mb-4">Welcome to your Dashboard</h2>
+            <p className="text-gray-600 mb-4">
+              This is your dashboard where you can manage your content and settings.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+              <div className="bg-gray-50 p-4 rounded-md border">
+                <h3 className="font-medium text-gray-900">AI Writing</h3>
+                <p className="text-sm text-gray-500 mt-1">Create AI-generated content for your blog</p>
+                <Button variant="link" className="text-glidr-purple p-0 mt-2" onClick={() => navigate("/features/ai-writing")}>
+                  Get Started →
                 </Button>
               </div>
-
-              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <TabsList className="mb-6">
-                  <TabsTrigger value="posts">Posts</TabsTrigger>
-                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                  <TabsTrigger value="platforms">Platforms</TabsTrigger>
-                  <TabsTrigger value="settings">Settings</TabsTrigger>
-                </TabsList>
-                
-                <DashboardTabContent 
-                  activeTab={activeTab} 
-                  onEdit={editPost}
-                  onCancel={cancelPost}
-                  onViewAllScheduled={viewAllScheduled}
-                  onViewStats={viewStats}
-                  onRepublish={republishPost}
-                  onViewAllPublished={viewAllPublished}
-                  onViewAllDrafts={viewAllDrafts}
-                />
-              </Tabs>
-            </>
-          )}
-          
-          {path === "/dashboard/content" && <ContentPage />}
-          {path === "/dashboard/schedule" && <SchedulePage />}
-          {path === "/dashboard/analytics" && <AnalyticsPage />}
-          {path === "/dashboard/social" && <SocialPage />}
-          {path === "/dashboard/profile" && <ProfilePage />}
-          {path === "/dashboard/settings" && <SettingsPage />}
-          {path === "/dashboard/new-post" && <NewPostPage />}
-          {isEditingPost && <EditPostPage postId={editingPostId} />}
-        </main>
-      </div>
-      
-      <WatchDemoModal open={demoModalOpen} onOpenChange={setDemoModalOpen} />
+              <div className="bg-gray-50 p-4 rounded-md border">
+                <h3 className="font-medium text-gray-900">Auto-Posting</h3>
+                <p className="text-sm text-gray-500 mt-1">Schedule and automate your content posting</p>
+                <Button variant="link" className="text-glidr-purple p-0 mt-2" onClick={() => navigate("/features/auto-posting")}>
+                  Get Started →
+                </Button>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-md border">
+                <h3 className="font-medium text-gray-900">Social Sharing</h3>
+                <p className="text-sm text-gray-500 mt-1">Share your content across social platforms</p>
+                <Button variant="link" className="text-glidr-purple p-0 mt-2" onClick={() => navigate("/features/social-sharing")}>
+                  Get Started →
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };
