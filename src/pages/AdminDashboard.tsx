@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminTabContent from "@/components/admin/dashboard/AdminTabContent";
-import { useAuth } from "@/hooks/useAuth";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -14,27 +13,6 @@ const AdminDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("users");
   const [activePage, setActivePage] = useState("admin-dashboard");
-  const { user, isAdmin, loading } = useAuth();
-
-  console.log("AdminDashboard rendering, path:", location.pathname);
-
-  // Redirect if not admin
-  useEffect(() => {
-    if (loading) {
-      console.log("Auth still loading, waiting...");
-      return;
-    }
-    
-    if (user && !isAdmin) {
-      console.log("Not admin, redirecting to dashboard");
-      navigate("/dashboard");
-    } else if (!user) {
-      console.log("Not logged in, redirecting to auth");
-      navigate("/auth");
-    } else {
-      console.log("Admin access confirmed");
-    }
-  }, [user, isAdmin, navigate, loading]);
 
   // Update activePage based on route
   useEffect(() => {
@@ -51,11 +29,10 @@ const AdminDashboard = () => {
     const tabFromUrl = searchParams.get("tab");
     if (tabFromUrl && ["users", "analytics", "system", "security", "settings"].includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
-    } else if (!tabFromUrl && location.pathname === "/admin-dashboard") {
-      // Only set default tab if we're on the main admin dashboard page
+    } else if (!tabFromUrl) {
       setSearchParams({ tab: "users" });
     }
-  }, [searchParams, setSearchParams, location.pathname]);
+  }, [searchParams, setSearchParams]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -65,17 +42,6 @@ const AdminDashboard = () => {
 
   // Determine if we need to show the dashboard content or a specific page
   const showDashboardContent = location.pathname === "/admin-dashboard" || location.pathname === "/admin-dashboard/";
-
-  console.log("Admin Dashboard Render:", { 
-    path: location.pathname, 
-    showDashboardContent, 
-    activeTab,
-    searchParams: searchParams.toString()
-  });
-
-  if (loading) {
-    return <div className="flex h-screen items-center justify-center">Verifying admin access...</div>;
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -106,50 +72,11 @@ const AdminDashboard = () => {
             </>
           ) : (
             <Routes>
-              <Route path="users/*" element={
-                <div className="space-y-6">
-                  <h1 className="text-2xl font-bold">User Management</h1>
-                  <AdminTabContent activeTab="users" />
-                </div>
-              } />
-              <Route path="system/*" element={
-                <div className="space-y-6">
-                  <h1 className="text-2xl font-bold">System Management</h1>
-                  <AdminTabContent activeTab="system" />
-                </div>
-              } />
-              <Route path="security/*" element={
-                <div className="space-y-6">
-                  <h1 className="text-2xl font-bold">Security Management</h1>
-                  <AdminTabContent activeTab="security" />
-                </div>
-              } />
-              <Route path="settings/*" element={
-                <div className="space-y-6">
-                  <h1 className="text-2xl font-bold">Admin Settings</h1>
-                  <AdminTabContent activeTab="settings" />
-                </div>
-              } />
-              <Route path="analytics/*" element={
-                <div className="space-y-6">
-                  <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
-                  <AdminTabContent activeTab="analytics" />
-                </div>
-              } />
-              <Route path="*" element={
-                <div className="p-6 bg-white rounded-lg shadow-sm">
-                  <h2 className="text-xl font-medium mb-2">Page Not Found</h2>
-                  <p className="text-gray-600 mb-4">
-                    The admin page you're looking for doesn't exist.
-                  </p>
-                  <button 
-                    onClick={() => navigate("/admin-dashboard")}
-                    className="text-blue-600 hover:underline"
-                  >
-                    Return to Admin Dashboard
-                  </button>
-                </div>
-              } />
+              {/* Add routes for admin-specific pages here if needed */}
+              <Route path="users" element={<div>User Management Page</div>} />
+              <Route path="system" element={<div>System Management Page</div>} />
+              <Route path="security" element={<div>Security Management Page</div>} />
+              {/* Add more routes as needed */}
             </Routes>
           )}
         </main>

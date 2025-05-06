@@ -2,21 +2,12 @@
 import { useState, useEffect } from 'react';
 
 interface TypeAnimationProps {
-  texts?: string[];  // Made optional with ?
+  texts: string[];  // Changed from single text to array of texts
   speed?: number;
   className?: string;
 }
 
-const TypeAnimation = ({ 
-  texts = [
-    "Streamline your content marketing workflow",
-    "Schedule posts across multiple platforms",
-    "Generate AI-powered content ideas",
-    "Analyze performance with detailed metrics"
-  ], 
-  speed = 100, 
-  className = '' 
-}: TypeAnimationProps) => {
+const TypeAnimation = ({ texts, speed = 100, className = '' }: TypeAnimationProps) => {
   const [displayText, setDisplayText] = useState('');
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [currentCharIndex, setCurrentCharIndex] = useState(0);

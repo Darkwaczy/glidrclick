@@ -5,11 +5,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
   LayoutDashboard, Settings, File, CalendarDays, BarChart, 
-  Share, User, LogOut, ShieldAlert
+  Share, User, LogOut
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { useState, useEffect } from "react";
 
 interface DashboardSidebarProps {
   activePage: string;
@@ -17,55 +14,21 @@ interface DashboardSidebarProps {
 
 const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    const checkAdminRole = async () => {
-      if (!user?.id) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
-          .maybeSingle();
-        
-        setIsAdmin(!!data);
-        
-        if (error) {
-          console.error("Error checking admin role:", error);
-        }
-      } catch (err) {
-        console.error("Error checking user role:", err);
-      }
-    };
-    
-    checkAdminRole();
-  }, [user]);
 
   const handleNavigation = (path: string) => {
     navigate(path);
+    toast.info(`Navigating to ${path}`);
   };
 
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      toast.success("Logged out successfully");
-    } catch (error) {
-      console.error("Error logging out:", error);
-      toast.error("Failed to log out");
-    }
+  const handleLogout = () => {
+    toast.success("Logging out...");
+    navigate("/");
   };
 
   return (
     <div className="hidden md:flex w-64 flex-col bg-white border-r">
       <div className="p-4 flex items-center gap-2 border-b">
-        <h1 className="text-xl font-bold">
-          <span className="text-[#9b87f5]">Glidr</span>
-          <span className="text-gray-800">click</span>
-        </h1>
+        <h1 className="text-xl font-bold gradient-text">Glidrclick</h1>
       </div>
       <div className="flex flex-col flex-grow p-4 space-y-6">
         <div className="space-y-1">
@@ -123,16 +86,6 @@ const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
           >
             <Settings size={18} /> Settings
           </Button>
-          
-          {isAdmin && (
-            <Button 
-              variant={activePage === "admin-dashboard" ? "default" : "ghost"}
-              className="w-full justify-start gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
-              onClick={() => handleNavigation("/admin-dashboard")}
-            >
-              <ShieldAlert size={18} /> Admin Dashboard
-            </Button>
-          )}
         </div>
 
         <div className="mt-auto space-y-1">

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,11 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { signIn, signUp, user, loading, isAdmin } = useAuth();
+  const { signIn, signUp, user, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
   
@@ -28,15 +28,9 @@ const Auth = () => {
   // Redirect to dashboard if already logged in
   useEffect(() => {
     if (user && !loading) {
-      console.log("Auth page: User authenticated, redirecting", { isAdmin, email: user.email });
-      // Check if admin user to redirect to appropriate dashboard
-      if (isAdmin || user.email === "admin@glidrclick.com") {
-        navigate("/admin-dashboard");
-      } else {
-        navigate("/dashboard");
-      }
+      navigate("/dashboard");
     }
-  }, [user, loading, navigate, isAdmin]);
+  }, [user, loading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +45,7 @@ const Auth = () => {
     try {
       await signIn({ email: loginEmail, password: loginPassword });
       toast.success("Successfully logged in!");
-      // Redirection will be handled by useEffect
+      navigate("/dashboard");
     } catch (error: any) {
       console.error("Login error:", error);
       toast.error(error?.message || "Failed to login. Please check your credentials.");

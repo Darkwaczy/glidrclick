@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,40 +9,19 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('Auth state change event:', event);
         setSession(session);
         setUser(session?.user ?? null);
-        
-        // Check for admin role if user is signed in
-        if (session?.user) {
-          const isAdminEmail = session.user.email === 'admin@glidrclick.com';
-          
-          if (isAdminEmail) {
-            setIsAdmin(true);
-          } else {
-            const { data } = await supabase
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', session.user.id)
-              .eq('role', 'admin')
-              .maybeSingle();
-            
-            setIsAdmin(!!data);
-          }
-        } else {
-          setIsAdmin(false);
-        }
-        
         setLoading(false);
         
-        // Handle social auth redirects
+        // Handle social auth redirects - moved to a separate function to avoid
+        // running Supabase calls inside the auth state change handler
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           const urlParams = new URLSearchParams(window.location.search);
           const connectedPlatform = urlParams.get('connected');
@@ -60,29 +38,10 @@ export const useAuth = () => {
     );
 
     // Then check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('Existing session:', session ? 'Yes' : 'No');
       setSession(session);
       setUser(session?.user ?? null);
-      
-      // Check for admin role if user is signed in
-      if (session?.user) {
-        const isAdminEmail = session.user.email === 'admin@glidrclick.com';
-          
-        if (isAdminEmail) {
-          setIsAdmin(true);
-        } else {
-          const { data } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', session.user.id)
-            .eq('role', 'admin')
-            .maybeSingle();
-          
-          setIsAdmin(!!data);
-        }
-      }
-      
       setLoading(false);
       
       // Handle URL parameters for social connections on initial load
@@ -154,20 +113,9 @@ export const useAuth = () => {
 
   const signIn = async ({ email, password }: { email: string, password: string }) => {
     try {
-      console.log(`Signing in with email: ${email}`);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        console.error('Error signing in:', error);
-        throw error;
-      }
-      
-      // Special handling for admin account
-      if (email === 'admin@glidrclick.com') {
-        setIsAdmin(true);
-      }
-      
-      // Navigation will be handled by the onAuthStateChange listener
-      return true;
+      if (error) throw error;
+      navigate('/dashboard');
     } catch (error) {
       console.error('Error signing in:', error);
       throw error;
@@ -188,7 +136,7 @@ export const useAuth = () => {
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
-      navigate('/auth');
+      navigate('/');
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -198,7 +146,6 @@ export const useAuth = () => {
     user,
     session,
     loading,
-    isAdmin,
     signIn,
     signUp,
     signOut,

@@ -42,13 +42,7 @@ const AdminHeader = () => {
           <Button variant="ghost" className="md:hidden">
             <LayoutDashboard size={20} />
           </Button>
-          <div className="flex items-center">
-            <h1 className="text-xl font-bold">
-              <span className="text-[#9b87f5]">Glidr</span>
-              <span className="text-gray-800">click</span>
-              <span className="ml-2 font-semibold">Admin</span>
-            </h1>
-          </div>
+          <h1 className="text-lg font-semibold">Admin Dashboard</h1>
         </div>
         <div className="flex items-center gap-2">
           <DropdownMenu>
