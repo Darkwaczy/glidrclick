@@ -1,0 +1,22 @@
+
+project_id = "jbcurgdwbvjsgbftjejg"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage"]
+
+[db]
+port = 54322
+
+[realtime]
+enabled = true
+
+[storage]
+enabled = true
+
+[functions]
+enabled = true
+
+[functions.init-storage]
+verify_jwt = true

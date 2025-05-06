@@ -1,80 +1,46 @@
-import { useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Play } from 'lucide-react';
-import TypeAnimation from './TypeAnimation';
+
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Play } from "lucide-react";
+import TypeAnimation from "@/components/TypeAnimation";
 
 const Hero = () => {
-  const dotsContainerRef = useRef<HTMLDivElement>(null);
-  
-  useEffect(() => {
-    if (!dotsContainerRef.current) return;
-    
-    const container = dotsContainerRef.current;
-    const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight;
-    
-    // Clear any existing dots
-    container.innerHTML = '';
-    
-    // Create floating dots
-    for (let i = 0; i < 20; i++) {
-      const dot = document.createElement('div');
-      dot.classList.add('dot');
-      
-      // Random size between 10px and 50px
-      const size = Math.random() * 40 + 10;
-      dot.style.width = `${size}px`;
-      dot.style.height = `${size}px`;
-      
-      // Random position
-      const left = Math.random() * 100;
-      const top = Math.random() * 100;
-      dot.style.left = `${left}%`;
-      dot.style.top = `${top}%`;
-      
-      // Random delay for animation
-      const delay = Math.random() * 5;
-      dot.style.animationDelay = `${delay}s`;
-      
-      container.appendChild(dot);
-    }
-  }, []);
-  
-  const typingTexts = [
-    "Generate. Schedule. Auto-post. Grow.",
-    "Write. Schedule. Share. Succeed.",
-    "Create. Optimize. Publish. Scale.",
-    "Plan. Write. Post. Repeat.",
-    "Ideate. Create. Share. Engage."
-  ];
-  
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 animated-bg">
-      <div className="flowing-dots" ref={dotsContainerRef}></div>
+    <div className="relative min-h-screen flex items-center justify-center bg-[#e5deff] pt-20">
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute w-full h-full">
+          {/* Decorative circles */}
+          <div className="absolute top-1/4 left-1/5 w-16 h-16 bg-[#e5deff] rounded-full opacity-70"></div>
+          <div className="absolute top-1/2 right-1/4 w-24 h-24 bg-[#e5deff] rounded-full opacity-70"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-20 h-20 bg-[#e5deff] rounded-full opacity-70"></div>
+          <div className="absolute top-1/3 right-1/5 w-12 h-12 bg-[#e5deff] rounded-full opacity-70"></div>
+          <div className="absolute bottom-1/3 left-1/4 w-28 h-28 bg-[#e5deff] rounded-full opacity-60"></div>
+          <div className="absolute top-20 left-1/2 w-14 h-14 bg-[#e5deff] rounded-full opacity-60"></div>
+        </div>
+      </div>
       
-      <div className="container mx-auto px-4 z-10">
-        <div className="flex flex-col items-center text-center space-y-6 py-16">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight max-w-4xl mx-auto animate-fade-in-up">
-            Automate Your Blog in <span className="gradient-text">One Click</span>
-          </h1>
-          
-          <p className="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            Let Glidrclick write and post high-quality content daily — straight to your blog and social media.
-          </p>
-          
-          <div className="h-16 flex items-center justify-center animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-            <TypeAnimation texts={typingTexts} className="text-xl md:text-2xl font-medium gradient-text" />
-          </div>
-          
-          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-6 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-            <Button className="gradient-button text-white rounded-full px-8 py-6 text-lg">
-              Try Free for 7 Days
-            </Button>
-            
-            <Button variant="outline" className="rounded-full border-2 border-gray-300 hover:border-glidr-purple px-8 py-6 text-lg">
-              <Play size={18} className="mr-2" /> Watch Demo
-            </Button>
-          </div>
+      <div className="container mx-auto px-4 relative z-10 text-center">
+        <h1 className="text-4xl md:text-6xl font-bold mb-6">
+          <span className="text-black">Automate Your Blog in </span>
+          <span className="text-[#9b87f5]"><TypeAnimation /></span>
+        </h1>
+        
+        <p className="text-xl text-gray-700 mb-12 max-w-2xl mx-auto">
+          Let Glidrclick write and post high-quality content daily — straight to
+          your blog and social media.
+        </p>
+        
+        <div className="flex flex-col md:flex-row gap-4 justify-center">
+          <Button size="lg" className="bg-[#9b87f5] hover:bg-[#7E69AB] text-white px-8 py-6 text-lg rounded-full">
+            Try Free for 7 Days
+          </Button>
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="border-[#9b87f5] text-[#9b87f5] hover:bg-[#e5deff] px-8 py-6 text-lg rounded-full"
+          >
+            <Play size={18} className="mr-1" /> Watch Demo
+          </Button>
         </div>
       </div>
     </div>

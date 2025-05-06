@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Check, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface PricingFeature {
   title: string;
@@ -19,6 +20,7 @@ const pricingFeatures: PricingFeature[] = [
 
 const Pricing = () => {
   const [isAnnual, setIsAnnual] = useState(false);
+  const navigate = useNavigate();
   
   const renderFeature = (value: boolean | string) => {
     if (typeof value === 'boolean') {
@@ -29,6 +31,10 @@ const Pricing = () => {
       );
     }
     return <span>{value}</span>;
+  };
+
+  const handlePlanSelection = (plan: 'free' | 'pro' | 'elite') => {
+    navigate('/register', { state: { selectedPlan: plan } });
   };
 
   return (
@@ -69,7 +75,10 @@ const Pricing = () => {
                 <span className="text-4xl font-bold">₦0</span>
                 <span className="text-gray-600 ml-2 mb-1">/ 7 days</span>
               </div>
-              <Button className="w-full mt-6 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-full">
+              <Button 
+                onClick={() => handlePlanSelection('free')}
+                className="w-full mt-6 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-full"
+              >
                 Try Free
               </Button>
             </div>
@@ -96,7 +105,10 @@ const Pricing = () => {
                 <span className="text-4xl font-bold">₦{isAnnual ? '7,600' : '9,500'}</span>
                 <span className="text-gray-600 ml-2 mb-1">/ mo</span>
               </div>
-              <Button className="w-full mt-6 gradient-button text-white rounded-full">
+              <Button 
+                onClick={() => handlePlanSelection('pro')}
+                className="w-full mt-6 gradient-button text-white rounded-full"
+              >
                 Get Pro
               </Button>
             </div>
@@ -120,7 +132,10 @@ const Pricing = () => {
                 <span className="text-4xl font-bold">₦{isAnnual ? '15,200' : '19,000'}</span>
                 <span className="text-gray-600 ml-2 mb-1">/ mo</span>
               </div>
-              <Button className="w-full mt-6 bg-gray-800 hover:bg-black text-white rounded-full">
+              <Button 
+                onClick={() => handlePlanSelection('elite')}
+                className="w-full mt-6 bg-gray-800 hover:bg-black text-white rounded-full"
+              >
                 Go Elite
               </Button>
             </div>

@@ -1,139 +1,165 @@
 
-import React from 'react';
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { initFacebookSdk, checkFacebookLoginStatus } from "@/utils/social/facebook-sdk";
+
+// Import pages
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+
+// Import features pages
 import AIWriting from "./pages/features/AIWriting";
 import AutoPosting from "./pages/features/AutoPosting";
 import SocialSharing from "./pages/features/SocialSharing";
-import SocialPage from "./pages/dashboard/Social";
-import { SocialProvider } from "./contexts/SocialContext";
-import DashboardLayout from "./components/dashboard/DashboardLayout";
-import { AuthProvider } from "./hooks/useAuth";
 
-// Create a dashboard placeholder component for routes that aren't implemented yet
-const DashboardPlaceholder = ({ title }: { title: string }) => (
-  <div className="flex items-center justify-center h-screen">
-    <div className="text-center p-8 rounded-lg bg-white shadow-md">
-      <h1 className="text-2xl font-bold mb-4">{title} Dashboard</h1>
-      <p className="text-gray-600 mb-4">This dashboard section is coming soon!</p>
-      <a href="/dashboard/social" className="text-glidr-purple hover:underline">
-        Go to Social Dashboard
-      </a>
-    </div>
-  </div>
-);
+// Import admin pages
+import AdminDashboard from "./pages/AdminDashboard";
 
-// Create auth placeholder pages
-const AuthPlaceholder = ({ type }: { type: 'login' | 'register' }) => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-100">
-    <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
+// Import legal pages
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import FacebookDataDeletion from "./pages/FacebookDataDeletion";
+
+// Create a client with more aggressive stale time settings for production
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 2,
+      retryDelay: (attempt) => Math.min(attempt > 1 ? 2000 : 1000, 30000),
+      refetchOnMount: true,
+      refetchOnWindowFocus: false,
+    }
+  }
+});
+
+// Protected route component with better loading states and error handling
+const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.ReactNode, requireAdmin?: boolean }) => {
+  const { user, loading, isAdmin } = useAuth();
+  
+  useEffect(() => {
+    console.log("ProtectedRoute - Auth state:", { 
+      isLoading: loading, 
+      hasUser: !!user, 
+      isAdmin, 
+      url: window.location.href,
+      timestamp: new Date().toISOString()
+    });
+  }, [user, loading, isAdmin]);
+  
+  // Show loading state while checking authentication
+  if (loading) {
+    console.log("ProtectedRoute - Still loading auth state");
+    return <div className="flex h-screen items-center justify-center">
       <div className="text-center">
-        <h1 className="text-2xl font-bold gradient-text">Glidrclick</h1>
-        <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-          {type === 'login' ? 'Sign in to your account' : 'Create your account'}
-        </h2>
+        <div className="w-16 h-16 border-4 border-t-blue-500 border-blue-200 rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-gray-600">Authenticating...</p>
       </div>
-      <div className="mt-8 space-y-6">
-        <div className="rounded-md shadow-sm space-y-4">
-          <div>
-            <label htmlFor="email-address" className="sr-only">Email address</label>
-            <input id="email-address" name="email" type="email" autoComplete="email" required 
-              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-glidr-purple focus:border-glidr-purple focus:z-10 sm:text-sm" 
-              placeholder="Email address" />
-          </div>
-          <div>
-            <label htmlFor="password" className="sr-only">Password</label>
-            <input id="password" name="password" type="password" autoComplete="current-password" required 
-              className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-glidr-purple focus:border-glidr-purple focus:z-10 sm:text-sm" 
-              placeholder="Password" />
-          </div>
-        </div>
+    </div>;
+  }
+  
+  // Redirect to auth if not authenticated
+  if (!user) {
+    console.log("ProtectedRoute - No user, redirecting to auth page");
+    return <Navigate to="/auth" replace />;
+  }
+  
+  // Redirect non-admin users from admin routes
+  if (requireAdmin && !isAdmin) {
+    console.log("ProtectedRoute - User is not admin, redirecting to dashboard");
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  // Render children if authenticated
+  console.log("ProtectedRoute - Auth successful, rendering protected content");
+  return <>{children}</>;
+};
 
-        <div>
-          <button className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white gradient-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-glidr-purple">
-            {type === 'login' ? 'Sign in' : 'Sign up'}
-          </button>
-        </div>
+function AppContent() {
+  console.log("AppContent rendering - URL:", window.location.href);
+  
+  // Initialize Facebook SDK when the app loads
+  useEffect(() => {
+    const initFacebook = async () => {
+      console.log("Initializing Facebook SDK...");
+      try {
+        // Initialize Facebook SDK
+        await initFacebookSdk();
         
-        <div className="text-center text-sm">
-          {type === 'login' ? (
-            <p>Don't have an account? <a href="/register" className="font-medium text-glidr-purple hover:text-glidr-purple/80">Sign up</a></p>
-          ) : (
-            <p>Already have an account? <a href="/login" className="font-medium text-glidr-purple hover:text-glidr-purple/80">Sign in</a></p>
-          )}
-        </div>
-      </div>
-    </div>
-  </div>
-);
+        // Check if user is already logged in to Facebook
+        try {
+          const loginStatus = await checkFacebookLoginStatus();
+          console.log("Initial Facebook login status:", loginStatus);
+        } catch (statusError) {
+          console.warn("Error checking initial Facebook login status:", statusError);
+        }
+      } catch (error) {
+        console.error("Error initializing Facebook SDK:", error);
+      }
+    };
 
-const queryClient = new QueryClient();
+    initFacebook();
+    
+    // Log if we're in production or preview
+    const isProduction = !window.location.hostname.includes('preview');
+    console.log(`Environment: ${isProduction ? 'Production' : 'Preview'}`);
+    console.log("Current hostname:", window.location.hostname);
+  }, []);
+  
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/login" element={<Navigate to="/auth" replace />} /> {/* Redirect /login to /auth */}
+        <Route path="/register" element={<Register />} />
+        
+        {/* Protected routes */}
+        <Route path="/dashboard/*" element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin-dashboard/*" element={
+          <ProtectedRoute requireAdmin={true}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
+        
+        {/* Public feature pages */}
+        <Route path="/features/ai-writing" element={<AIWriting />} />
+        <Route path="/features/auto-posting" element={<AutoPosting />} />
+        <Route path="/features/social-sharing" element={<SocialSharing />} />
+        
+        {/* Legal pages */}
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/facebook-data-deletion" element={<FacebookDataDeletion />} />
+        
+        <Route path="/404" element={<NotFound />} />
+        <Route path="*" element={<Navigate to="/404" replace />} />
+      </Routes>
+      <Toaster position="top-right" />
+    </Router>
+  );
+}
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
+function App() {
+  console.log("App rendering - Initial load:", new Date().toISOString());
+  return (
+    <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Main public routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/features/ai-writing" element={<AIWriting />} />
-            <Route path="/features/auto-posting" element={<AutoPosting />} />
-            <Route path="/features/social-sharing" element={<SocialSharing />} />
-            
-            {/* Auth routes */}
-            <Route path="/login" element={<AuthPlaceholder type="login" />} />
-            <Route path="/register" element={<AuthPlaceholder type="register" />} />
-            
-            {/* Dashboard routes */}
-            <Route path="/dashboard" element={
-              <DashboardLayout>
-                <DashboardPlaceholder title="Main" />
-              </DashboardLayout>
-            } />
-            <Route path="/dashboard/content" element={
-              <DashboardLayout>
-                <DashboardPlaceholder title="Content" />
-              </DashboardLayout>
-            } />
-            <Route path="/dashboard/social" element={
-              <DashboardLayout>
-                <SocialProvider>
-                  <SocialPage />
-                </SocialProvider>
-              </DashboardLayout>
-            } />
-            <Route path="/dashboard/calendar" element={
-              <DashboardLayout>
-                <DashboardPlaceholder title="Calendar" />
-              </DashboardLayout>
-            } />
-            <Route path="/dashboard/analytics" element={
-              <DashboardLayout>
-                <DashboardPlaceholder title="Analytics" />
-              </DashboardLayout>
-            } />
-            <Route path="/dashboard/settings" element={
-              <DashboardLayout>
-                <DashboardPlaceholder title="Settings" />
-              </DashboardLayout>
-            } />
-            <Route path="/dashboard/social/callback" element={<NotFound />} />
-            
-            {/* Not found and redirect */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <AppContent />
       </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+    </QueryClientProvider>
+  );
+}
 
 export default App;
