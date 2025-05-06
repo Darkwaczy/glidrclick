@@ -1,10 +1,9 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Edit, X, Plus, Calendar, Share } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Edit, X, Plus } from "lucide-react";
 import { getPlatformIcon } from "./utils/platformUtils";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ScheduledPostsListProps {
   posts: any[];
@@ -19,91 +18,55 @@ const ScheduledPostsList = ({
   onEditPost, 
   onCancelPost 
 }: ScheduledPostsListProps) => {
-  const isMobile = useIsMobile();
-  
   return (
     <Card>
-      <CardHeader className={`flex ${isMobile ? "flex-col" : "flex-row items-center"} justify-between`}>
+      <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Scheduled Posts</CardTitle>
-          <CardDescription>Create and schedule posts across multiple platforms</CardDescription>
+          <CardDescription>Your upcoming social media posts</CardDescription>
         </div>
-        <Button onClick={onCreatePost} className={`flex items-center ${isMobile ? "mt-2 w-full" : ""}`}>
+        <Button onClick={onCreatePost}>
           <Plus size={16} className="mr-2" /> Create Post
         </Button>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           {posts.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="bg-gray-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
-                <Calendar size={24} className="text-gray-500" />
-              </div>
-              <p className="text-gray-500 mb-2">No scheduled posts</p>
-              <p className="text-sm text-gray-400 max-w-md mx-auto">
-                Create posts once and publish them to multiple social platforms simultaneously
-              </p>
-              <Button onClick={onCreatePost} className="mt-4 flex items-center">
-                <Plus size={16} className="mr-2" /> Create Your First Post
-              </Button>
-            </div>
+            <p className="text-center text-gray-500 py-4">No scheduled posts</p>
           ) : (
             posts.map((post) => (
               <div key={post.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                <div className={`flex justify-between items-start ${isMobile ? "flex-col" : ""}`}>
+                <div className="flex justify-between items-start">
                   <h3 className="font-medium">{post.title}</h3>
-                  <div className={`flex gap-2 ${isMobile ? "mt-2 w-full" : ""}`}>
-                    <Button 
-                      size={isMobile ? "sm" : "sm"} 
-                      variant="outline" 
-                      onClick={() => onEditPost(post.id)} 
-                      className={`flex items-center ${isMobile ? "flex-1" : ""}`}
-                    >
-                      <Edit size={14} className="mr-1" /> Edit
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => onEditPost(post.id)}>
+                      Edit
                     </Button>
-                    <Button 
-                      size={isMobile ? "sm" : "sm"} 
-                      variant="outline" 
-                      className={`text-red-600 flex items-center ${isMobile ? "flex-1" : ""}`} 
-                      onClick={() => onCancelPost(post.id)}
-                    >
-                      <X size={14} className="mr-1" /> Cancel
+                    <Button size="sm" variant="outline" className="text-red-600" onClick={() => onCancelPost(post.id)}>
+                      Cancel
                     </Button>
                   </div>
                 </div>
                 
                 <p className="text-sm text-gray-600 mt-2">{post.content}</p>
                 
-                <div className="mt-3 flex items-center">
-                  <Calendar size={12} className="mr-1 text-gray-500" />
-                  <span className="text-sm text-gray-500">
-                    {post.scheduledFor || new Date(post.scheduled_for).toLocaleString()}
-                  </span>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {post.platforms?.map((platform: string) => (
+                    <div key={platform} className="flex items-center bg-gray-100 rounded px-2 py-1 text-xs">
+                      {getPlatformIcon(platform, 12)}
+                      <span className="ml-1">{platform}</span>
+                    </div>
+                  ))}
                 </div>
-
-                <div className="mt-3">
-                  <div className="flex items-center text-xs text-gray-500 mb-1">
-                    <Share size={12} className="mr-1" /> Publishing to:
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {post.platforms?.map((platform: string) => (
-                      <div key={platform} className="flex items-center bg-gray-100 rounded px-2 py-1 text-xs">
-                        {getPlatformIcon(platform, 12)}
-                        <span className="ml-1">{platform}</span>
-                      </div>
-                    ))}
-                  </div>
+                
+                <div className="mt-3 text-sm text-gray-500">
+                  Scheduled for: {post.scheduledFor || new Date(post.scheduled_for).toLocaleString()}
                 </div>
               </div>
             ))
           )}
         </div>
       </CardContent>
-      <CardFooter className="border-t pt-4">
-        <p className="text-xs text-gray-500">
-          Schedule posts to publish automatically across all your connected social media platforms.
-        </p>
-      </CardFooter>
     </Card>
   );
 };

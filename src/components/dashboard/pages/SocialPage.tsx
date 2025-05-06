@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -18,15 +19,10 @@ import {
   getPlatformName
 } from "@/utils/social";
 
-// Import authentication utilities
-import { handleOAuthCallback } from "@/utils/social/authentication";
-import { useFacebookAuth } from "@/hooks/useFacebookAuth";
-
 // Import refactored components
 import ConnectedPlatformsList from "../social/ConnectedPlatformsList";
 import MentionsList from "../social/MentionsList";
 import ScheduledPostsList from "../social/ScheduledPostsList";
-import FacebookSdkWarning from "../social/FacebookSdkWarning";
 
 // Import dialogs
 import ConnectPlatformDialog from "../social/dialogs/ConnectPlatformDialog";
@@ -34,7 +30,6 @@ import PlatformSettingsDialog from "../social/dialogs/PlatformSettingsDialog";
 import ReplyMentionDialog from "../social/dialogs/ReplyMentionDialog";
 import CreatePostDialog from "../social/dialogs/CreatePostDialog";
 import EditPostDialog from "../social/dialogs/EditPostDialog";
-import ConnectWordPressDialog from "../social/dialogs/ConnectWordPressDialog";
 
 interface Mention {
   id: string;
@@ -49,7 +44,6 @@ const SocialPage = () => {
   const [platforms, setPlatforms] = useState<any[]>([]);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showConnectDialog, setShowConnectDialog] = useState(false);
-  const [showWordPressDialog, setShowWordPressDialog] = useState(false);
   const [currentPlatform, setCurrentPlatform] = useState<string | null>(null);
   const [replyingToMention, setReplyingToMention] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
@@ -58,71 +52,24 @@ const SocialPage = () => {
   const [mentionsList, setMentionsList] = useState<Mention[]>([]);
   const [scheduledPostsList, setScheduledPostsList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [processingOAuth, setProcessingOAuth] = useState(false);
-  
-  // Use our enhanced Facebook hook
-  const { error: facebookSdkError } = useFacebookAuth();
-
-  useEffect(() => {
-    // Add event listener for showing WordPress dialog
-    window.addEventListener('show-wordpress-dialog', () => {
-      setShowWordPressDialog(true);
-    });
-
-    return () => {
-      window.removeEventListener('show-wordpress-dialog', () => {
-        setShowWordPressDialog(true);
-      });
-    };
-  }, []);
 
   useEffect(() => {
     loadPlatforms();
     loadScheduledPosts();
     loadMentions();
 
-    // Process OAuth callback if present in URL
-    const processOAuthCallback = async () => {
-      const url = new URL(window.location.href);
-      const urlParams = new URLSearchParams(url.search);
-      const connectedPlatform = urlParams.get('connected');
-      const code = urlParams.get('code');
-      const error = urlParams.get('error');
-      const errorReason = urlParams.get('error_reason');
-      const errorDescription = urlParams.get('error_description');
-      
-      if (error || errorReason || errorDescription) {
-        console.error("OAuth error:", { error, errorReason, errorDescription });
-        toast.error(`Connection failed: ${errorDescription || errorReason || error || "Unknown error"}`);
-        // Clean up URL parameters
-        window.history.replaceState({}, document.title, window.location.pathname);
-        return;
-      }
-      
-      if (connectedPlatform && code) {
-        setProcessingOAuth(true);
-        try {
-          console.log(`Processing OAuth callback for ${connectedPlatform} with code: ${code.substring(0, 10)}...`);
-          const success = await handleOAuthCallback(connectedPlatform, code);
-          if (success) {
-            toast.success(`Connected to ${getPlatformName(connectedPlatform)} successfully!`);
-            await loadPlatforms();
-          }
-        } catch (err) {
-          console.error("OAuth callback error:", err);
-          toast.error(`Failed to complete ${getPlatformName(connectedPlatform)} connection`);
-        } finally {
-          setProcessingOAuth(false);
-          // Clean up URL parameters
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-      } else if (error) {
-        toast.error(`Connection failed: ${error}`);
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
-    };
+    const urlParams = new URLSearchParams(window.location.search);
+    const connectedPlatform = urlParams.get('connected');
+    const error = urlParams.get('error');
     
-    processOAuthCallback();
+    if (connectedPlatform) {
+      savePlatformConnection(connectedPlatform);
+      toast.success(`Connected to ${getPlatformName(connectedPlatform)} successfully!`);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (error) {
+      toast.error(`Connection failed: ${error}`);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   }, []);
 
   const loadMentions = async () => {
@@ -442,20 +389,11 @@ const SocialPage = () => {
           <p className="text-gray-600">Connect and manage your social media accounts</p>
         </div>
         
-        <Button onClick={handleRefreshConnections} disabled={isRefreshing || isLoading || processingOAuth}>
-          <RefreshCw size={16} className={`mr-2 ${isRefreshing || processingOAuth ? 'animate-spin' : ''}`} /> 
-          {processingOAuth ? 'Processing...' : isRefreshing ? 'Refreshing...' : 'Refresh Connections'}
+        <Button onClick={handleRefreshConnections} disabled={isRefreshing || isLoading}>
+          <RefreshCw size={16} className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} /> 
+          {isRefreshing ? 'Refreshing...' : 'Refresh Connections'}
         </Button>
       </div>
-      
-      {/* Display Facebook SDK warning if there's an error */}
-      {facebookSdkError && <FacebookSdkWarning error={facebookSdkError} />}
-      
-      {processingOAuth && (
-        <div className="p-4 border border-blue-100 rounded bg-blue-50 text-blue-800 text-sm">
-          Processing your platform connection. Please wait...
-        </div>
-      )}
       
       <Tabs defaultValue="connected">
         <TabsList>
@@ -527,12 +465,6 @@ const SocialPage = () => {
         onOpenChange={() => setEditingPostId(null)}
         post={currentEditingPost}
         onSubmit={handleUpdatePost}
-      />
-      
-      {/* WordPress Self-Hosted Dialog */}
-      <ConnectWordPressDialog
-        open={showWordPressDialog}
-        onOpenChange={setShowWordPressDialog}
       />
     </div>
   );

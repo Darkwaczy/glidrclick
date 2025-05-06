@@ -1,151 +1,109 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { getCurrentUserId } from './helpers';
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { SocialPlatform } from "./types";
 
-/**
- * Get connected social platforms for the current user
- */
-export const getSocialPlatforms = async () => {
+// API base URL - changed to use Supabase for real authentication
+const API_BASE_URL = "http://localhost:5000/api";
+
+export const getSocialPlatforms = async (): Promise<SocialPlatform[]> => {
   try {
-    // Get current user
-    const userId = await getCurrentUserId();
+    // Try to get platforms from Supabase first
+    const { data: userSession } = await supabase.auth.getSession();
+    const userId = userSession.session?.user.id;
     
     if (!userId) {
-      console.log("No authenticated user found");
-      return [];
+      throw new Error("User not authenticated");
     }
     
-    // Get platforms from database
-    const { data: userPlatforms, error: userPlatformsError } = await supabase
+    const { data: socialPlatforms, error } = await supabase
       .from('social_platforms')
       .select('*')
       .eq('user_id', userId);
-      
-    if (userPlatformsError) {
-      console.error("Error fetching user platforms:", userPlatformsError);
-      throw userPlatformsError;
+    
+    if (error) throw error;
+    
+    if (socialPlatforms && socialPlatforms.length > 0) {
+      // Transform the data to match our SocialPlatform type
+      return socialPlatforms.map(platform => {
+        // Convert notifications to the correct format
+        let notificationsObj = {
+          mentions: true,
+          messages: true
+        };
+        
+        // Check if notifications exists and is an object
+        if (platform.notifications && typeof platform.notifications === 'object' && !Array.isArray(platform.notifications)) {
+          const notifs = platform.notifications as Record<string, any>;
+          notificationsObj = {
+            mentions: Boolean(notifs.mentions),
+            messages: Boolean(notifs.messages)
+          };
+        }
+        
+        return {
+          id: platform.platform_id,
+          name: platform.name,
+          icon: platform.icon as "facebook" | "twitter" | "instagram" | "linkedin" | "wordpress",
+          isConnected: platform.is_connected || false,
+          accountName: platform.account_name,
+          lastSync: platform.last_sync,
+          syncFrequency: platform.sync_frequency as "realtime" | "hourly" | "daily",
+          notifications: notificationsObj
+        };
+      });
     }
     
-    // Get all available platforms
-    const availablePlatforms = [
-      { id: 'facebook', name: 'Facebook', icon: 'facebook' },
-      { id: 'instagram', name: 'Instagram', icon: 'instagram' },
-      { id: 'twitter', name: 'Twitter', icon: 'twitter' },
-      { id: 'linkedin', name: 'LinkedIn', icon: 'linkedin' },
-      { id: 'wordpress', name: 'WordPress', icon: 'wordpress' }
+    // If no platforms are returned, return default platforms list
+    return [
+      { id: "facebook", name: "Facebook", icon: "facebook", isConnected: false },
+      { id: "instagram", name: "Instagram", icon: "instagram", isConnected: false },
+      { id: "wordpress", name: "WordPress Blog", icon: "wordpress", isConnected: false }
     ];
-    
-    // Merge available platforms with user's connected platforms
-    const platforms = availablePlatforms.map(platform => {
-      const userPlatform = userPlatforms?.find(p => p.platform_id === platform.id);
-      
-      return {
-        ...platform,
-        isConnected: !!userPlatform,
-        accountName: userPlatform?.account_name || null,
-        lastSync: userPlatform?.last_sync || null,
-        userId: userId
-      };
-    });
-    
-    return platforms;
   } catch (error) {
     console.error("Error fetching social platforms:", error);
-    return [];
+    
+    // Return default platforms on error
+    return [
+      { id: "facebook", name: "Facebook", icon: "facebook", isConnected: false },
+      { id: "instagram", name: "Instagram", icon: "instagram", isConnected: false },
+      { id: "wordpress", name: "WordPress Blog", icon: "wordpress", isConnected: false }
+    ];
   }
 };
 
-/**
- * Connect to a social platform
- * @param platformId The platform ID to connect to
- */
-export const connectPlatform = async (platformId: string): Promise<boolean> => {
+export const updatePlatformSettings = async (
+  platformId: string, 
+  settings: Partial<SocialPlatform>
+): Promise<boolean> => {
   try {
-    if (platformId === 'facebook') {
-      window.open('/dashboard/social?platform=facebook', '_self');
-      return true;
-    } else if (platformId === 'instagram') {
-      window.open('/dashboard/social?platform=instagram', '_self');
-      return true;
-    } else if (platformId === 'wordpress') {
-      // Show WordPress dialog instead of redirecting
-      window.dispatchEvent(new CustomEvent('show-wordpress-dialog'));
-      return true;
-    } else {
-      toast.error(`Connection to ${platformId} is not yet implemented`);
-      return false;
-    }
-  } catch (error) {
-    console.error(`Error connecting to ${platformId}:`, error);
-    toast.error(`Failed to connect to ${platformId}`);
-    return false;
-  }
-};
-
-/**
- * Disconnect from a social platform
- * @param platformId The platform ID to disconnect from
- */
-export const disconnectPlatform = async (platformId: string): Promise<boolean> => {
-  try {
-    // Get current user
-    const userId = await getCurrentUserId();
+    // Get the user ID
+    const { data: userSession } = await supabase.auth.getSession();
+    const userId = userSession.session?.user.id;
     
     if (!userId) {
-      toast.error('You must be logged in to disconnect platforms');
-      return false;
+      throw new Error("User not authenticated");
     }
     
-    // Delete platform connection from database
+    // Transform settings to match database schema
+    const dbSettings: any = {};
+    if (settings.syncFrequency) dbSettings.sync_frequency = settings.syncFrequency;
+    if (settings.notifications) dbSettings.notifications = settings.notifications;
+    if (settings.accountName) dbSettings.account_name = settings.accountName;
+    
+    // Update settings in Supabase
     const { error } = await supabase
       .from('social_platforms')
-      .delete()
-      .eq('user_id', userId)
-      .eq('platform_id', platformId);
-      
-    if (error) throw error;
+      .update(dbSettings)
+      .eq('platform_id', platformId)
+      .eq('user_id', userId);
     
-    toast.success(`Successfully disconnected from ${platformId}`);
-    return true;
-  } catch (error) {
-    console.error(`Error disconnecting from ${platformId}:`, error);
-    toast.error(`Failed to disconnect from ${platformId}`);
-    return false;
-  }
-};
-
-/**
- * Update platform settings
- * @param platformId The platform ID
- * @param settings The new settings
- */
-export const updatePlatformSettings = async (platformId: string, settings: any): Promise<boolean> => {
-  try {
-    // Get current user
-    const userId = await getCurrentUserId();
-    
-    if (!userId) {
-      toast.error('You must be logged in to update platform settings');
-      return false;
-    }
-    
-    // Update platform settings in database
-    const { error } = await supabase
-      .from('social_platforms')
-      .update({
-        notifications: settings.notifications,
-        sync_frequency: settings.syncFrequency
-      })
-      .eq('user_id', userId)
-      .eq('platform_id', platformId);
-      
     if (error) throw error;
     
     return true;
   } catch (error) {
-    console.error(`Error updating settings for ${platformId}:`, error);
-    toast.error(`Failed to update settings for ${platformId}`);
+    console.error("Error updating platform settings:", error);
+    toast.error("Failed to update settings");
     return false;
   }
 };

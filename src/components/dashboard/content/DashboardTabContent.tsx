@@ -4,7 +4,7 @@ import { TabsContent } from "@/components/ui/tabs";
 import { usePosts } from "@/hooks/usePosts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { getScheduledPosts, getPublishedPosts, checkAndUpdatePostStatus } from "@/utils/social";
+import { getScheduledPosts, getPublishedPosts } from "@/utils/social";
 import PostsTabContent from "./tabs/PostsTabContent";
 import AnalyticsTabContent from "./tabs/AnalyticsTabContent";
 import PlatformsTabContent from "./tabs/PlatformsTabContent";
@@ -45,12 +45,6 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
       setIsLoading(true);
       
       try {
-        // Check if any scheduled posts should now be published
-        const updatedCount = await checkAndUpdatePostStatus();
-        if (updatedCount > 0) {
-          console.log(`${updatedCount} posts were automatically published`);
-        }
-        
         // Get scheduled posts directly from Supabase
         const scheduledData = await getScheduledPosts();
         const scheduled = scheduledData.map(post => ({

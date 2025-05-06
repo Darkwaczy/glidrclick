@@ -3,7 +3,6 @@ import React from "react";
 import { Loader2, Calendar, BarChart3, ArrowUpRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import PostsList from "@/components/dashboard/PostsList";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PostsTabContentProps {
   scheduledPosts: any[];
@@ -32,8 +31,6 @@ const PostsTabContent: React.FC<PostsTabContentProps> = ({
   onViewAllPublished,
   onViewAllDrafts
 }) => {
-  const isMobile = useIsMobile();
-  
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -44,7 +41,7 @@ const PostsTabContent: React.FC<PostsTabContentProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className={`grid grid-cols-1 gap-6 ${isMobile ? "" : "md:grid-cols-2 lg:grid-cols-3"}`}>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Scheduled Posts</CardTitle>
@@ -86,7 +83,7 @@ const PostsTabContent: React.FC<PostsTabContentProps> = ({
         </Card>
       </div>
       
-      <div className={`grid grid-cols-1 gap-6 ${isMobile ? "" : "md:grid-cols-2"}`}>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <PostsList 
           title="Upcoming Posts" 
           posts={scheduledPosts} 

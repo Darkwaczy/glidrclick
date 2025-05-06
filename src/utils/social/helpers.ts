@@ -1,84 +1,45 @@
 
 /**
- * Helper functions for social media integration
- */
-
-/**
- * Get platform name from ID
- * @param platformId The platform ID
- * @returns The formatted platform name
+ * Get the display name of a social media platform
+ * @param platformId The ID of the platform
+ * @returns The display name of the platform
  */
 export const getPlatformName = (platformId: string): string => {
   const platforms: Record<string, string> = {
-    'facebook': 'Facebook',
-    'twitter': 'Twitter',
-    'linkedin': 'LinkedIn',
-    'instagram': 'Instagram',
-    'pinterest': 'Pinterest',
-    'wordpress': 'WordPress',
+    facebook: 'Facebook',
+    twitter: 'Twitter',
+    instagram: 'Instagram',
+    linkedin: 'LinkedIn',
+    wordpress: 'WordPress Blog'
   };
   
-  return platforms[platformId] || platformId.charAt(0).toUpperCase() + platformId.slice(1);
+  return platforms[platformId] || platformId;
 };
 
 /**
- * Format date for display
- * @param date Date string
- * @returns Formatted date string
+ * Check if a platform is supported for authentication
+ * @param platformId The ID of the platform
+ * @returns Whether the platform is supported
  */
-export const formatDate = (date: string | Date): string => {
-  if (!date) return '';
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleString();
+export const isPlatformSupported = (platformId: string): boolean => {
+  // Currently, no platform is properly configured in the Supabase project
+  const supportedPlatforms: string[] = [];
+  return supportedPlatforms.includes(platformId);
 };
 
 /**
- * Get current user ID from Supabase auth
- * @returns User ID or null if not authenticated
+ * Get more detailed information about a platform's support status
+ * @param platformId The ID of the platform
+ * @returns Status object with availability info
  */
-export const getCurrentUserId = async () => {
-  const { supabase } = await import('@/integrations/supabase/client');
-  const { data } = await supabase.auth.getUser();
-  return data?.user?.id || null;
-};
-
-/**
- * Get platform documentation URL
- * @param platformId The platform ID (e.g., 'facebook', 'wordpress')
- * @returns URL to the platform documentation
- */
-export const getPlatformDocUrl = (platformId: string): string => {
-  const docUrls: Record<string, string> = {
-    'facebook': 'https://developers.facebook.com/docs/pages/',
-    'instagram': 'https://developers.facebook.com/docs/instagram-api/',
-    'twitter': 'https://developer.twitter.com/en/docs',
-    'linkedin': 'https://developer.linkedin.com/docs',
-    'wordpress': 'https://developer.wordpress.org/rest-api/',
+export const getPlatformStatus = (platformId: string) => {
+  const statusMap: Record<string, { status: 'available' | 'coming-soon' | 'not-configured', message: string }> = {
+    facebook: { status: 'not-configured', message: 'Facebook provider is not enabled in this project' },
+    instagram: { status: 'not-configured', message: 'Instagram provider is not enabled in this project' },
+    wordpress: { status: 'not-configured', message: 'WordPress provider is not enabled in this project' },
+    twitter: { status: 'coming-soon', message: 'Coming soon' },
+    linkedin: { status: 'coming-soon', message: 'Coming soon' }
   };
   
-  return docUrls[platformId] || '#';
-};
-
-/**
- * Get OAuth configuration for a platform
- * @param platformId The platform ID
- * @returns OAuth configuration object
- */
-export const getPlatformOAuthConfig = (platformId: string) => {
-  const configs: Record<string, any> = {
-    'facebook': {
-      appId: '1315958822809269',
-      scopes: 'pages_show_list,pages_read_engagement,pages_manage_posts',
-    },
-    'instagram': {
-      appId: '1315958822809269',
-      scopes: 'instagram_basic,instagram_content_publish,pages_show_list',
-    },
-    'wordpress': {
-      clientId: process.env.WORDPRESS_CLIENT_ID || '',
-      redirectUri: `${window.location.origin}/dashboard/social`,
-    }
-  };
-  
-  return configs[platformId] || {};
+  return statusMap[platformId] || { status: 'not-configured', message: 'Not configured' };
 };

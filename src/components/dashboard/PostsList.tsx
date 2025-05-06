@@ -1,4 +1,3 @@
-
 import React from "react";
 import { MoreVertical, Eye, Edit, X, RefreshCw, Calendar, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Post {
   id: string | number;
@@ -42,7 +40,6 @@ const PostsList = ({
   onViewAll,
 }: PostsListProps) => {
   const displayPosts = posts || [];
-  const isMobile = useIsMobile();
   
   return (
     <Card>
@@ -82,11 +79,11 @@ const PostsList = ({
                 key={post.id}
                 className="flex items-start justify-between border-b pb-4 last:border-0 last:pb-0"
               >
-                <div className="overflow-hidden pr-2 flex-1">
+                <div className="overflow-hidden pr-2">
                   <h3 className="font-medium text-sm truncate">{post.title}</h3>
                   <div className="flex items-center mt-1">
-                    <Calendar size={14} className="text-gray-500 mr-1 flex-shrink-0" />
-                    <span className="text-xs text-gray-500 truncate">{post.date}</span>
+                    <Calendar size={14} className="text-gray-500 mr-1" />
+                    <span className="text-xs text-gray-500">{post.date}</span>
                   </div>
                   {post.platform && (
                     <div className="mt-1">
@@ -96,7 +93,7 @@ const PostsList = ({
                     </div>
                   )}
                   {post.views !== undefined && (
-                    <div className={`flex items-center ${isMobile ? "flex-col items-start" : "gap-4"} mt-1`}>
+                    <div className="flex items-center gap-4 mt-1">
                       <span className="text-xs text-gray-500">
                         {post.views.toLocaleString()} views
                       </span>
@@ -106,7 +103,7 @@ const PostsList = ({
                     </div>
                   )}
                 </div>
-                <div className="flex-shrink-0">
+                <div>
                   {type === "scheduled" || type === "draft" ? (
                     <div className="flex gap-1">
                       {onEdit && (

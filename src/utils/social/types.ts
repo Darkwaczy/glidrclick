@@ -1,40 +1,18 @@
 
-/**
- * Type definitions for social media integration
- */
+import { Json } from "@/integrations/supabase/types";
 
-export interface SocialPlatform {
+export type SocialPlatform = {
   id: string;
   name: string;
-  icon: string;
+  icon: "facebook" | "twitter" | "instagram" | "linkedin" | "wordpress";
   isConnected: boolean;
-  accountName?: string | null;
-  lastSync?: string | null;
-  userId?: string | null;
-}
-
-export interface PlatformSettings {
-  notifications: {
+  accountName?: string;
+  lastSync?: string;
+  syncFrequency?: "realtime" | "hourly" | "daily";
+  notifications?: {
     mentions: boolean;
     messages: boolean;
-    comments?: boolean;
   };
-  syncFrequency: 'realtime' | 'hourly' | 'daily' | 'weekly';
-  autoPublish?: boolean;
-}
+};
 
-export interface ScheduledPost {
-  id: string;
-  title: string;
-  content: string;
-  scheduledFor: string;
-  platforms: string[];
-}
-
-export interface Mention {
-  id: string;
-  platform: string;
-  username: string;
-  timeAgo: string;
-  content: string;
-}
+export type PostStatus = 'draft' | 'scheduled' | 'published';

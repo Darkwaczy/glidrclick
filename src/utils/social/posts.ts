@@ -1,60 +1,50 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { getCurrentUserId } from './helpers';
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { getPlatformName } from "./helpers";
 
-/**
- * Publish content to a social media platform
- * @param platformId The platform ID to publish to
- * @param content The content to publish
- * @param title Optional title for the post
- */
 export const publishToSocialMedia = async (
   platformId: string,
   content: string,
   title?: string
 ): Promise<boolean> => {
   try {
-    // Get the platform-specific token
-    const userId = await getCurrentUserId();
+    // Get the user ID
+    const { data: user } = await supabase.auth.getUser();
     
-    if (!userId) {
+    if (!user.user?.id) {
       toast.error('You must be logged in to publish content');
       return false;
     }
     
-    const { data: platform, error } = await supabase
-      .from('social_platforms')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('platform_id', platformId)
-      .single();
-      
-    if (error || !platform) {
-      toast.error(`Platform ${platformId} not found or not connected`);
-      return false;
-    }
-    
-    // In a real app, we would use the platform token to publish to the social media API
-    // For now, we'll just simulate success
-    console.log(`Publishing to ${platformId}: ${title || ''} - ${content}`);
-    
-    // Record the publish action in the database
-    const { error: insertError } = await supabase
+    // Create a post in Supabase
+    const { data: post, error: postError } = await supabase
       .from('posts')
       .insert({
-        user_id: userId,
-        title: title || 'Post from Glidrclick',
-        content: content,
+        title: title || 'Untitled Post',
+        content,
         status: 'published',
-        type: 'social',
-        published_at: new Date().toISOString()
+        published_at: new Date().toISOString(),
+        user_id: user.user.id,
+        type: 'social'
+      })
+      .select()
+      .single();
+      
+    if (postError) throw postError;
+    
+    // Create post_platform relation
+    const { error: platformError } = await supabase
+      .from('post_platforms')
+      .insert({
+        post_id: post.id,
+        platform_id: platformId,
+        status: 'published'
       });
       
-    if (insertError) {
-      console.error('Error recording publish action:', insertError);
-    }
+    if (platformError) throw platformError;
     
+    toast.success(`Published to ${getPlatformName(platformId)}`);
     return true;
   } catch (error) {
     console.error(`Error publishing to ${platformId}:`, error);
@@ -63,13 +53,6 @@ export const publishToSocialMedia = async (
   }
 };
 
-/**
- * Schedule a post for later publishing
- * @param title Post title
- * @param content Post content
- * @param platforms Platforms to publish to
- * @param scheduledDate Date to publish
- */
 export const schedulePost = async (
   title: string,
   content: string,
@@ -77,176 +60,131 @@ export const schedulePost = async (
   scheduledDate: Date
 ): Promise<boolean> => {
   try {
-    // Get current user
-    const userId = await getCurrentUserId();
+    // Get the user ID
+    const { data: user } = await supabase.auth.getUser();
     
-    if (!userId) {
+    if (!user.user?.id) {
       toast.error('You must be logged in to schedule posts');
       return false;
     }
     
-    // Insert post into database
-    const { data: post, error } = await supabase
+    // Insert into posts table
+    const { data: post, error: postError } = await supabase
       .from('posts')
       .insert({
-        user_id: userId,
-        title: title,
-        content: content,
+        title,
+        content,
         status: 'scheduled',
-        type: 'social',
-        scheduled_for: scheduledDate.toISOString()
+        scheduled_for: scheduledDate.toISOString(),
+        user_id: user.user.id,
+        type: 'social'
       })
       .select()
       .single();
       
-    if (error) throw error;
+    if (postError) throw postError;
     
-    // Link post to platforms
-    if (post && platforms.length > 0) {
-      const platformLinks = platforms.map(platformId => ({
-        post_id: post.id,
-        platform_id: platformId,
-        user_id: userId
-      }));
+    // Get available platform information from the social_platforms table
+    const { data: connectedPlatforms, error: platformsError } = await supabase
+      .from('social_platforms')
+      .select('platform_id, name')
+      .eq('user_id', user.user.id)
+      .eq('is_connected', true);
       
-      const { error: linkError } = await supabase
-        .from('post_platforms')
-        .insert(platformLinks);
+    if (platformsError) {
+      console.error("Error fetching platforms:", platformsError);
+      throw platformsError;
+    }
+    
+    // Create a mapping of platform names to platform_ids
+    const platformMap: Record<string, string> = {};
+    if (connectedPlatforms && connectedPlatforms.length > 0) {
+      connectedPlatforms.forEach(platform => {
+        platformMap[platform.name.toLowerCase()] = platform.platform_id;
+      });
+    }
+    
+    // Create post_platform relations for each selected platform
+    for (const platformName of platforms) {
+      // Handle 'all' case by using all available platform IDs
+      const platformsToUse = platformName.toLowerCase() === 'all' 
+        ? connectedPlatforms?.map(p => p.platform_id) || [] 
+        : [platformMap[platformName.toLowerCase()]];
         
-      if (linkError) {
-        console.error('Error linking post to platforms:', linkError);
+      for (const platformId of platformsToUse) {
+        if (!platformId) {
+          console.warn(`Platform not found or not connected: ${platformName}`);
+          continue;
+        }
+        
+        const { error: platformError } = await supabase
+          .from('post_platforms')
+          .insert({
+            post_id: post.id,
+            platform_id: platformId,
+            status: 'scheduled'
+          });
+          
+        if (platformError) {
+          console.error(`Error connecting post to platform ${platformName}:`, platformError);
+          throw platformError;
+        }
       }
     }
     
+    toast.success('Post scheduled successfully!');
     return true;
   } catch (error) {
     console.error('Error scheduling post:', error);
-    toast.error('Failed to schedule post');
+    toast.error('Failed to schedule post. Please try again.');
     return false;
   }
 };
 
-/**
- * Get scheduled posts for the current user
- */
 export const getScheduledPosts = async () => {
   try {
-    // Get current user
-    const userId = await getCurrentUserId();
+    const { data: user } = await supabase.auth.getUser();
     
-    if (!userId) {
+    if (!user.user?.id) {
       return [];
     }
     
-    // Get posts from database
-    const { data, error } = await supabase
+    const { data: posts, error } = await supabase
       .from('posts')
-      .select('*, post_platforms(platform_id)')
-      .eq('user_id', userId)
+      .select('*, post_platforms(*, platforms:platform_id(name))')
+      .eq('user_id', user.user.id)
       .eq('status', 'scheduled')
       .order('scheduled_for', { ascending: true });
       
     if (error) throw error;
-
-    // Check if any scheduled posts should now be published
-    const now = new Date();
-    const postsToUpdate = data?.filter(post => {
-      return post.scheduled_for && new Date(post.scheduled_for) <= now;
-    });
-
-    // Auto-publish posts whose scheduled time has passed
-    if (postsToUpdate && postsToUpdate.length > 0) {
-      for (const post of postsToUpdate) {
-        await supabase
-          .from('posts')
-          .update({
-            status: 'published',
-            published_at: now.toISOString()
-          })
-          .eq('id', post.id);
-        
-        console.log(`Automatically published scheduled post: ${post.title}`);
-      }
-    }
     
-    return data || [];
+    return posts || [];
   } catch (error) {
-    console.error('Error fetching scheduled posts:', error);
+    console.error('Error getting scheduled posts:', error);
     return [];
   }
 };
 
-/**
- * Get published posts for the current user
- */
 export const getPublishedPosts = async () => {
   try {
-    // Get current user
-    const userId = await getCurrentUserId();
+    const { data: user } = await supabase.auth.getUser();
     
-    if (!userId) {
+    if (!user.user?.id) {
       return [];
     }
     
-    // Get posts from database
-    const { data, error } = await supabase
+    const { data: posts, error } = await supabase
       .from('posts')
-      .select('*, post_platforms(platform_id)')
-      .eq('user_id', userId)
+      .select('*, post_platforms(*, platforms:platform_id(name))')
+      .eq('user_id', user.user.id)
       .eq('status', 'published')
       .order('published_at', { ascending: false });
       
     if (error) throw error;
     
-    return data || [];
+    return posts || [];
   } catch (error) {
-    console.error('Error fetching published posts:', error);
+    console.error('Error getting published posts:', error);
     return [];
-  }
-};
-
-/**
- * Check and update post status
- * This function will check if any scheduled posts should be marked as published
- */
-export const checkAndUpdatePostStatus = async () => {
-  try {
-    const userId = await getCurrentUserId();
-    if (!userId) return;
-    
-    const now = new Date();
-    
-    // Get all scheduled posts that should be published by now
-    const { data: postsToPublish, error } = await supabase
-      .from('posts')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('status', 'scheduled')
-      .lt('scheduled_for', now.toISOString());
-      
-    if (error) throw error;
-    
-    if (postsToPublish && postsToPublish.length > 0) {
-      // Update all these posts to published status
-      const postIds = postsToPublish.map(post => post.id);
-      
-      const { error: updateError } = await supabase
-        .from('posts')
-        .update({
-          status: 'published',
-          published_at: now.toISOString()
-        })
-        .in('id', postIds);
-        
-      if (updateError) throw updateError;
-      
-      console.log(`Updated ${postsToPublish.length} posts from scheduled to published`);
-      return postsToPublish.length;
-    }
-    
-    return 0;
-  } catch (error) {
-    console.error('Error updating post status:', error);
-    return 0;
   }
 };
