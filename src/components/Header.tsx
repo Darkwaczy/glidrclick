@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
@@ -98,7 +97,7 @@ const Header = () => {
               Login
             </Link>
             <div className="px-4 pt-2">
-              <Button onClick={() => navigate('/register')} className="w-full gradient-button text-white rounded-full">
+              <Button className="w-full gradient-button text-white rounded-full">
                 Try Free for 7 Days
               </Button>
             </div>
