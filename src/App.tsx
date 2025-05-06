@@ -13,6 +13,7 @@ import SocialSharing from "./pages/features/SocialSharing";
 import SocialPage from "./pages/dashboard/Social";
 import { SocialProvider } from "./contexts/SocialContext";
 import DashboardLayout from "./components/dashboard/DashboardLayout";
+import { AuthProvider } from "./hooks/useAuth";
 
 // Create a dashboard placeholder component for routes that aren't implemented yet
 const DashboardPlaceholder = ({ title }: { title: string }) => (
@@ -75,61 +76,63 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Main public routes */}
-          <Route path="/" element={<Index />} />
-          <Route path="/features/ai-writing" element={<AIWriting />} />
-          <Route path="/features/auto-posting" element={<AutoPosting />} />
-          <Route path="/features/social-sharing" element={<SocialSharing />} />
-          
-          {/* Auth routes */}
-          <Route path="/login" element={<AuthPlaceholder type="login" />} />
-          <Route path="/register" element={<AuthPlaceholder type="register" />} />
-          
-          {/* Dashboard routes */}
-          <Route path="/dashboard" element={
-            <DashboardLayout>
-              <DashboardPlaceholder title="Main" />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/content" element={
-            <DashboardLayout>
-              <DashboardPlaceholder title="Content" />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/social" element={
-            <DashboardLayout>
-              <SocialProvider>
-                <SocialPage />
-              </SocialProvider>
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/calendar" element={
-            <DashboardLayout>
-              <DashboardPlaceholder title="Calendar" />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/analytics" element={
-            <DashboardLayout>
-              <DashboardPlaceholder title="Analytics" />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/settings" element={
-            <DashboardLayout>
-              <DashboardPlaceholder title="Settings" />
-            </DashboardLayout>
-          } />
-          <Route path="/dashboard/social/callback" element={<NotFound />} />
-          
-          {/* Not found and redirect */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Main public routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/features/ai-writing" element={<AIWriting />} />
+            <Route path="/features/auto-posting" element={<AutoPosting />} />
+            <Route path="/features/social-sharing" element={<SocialSharing />} />
+            
+            {/* Auth routes */}
+            <Route path="/login" element={<AuthPlaceholder type="login" />} />
+            <Route path="/register" element={<AuthPlaceholder type="register" />} />
+            
+            {/* Dashboard routes */}
+            <Route path="/dashboard" element={
+              <DashboardLayout>
+                <DashboardPlaceholder title="Main" />
+              </DashboardLayout>
+            } />
+            <Route path="/dashboard/content" element={
+              <DashboardLayout>
+                <DashboardPlaceholder title="Content" />
+              </DashboardLayout>
+            } />
+            <Route path="/dashboard/social" element={
+              <DashboardLayout>
+                <SocialProvider>
+                  <SocialPage />
+                </SocialProvider>
+              </DashboardLayout>
+            } />
+            <Route path="/dashboard/calendar" element={
+              <DashboardLayout>
+                <DashboardPlaceholder title="Calendar" />
+              </DashboardLayout>
+            } />
+            <Route path="/dashboard/analytics" element={
+              <DashboardLayout>
+                <DashboardPlaceholder title="Analytics" />
+              </DashboardLayout>
+            } />
+            <Route path="/dashboard/settings" element={
+              <DashboardLayout>
+                <DashboardPlaceholder title="Settings" />
+              </DashboardLayout>
+            } />
+            <Route path="/dashboard/social/callback" element={<NotFound />} />
+            
+            {/* Not found and redirect */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
