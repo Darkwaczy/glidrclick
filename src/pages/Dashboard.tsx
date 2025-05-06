@@ -18,7 +18,6 @@ import NewPostPage from "@/components/dashboard/pages/NewPostPage";
 import WatchDemoModal from "@/components/dashboard/WatchDemoModal";
 import EditPostPage from "@/components/dashboard/pages/EditPostPage";
 import { usePosts } from "@/hooks/usePosts";
-import { checkAndUpdatePostStatus } from "@/utils/social";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -39,15 +38,6 @@ const Dashboard = () => {
       setActivePage("dashboard");
     }
   }, [location.pathname]);
-
-  // Check for scheduled posts that should be published on dashboard load
-  useEffect(() => {
-    const checkScheduledPosts = async () => {
-      await checkAndUpdatePostStatus();
-    };
-    
-    checkScheduledPosts();
-  }, []);
 
   // Get tab from URL if available
   useEffect(() => {
@@ -118,55 +108,53 @@ const Dashboard = () => {
   const isEditingPost = path.includes('/edit-post/');
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <DashboardHeader onWatchDemo={watchDemo} />
-      <div className="flex flex-1 overflow-hidden">
-        <DashboardSidebar activePage={activePage} />
-        <main className="flex-1 flex flex-col overflow-auto">
-          <div className="flex-1 p-4 md:p-8 overflow-y-auto">
-            {path === "/dashboard" && (
-              <>
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                  <div>
-                    <h1 className="text-2xl font-bold">Welcome back!</h1>
-                    <p className="text-gray-600">Here's what's happening with your content</p>
-                  </div>
-                  <Button className="gradient-button text-white" onClick={createPost}>
-                    <Plus size={18} className="mr-2" /> Create New Post
-                  </Button>
+    <div className="min-h-screen bg-gray-50 flex">
+      <DashboardSidebar activePage={activePage} />
+      <div className="flex-1 flex flex-col">
+        <DashboardHeader onWatchDemo={watchDemo} />
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto">
+          {path === "/dashboard" && (
+            <>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div>
+                  <h1 className="text-2xl font-bold">Welcome back!</h1>
+                  <p className="text-gray-600">Here's what's happening with your content</p>
                 </div>
+                <Button className="gradient-button text-white" onClick={createPost}>
+                  <Plus size={18} className="mr-2" /> Create New Post
+                </Button>
+              </div>
 
-                <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                  <TabsList className="mb-6 overflow-x-auto flex w-full md:w-auto">
-                    <TabsTrigger value="posts">Posts</TabsTrigger>
-                    <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                    <TabsTrigger value="platforms">Platforms</TabsTrigger>
-                    <TabsTrigger value="settings">Settings</TabsTrigger>
-                  </TabsList>
-                  
-                  <DashboardTabContent 
-                    activeTab={activeTab} 
-                    onEdit={editPost}
-                    onCancel={cancelPost}
-                    onViewAllScheduled={viewAllScheduled}
-                    onViewStats={viewStats}
-                    onRepublish={republishPost}
-                    onViewAllPublished={viewAllPublished}
-                    onViewAllDrafts={viewAllDrafts}
-                  />
-                </Tabs>
-              </>
-            )}
-            
-            {path === "/dashboard/content" && <ContentPage />}
-            {path === "/dashboard/schedule" && <SchedulePage />}
-            {path === "/dashboard/analytics" && <AnalyticsPage />}
-            {path === "/dashboard/social" && <SocialPage />}
-            {path === "/dashboard/profile" && <ProfilePage />}
-            {path === "/dashboard/settings" && <SettingsPage />}
-            {path === "/dashboard/new-post" && <NewPostPage />}
-            {isEditingPost && <EditPostPage postId={editingPostId} />}
-          </div>
+              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                <TabsList className="mb-6">
+                  <TabsTrigger value="posts">Posts</TabsTrigger>
+                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                  <TabsTrigger value="platforms">Platforms</TabsTrigger>
+                  <TabsTrigger value="settings">Settings</TabsTrigger>
+                </TabsList>
+                
+                <DashboardTabContent 
+                  activeTab={activeTab} 
+                  onEdit={editPost}
+                  onCancel={cancelPost}
+                  onViewAllScheduled={viewAllScheduled}
+                  onViewStats={viewStats}
+                  onRepublish={republishPost}
+                  onViewAllPublished={viewAllPublished}
+                  onViewAllDrafts={viewAllDrafts}
+                />
+              </Tabs>
+            </>
+          )}
+          
+          {path === "/dashboard/content" && <ContentPage />}
+          {path === "/dashboard/schedule" && <SchedulePage />}
+          {path === "/dashboard/analytics" && <AnalyticsPage />}
+          {path === "/dashboard/social" && <SocialPage />}
+          {path === "/dashboard/profile" && <ProfilePage />}
+          {path === "/dashboard/settings" && <SettingsPage />}
+          {path === "/dashboard/new-post" && <NewPostPage />}
+          {isEditingPost && <EditPostPage postId={editingPostId} />}
         </main>
       </div>
       

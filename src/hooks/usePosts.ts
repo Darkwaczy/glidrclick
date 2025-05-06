@@ -32,7 +32,6 @@ export const usePosts = (status?: string) => {
       const { data, error } = await query;
 
       if (error) {
-        console.error('Posts fetch error:', error);
         toast.error('Failed to fetch posts');
         throw error;
       }
@@ -40,21 +39,6 @@ export const usePosts = (status?: string) => {
       return data as Post[];
     },
   });
-
-  const getPostAnalytics = async (postId: string) => {
-    const { data, error } = await supabase
-      .from('post_analytics')
-      .select('*')
-      .eq('post_id', postId)
-      .maybeSingle();
-
-    if (error) {
-      console.error('Analytics fetch error:', error);
-      return null;
-    }
-
-    return data;
-  };
 
   const deletePost = useMutation({
     mutationFn: async (id: string) => {
@@ -99,6 +83,5 @@ export const usePosts = (status?: string) => {
     isLoading,
     deletePost: deletePost.mutate,
     updatePost: updatePost.mutate,
-    getPostAnalytics,
   };
 };

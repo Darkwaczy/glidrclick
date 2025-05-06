@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { TabsContent } from "@/components/ui/tabs";
 import { usePosts } from "@/hooks/usePosts";
@@ -31,7 +32,7 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
   onViewAllDrafts
 }) => {
   const { user } = useAuth();
-  const { posts: allPosts, isLoading: isPostsLoading, getPostAnalytics } = usePosts();
+  const { posts: allPosts, isLoading: isPostsLoading } = usePosts();
   const [scheduledPosts, setScheduledPosts] = useState<any[]>([]);
   const [publishedPosts, setPublishedPosts] = useState<any[]>([]);
   const [draftPosts, setDraftPosts] = useState<any[]>([]);
@@ -68,8 +69,12 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
         const analytics = [];
         for (const post of publishedData) {
           try {
-            const analyticsData = await getPostAnalytics(post.id);
-            
+            const { data: analyticsData } = await supabase
+              .from('post_analytics')
+              .select('*')
+              .eq('post_id', post.id)
+              .single();
+              
             if (analyticsData) {
               analytics.push({
                 postId: post.id,
@@ -166,7 +171,7 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
     };
     
     fetchData();
-  }, [allPosts, isPostsLoading, getPostAnalytics]);
+  }, [allPosts, isPostsLoading]);
   
   return (
     <>

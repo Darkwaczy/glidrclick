@@ -28,38 +28,15 @@ const Header = () => {
     setIsMobileMenuOpen(false);
   };
 
-  // Close mobile menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const mobileMenu = document.getElementById('mobile-menu');
-      const mobileMenuButton = document.getElementById('mobile-menu-button');
-      
-      if (
-        isMobileMenuOpen && 
-        mobileMenu && 
-        !mobileMenu.contains(event.target as Node) &&
-        mobileMenuButton && 
-        !mobileMenuButton.contains(event.target as Node)
-      ) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isMobileMenuOpen]);
-
   return (
     <header
       className={`fixed w-full z-50 transition-all duration-300 ${
         isScrolled ? 'bg-white/95 shadow-md py-4' : 'bg-transparent py-6'
       }`}
     >
-      <div className="container mx-auto flex justify-between items-center px-4">
+      <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="flex items-center">
-          <h1 className="text-xl sm:text-2xl font-bold gradient-text">Glidrclick</h1>
+          <h1 className="text-2xl font-bold gradient-text">Glidrclick</h1>
         </Link>
         
         {/* Desktop Menu */}
@@ -92,77 +69,36 @@ const Header = () => {
         
         {/* Mobile Menu Button */}
         <button 
-          id="mobile-menu-button"
-          className="md:hidden text-gray-700 p-2 rounded-lg hover:bg-gray-100"
+          className="md:hidden text-gray-700"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          aria-label="Toggle mobile menu"
         >
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          {isMobileMenuOpen ? <X /> : <Menu />}
         </button>
       </div>
       
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div 
-          id="mobile-menu" 
-          className="md:hidden absolute top-full left-0 w-full bg-white shadow-lg py-4 animate-fade-in z-50"
-        >
-          <div className="container mx-auto flex flex-col space-y-4 px-4">
-            <button 
-              className="text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
-              onClick={() => {
-                // Toggle submenu functionality could be added here
-              }}
-            >
+        <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-lg py-4 animate-fade-in">
+          <div className="container mx-auto flex flex-col space-y-4">
+            <button className="text-left px-4 py-2 text-gray-700 hover:bg-gray-100">
               Features
             </button>
             <div className="px-8 py-2 flex flex-col space-y-2 text-sm">
-              <Link 
-                to="/features/ai-writing" 
-                className="text-gray-700 hover:text-glidr-purple"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                AI Writing
-              </Link>
-              <Link 
-                to="/features/auto-posting" 
-                className="text-gray-700 hover:text-glidr-purple"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Auto-Posting
-              </Link>
-              <Link 
-                to="/features/social-sharing" 
-                className="text-gray-700 hover:text-glidr-purple"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Social Sharing
-              </Link>
+              <Link to="/features/ai-writing" className="text-gray-700 hover:text-glidr-purple">AI Writing</Link>
+              <Link to="/features/auto-posting" className="text-gray-700 hover:text-glidr-purple">Auto-Posting</Link>
+              <Link to="/features/social-sharing" className="text-gray-700 hover:text-glidr-purple">Social Sharing</Link>
             </div>
             <button 
-              className="text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
-              onClick={() => {
-                scrollToSection('pricing');
-                setIsMobileMenuOpen(false);
-              }}
+              className="text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+              onClick={() => scrollToSection('pricing')}
             >
               Pricing
             </button>
-            <Link 
-              to="/login" 
-              className="text-left px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
+            <Link to="/login" className="text-left px-4 py-2 text-gray-700 hover:bg-gray-100">
               Login
             </Link>
             <div className="px-4 pt-2">
-              <Button 
-                onClick={() => {
-                  navigate('/register');
-                  setIsMobileMenuOpen(false);
-                }} 
-                className="w-full gradient-button text-white rounded-full"
-              >
+              <Button onClick={() => navigate('/register')} className="w-full gradient-button text-white rounded-full">
                 Try Free for 7 Days
               </Button>
             </div>

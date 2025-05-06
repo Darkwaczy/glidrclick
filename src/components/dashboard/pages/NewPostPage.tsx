@@ -14,7 +14,6 @@ import CategorySelector from "@/components/dashboard/content/CategorySelector";
 import ToneSelector from "@/components/dashboard/content/ToneSelector";
 import ContentEditor from "@/components/dashboard/content/ContentEditor";
 import ImageGenerator from "@/components/dashboard/content/ImageGenerator";
-import ImageUploader from "@/components/dashboard/content/ImageUploader";
 import RssFeedSelector from "@/components/dashboard/content/RssFeedSelector";
 import { generateContent, generateTitle } from "@/services/aiService";
 import { schedulePost } from "@/utils/socialConnections";
@@ -24,7 +23,6 @@ const NewPostPage = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [generatedImage, setGeneratedImage] = useState("");
-  const [uploadedImage, setUploadedImage] = useState("");
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(["all"]);
   const [scheduledDate, setScheduledDate] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -33,7 +31,6 @@ const NewPostPage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeImageTab, setActiveImageTab] = useState<string>("generator");
 
   const handleGenerateContent = async () => {
     if (!selectedCategory || !selectedTone) {
@@ -99,15 +96,11 @@ const NewPostPage = () => {
         ? ["facebook", "instagram", "wordpress"] 
         : selectedPlatforms;
       
-      // Use either the generated or the uploaded image, prioritizing uploaded
-      const imageUrl = uploadedImage || generatedImage;
-      
       const scheduled = await schedulePost(
         title,
         content,
         platformsToUse,
-        new Date(scheduledDate),
-        imageUrl // Add the image URL to the post data
+        new Date(scheduledDate)
       );
       
       if (scheduled) {
@@ -227,27 +220,11 @@ const NewPostPage = () => {
                 </div>
                 
                 <div className="space-y-4">
-                  <Label>Images</Label>
-                  <Tabs defaultValue="generator" value={activeImageTab} onValueChange={setActiveImageTab}>
-                    <TabsList className="grid grid-cols-2">
-                      <TabsTrigger value="generator">AI Generator</TabsTrigger>
-                      <TabsTrigger value="upload">Upload Image</TabsTrigger>
-                    </TabsList>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <ImageGenerator 
+                      onImageGenerated={setGeneratedImage} 
+                    />
                     
-                    <TabsContent value="generator" className="space-y-4 mt-4">
-                      <ImageGenerator 
-                        onImageGenerated={setGeneratedImage} 
-                      />
-                    </TabsContent>
-                    
-                    <TabsContent value="upload" className="space-y-4 mt-4">
-                      <ImageUploader
-                        onImageUploaded={setUploadedImage}
-                      />
-                    </TabsContent>
-                  </Tabs>
-                  
-                  <div className="mt-4">
                     <RssFeedSelector
                       onSelectNews={(newsItem) => {
                         setContent(prev => prev + "\n\n" + newsItem);
@@ -311,15 +288,7 @@ const NewPostPage = () => {
               <div className="space-y-4">
                 <h3 className="font-bold text-lg">{title || "Your Title Here"}</h3>
                 
-                {uploadedImage ? (
-                  <div className="rounded-md overflow-hidden">
-                    <img 
-                      src={uploadedImage} 
-                      alt="Uploaded Preview"
-                      className="w-full h-auto"
-                    />
-                  </div>
-                ) : generatedImage ? (
+                {generatedImage && (
                   <div className="rounded-md overflow-hidden">
                     <img 
                       src={generatedImage} 
@@ -327,7 +296,7 @@ const NewPostPage = () => {
                       className="w-full h-auto"
                     />
                   </div>
-                ) : null}
+                )}
                 
                 <div className="prose max-w-none">
                   {content ? (

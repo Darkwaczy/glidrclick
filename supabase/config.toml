@@ -1,22 +1,38 @@
 
 project_id = "jbcurgdwbvjsgbftjejg"
 
-[api]
-enabled = true
-port = 54321
-schemas = ["public", "storage"]
-
-[db]
-port = 54322
-
-[realtime]
-enabled = true
-
-[storage]
-enabled = true
-
-[functions]
-enabled = true
-
-[functions.init-storage]
+[functions.connect-wordpress]
 verify_jwt = true
+
+[functions.connect-wordpress-self-hosted]
+verify_jwt = true
+
+[functions.oauth-facebook]
+verify_jwt = true
+
+[functions.oauth-instagram]
+verify_jwt = true
+
+[functions.oauth-wordpress]
+verify_jwt = true
+
+[functions.publish-facebook]
+verify_jwt = true
+
+[functions.publish-instagram]
+verify_jwt = true
+
+[functions.publish-wordpress]
+verify_jwt = true
+
+[functions.revoke-facebook]
+verify_jwt = true
+
+[functions.revoke-instagram]
+verify_jwt = true
+
+[functions.revoke-wordpress]
+verify_jwt = true
+
+[functions.facebook-data-deletion]
+verify_jwt = false

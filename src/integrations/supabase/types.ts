@@ -300,7 +300,6 @@ export type Database = {
           content: string | null
           created_at: string | null
           id: string
-          image_url: string | null
           published_at: string | null
           scheduled_for: string | null
           status: string
@@ -313,7 +312,6 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           id?: string
-          image_url?: string | null
           published_at?: string | null
           scheduled_for?: string | null
           status: string
@@ -326,7 +324,6 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           id?: string
-          image_url?: string | null
           published_at?: string | null
           scheduled_for?: string | null
           status?: string

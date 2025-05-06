@@ -10,8 +10,6 @@ import {
   User,
   LogOut,
   ChevronDown,
-  Menu,
-  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,7 +29,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -43,10 +40,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
     }
   };
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
   return (
     <header className="border-b bg-white sticky top-0 z-10">
       <div className="flex h-16 items-center justify-between px-4 sm:px-6">
@@ -55,19 +48,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
             variant="outline"
             size="icon"
             className="sm:hidden"
-            onClick={toggleMobileMenu}
-            aria-label="Toggle mobile menu"
-          >
-            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            className="hidden sm:flex"
             onClick={() => navigate("/dashboard")}
           >
-            <span className="text-lg sm:text-xl font-bold gradient-text ml-0">Glidrclick</span>
+            <LayoutDashboard className="h-5 w-5" />
           </Button>
 
           <div className="hidden md:flex gap-2">
@@ -108,7 +91,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 bg-white">
+            <DropdownMenuContent align="end" className="w-80">
               <div className="p-4 text-center">
                 {user ? (
                   <>
@@ -145,7 +128,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
                 <ChevronDown size={14} />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-white">
+            <DropdownMenuContent align="end">
               {user ? (
                 <>
                   <DropdownMenuItem onClick={() => navigate("/dashboard/profile")}>
@@ -167,58 +150,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
           </DropdownMenu>
         </div>
       </div>
-      
-      {/* Mobile Menu for Dashboard */}
-      {isMobileMenuOpen && (
-        <div className="sm:hidden border-t border-gray-100 bg-white">
-          <div className="flex flex-col p-4 space-y-3">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="justify-start"
-              onClick={() => {
-                navigate("/dashboard");
-                setIsMobileMenuOpen(false);
-              }}
-            >
-              <LayoutDashboard size={16} className="mr-2" /> Dashboard
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="justify-start"
-              onClick={() => {
-                navigate("/dashboard/schedule");
-                setIsMobileMenuOpen(false);
-              }}
-            >
-              <Calendar size={16} className="mr-2" /> Schedule
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="justify-start"
-              onClick={() => {
-                navigate("/dashboard/settings");
-                setIsMobileMenuOpen(false);
-              }}
-            >
-              <Settings size={16} className="mr-2" /> Settings
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="justify-start"
-              onClick={() => {
-                if (onWatchDemo) onWatchDemo();
-                setIsMobileMenuOpen(false);
-              }}
-            >
-              <HelpCircle size={16} className="mr-2" /> How It Works
-            </Button>
-          </div>
-        </div>
-      )}
     </header>
   );
 };

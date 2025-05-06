@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { signIn, signUp, user, loading } = useAuth();
+  const { signIn, signUp, user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
   
@@ -27,10 +28,10 @@ const Auth = () => {
 
   // Redirect to dashboard if already logged in
   useEffect(() => {
-    if (user && !loading) {
+    if (user) {
       navigate("/dashboard");
     }
-  }, [user, loading, navigate]);
+  }, [user, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,11 +100,6 @@ const Auth = () => {
       setIsLoading(false);
     }
   };
-  
-  // Show loading state while checking auth
-  if (loading) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
-  }
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">

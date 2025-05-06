@@ -17,7 +17,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { useAuth } from "@/hooks/useAuth";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -31,7 +30,6 @@ const formSchema = z.object({
 const LoginPage = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { signIn } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -41,28 +39,24 @@ const LoginPage = () => {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values);
     setIsSubmitting(true);
     
-    try {
-      // Since we're using zod validation, we can be confident that email and password are defined
-      // The TypeScript error was occurring because the types weren't being properly narrowed
-      const { email, password } = values;
+    // In a real app, this would connect to Supabase or another auth provider
+    setTimeout(() => {
+      setIsSubmitting(false);
       
-      if (email === "admin@glidrclick.com" && password === "admin123") {
+      // Check if this is an admin login
+      if (values.email === "admin@glidrclick.com" && values.password === "admin123") {
         toast.success("Admin login successful! Redirecting to admin dashboard...");
         setTimeout(() => navigate("/admin-dashboard"), 1500);
       } else {
-        await signIn({ email, password });
-        toast.success("Login successful!");
-        // The useAuth hook will handle the redirect to dashboard
+        toast.success("Login successful! Redirecting to dashboard...");
+        // Navigate to dashboard after successful login
+        setTimeout(() => navigate("/dashboard"), 1500);
       }
-    } catch (error: any) {
-      console.error("Login error:", error);
-      toast.error(error?.message || "Login failed. Please check your credentials.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    }, 1500);
   }
 
   return (
