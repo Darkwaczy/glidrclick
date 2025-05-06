@@ -193,6 +193,36 @@ export type Database = {
           },
         ]
       }
+      oauth_states: {
+        Row: {
+          code_verifier: string | null
+          created_at: string
+          expires_at: string
+          platform: string
+          redirect_url: string
+          state: string
+          user_id: string
+        }
+        Insert: {
+          code_verifier?: string | null
+          created_at?: string
+          expires_at?: string
+          platform: string
+          redirect_url: string
+          state: string
+          user_id: string
+        }
+        Update: {
+          code_verifier?: string | null
+          created_at?: string
+          expires_at?: string
+          platform?: string
+          redirect_url?: string
+          state?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       payment_transactions: {
         Row: {
           amount: number
@@ -274,6 +304,51 @@ export type Database = {
           updated_at?: string
           whatsapp_number?: string | null
           whatsapp_verified?: boolean | null
+        }
+        Relationships: []
+      }
+      social_connections: {
+        Row: {
+          access_token: string
+          created_at: string
+          id: string
+          meta: Json | null
+          platform: string
+          platform_user_id: string
+          platform_username: string | null
+          refresh_token: string | null
+          scope: string | null
+          token_expires_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          id?: string
+          meta?: Json | null
+          platform: string
+          platform_user_id: string
+          platform_username?: string | null
+          refresh_token?: string | null
+          scope?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          id?: string
+          meta?: Json | null
+          platform?: string
+          platform_user_id?: string
+          platform_username?: string | null
+          refresh_token?: string | null
+          scope?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -384,6 +459,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_oauth_states: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _user_id: string
