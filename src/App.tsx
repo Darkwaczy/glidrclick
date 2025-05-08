@@ -9,6 +9,10 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { DashboardLayout } from './components/dashboard/DashboardLayout';
 import Analytics from './pages/dashboard/Analytics';
+import Create from './pages/dashboard/Create';
+import Users from './pages/dashboard/Users';
+import CalendarPage from './pages/dashboard/Calendar';
+import Settings from './pages/dashboard/Settings';
 
 // Create the client
 const queryClient = new QueryClient();
@@ -27,6 +31,10 @@ const App = () => {
               {/* Dashboard Routes */}
               <Route path="/dashboard" element={<DashboardLayout />}>
                 <Route path="analytics" element={<Analytics />} />
+                <Route path="create" element={<Create />} />
+                <Route path="users" element={<Users />} />
+                <Route path="calendar" element={<CalendarPage />} />
+                <Route path="settings" element={<Settings />} />
                 {/* Add more dashboard routes as needed */}
               </Route>
 

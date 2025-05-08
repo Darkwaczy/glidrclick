@@ -1,12 +1,13 @@
 
 import React from 'react';
-import { Outlet } from 'react-router-dom';
-import { ChartBar, Users, Settings, Calendar } from 'lucide-react';
+import { Link, Outlet, useLocation } from 'react-router-dom';
+import { ChartBar, Users, Settings, Calendar, PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const sidebarItems = [
   { icon: ChartBar, label: 'Analytics', path: '/dashboard/analytics' },
+  { icon: PlusCircle, label: 'Create', path: '/dashboard/create' },
   { icon: Users, label: 'Users', path: '/dashboard/users' },
   { icon: Calendar, label: 'Calendar', path: '/dashboard/calendar' },
   { icon: Settings, label: 'Settings', path: '/dashboard/settings' },
@@ -15,6 +16,7 @@ const sidebarItems = [
 export function DashboardLayout() {
   const [collapsed, setCollapsed] = React.useState(false);
   const isMobile = useIsMobile();
+  const location = useLocation();
   
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
@@ -44,16 +46,16 @@ export function DashboardLayout() {
           <ul className="space-y-1">
             {sidebarItems.map((item) => (
               <li key={item.path}>
-                <a
-                  href={item.path}
+                <Link
+                  to={item.path}
                   className={cn(
                     "flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100",
-                    window.location.pathname === item.path && "bg-gray-100 font-medium"
+                    location.pathname === item.path && "bg-gray-100 font-medium"
                   )}
                 >
                   <item.icon className="h-5 w-5 mr-3" />
                   {!collapsed && <span>{item.label}</span>}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
