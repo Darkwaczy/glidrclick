@@ -2,10 +2,12 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,6 +25,21 @@ const Header = () => {
       section.scrollIntoView({ behavior: 'smooth' });
     }
     setIsMobileMenuOpen(false);
+  };
+
+  const handleFeatureClick = (feature: string) => {
+    // For now, just scroll to the demo section as a placeholder
+    scrollToSection('interactive-demo');
+  };
+
+  const handleLoginClick = () => {
+    // Navigate to dashboard for now (you can change this to a login page later)
+    navigate('/dashboard/analytics');
+  };
+
+  const handleTrialClick = () => {
+    // Scroll to pricing section to start trial
+    scrollToSection('pricing');
   };
 
   return (
@@ -44,9 +61,24 @@ const Header = () => {
             </button>
             <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
               <div className="py-2 px-4">
-                <a href="#" className="block py-2 text-sm text-gray-700 hover:text-glidr-purple">AI Writing</a>
-                <a href="#" className="block py-2 text-sm text-gray-700 hover:text-glidr-purple">Auto-Posting</a>
-                <a href="#" className="block py-2 text-sm text-gray-700 hover:text-glidr-purple">Social Sharing</a>
+                <button 
+                  onClick={() => handleFeatureClick('ai-writing')}
+                  className="block py-2 text-sm text-gray-700 hover:text-glidr-purple w-full text-left"
+                >
+                  AI Writing
+                </button>
+                <button 
+                  onClick={() => handleFeatureClick('auto-posting')}
+                  className="block py-2 text-sm text-gray-700 hover:text-glidr-purple w-full text-left"
+                >
+                  Auto-Posting
+                </button>
+                <button 
+                  onClick={() => handleFeatureClick('social-sharing')}
+                  className="block py-2 text-sm text-gray-700 hover:text-glidr-purple w-full text-left"
+                >
+                  Social Sharing
+                </button>
               </div>
             </div>
           </div>
@@ -56,10 +88,18 @@ const Header = () => {
           >
             Pricing
           </button>
-          <button className="text-gray-700 hover:text-glidr-purple transition-colors">
+          <button 
+            className="text-gray-700 hover:text-glidr-purple transition-colors"
+            onClick={handleLoginClick}
+          >
             Login
           </button>
-          <Button className="gradient-button text-white rounded-full px-8">Try Free for 7 Days</Button>
+          <Button 
+            className="gradient-button text-white rounded-full px-8"
+            onClick={handleTrialClick}
+          >
+            Try Free for 7 Days
+          </Button>
         </nav>
         
         {/* Mobile Menu Button */}
@@ -79,9 +119,24 @@ const Header = () => {
               Features
             </button>
             <div className="px-8 py-2 flex flex-col space-y-2 text-sm">
-              <a href="#" className="text-gray-700 hover:text-glidr-purple">AI Writing</a>
-              <a href="#" className="text-gray-700 hover:text-glidr-purple">Auto-Posting</a>
-              <a href="#" className="text-gray-700 hover:text-glidr-purple">Social Sharing</a>
+              <button 
+                onClick={() => handleFeatureClick('ai-writing')}
+                className="text-gray-700 hover:text-glidr-purple text-left"
+              >
+                AI Writing
+              </button>
+              <button 
+                onClick={() => handleFeatureClick('auto-posting')}
+                className="text-gray-700 hover:text-glidr-purple text-left"
+              >
+                Auto-Posting
+              </button>
+              <button 
+                onClick={() => handleFeatureClick('social-sharing')}
+                className="text-gray-700 hover:text-glidr-purple text-left"
+              >
+                Social Sharing
+              </button>
             </div>
             <button 
               className="text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
@@ -89,11 +144,17 @@ const Header = () => {
             >
               Pricing
             </button>
-            <button className="text-left px-4 py-2 text-gray-700 hover:bg-gray-100">
+            <button 
+              className="text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+              onClick={handleLoginClick}
+            >
               Login
             </button>
             <div className="px-4 pt-2">
-              <Button className="w-full gradient-button text-white rounded-full">
+              <Button 
+                className="w-full gradient-button text-white rounded-full"
+                onClick={handleTrialClick}
+              >
                 Try Free for 7 Days
               </Button>
             </div>
