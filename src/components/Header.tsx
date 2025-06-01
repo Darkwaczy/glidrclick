@@ -29,7 +29,6 @@ const Header = () => {
 
   const handleFeatureClick = (feature: string) => {
     console.log('Feature clicked:', feature);
-    // Scroll to the interactive demo section for any feature
     scrollToSection('interactive-demo');
   };
 
@@ -37,7 +36,6 @@ const Header = () => {
     e.preventDefault();
     e.stopPropagation();
     console.log('Login clicked');
-    // Navigate to dashboard for now
     navigate('/dashboard/analytics');
   };
 
@@ -45,7 +43,6 @@ const Header = () => {
     e.preventDefault();
     e.stopPropagation();
     console.log('Trial clicked');
-    // Scroll to pricing section to start trial
     scrollToSection('pricing');
   };
 
