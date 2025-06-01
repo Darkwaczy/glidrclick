@@ -51,6 +51,131 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_conversions: {
+        Row: {
+          conversions: number
+          created_at: string
+          date: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conversions?: number
+          created_at?: string
+          date: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conversions?: number
+          created_at?: string
+          date?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      analytics_sources: {
+        Row: {
+          count: number
+          created_at: string
+          id: string
+          source: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          id?: string
+          source: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          id?: string
+          source?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      analytics_visitors: {
+        Row: {
+          count: number
+          created_at: string
+          date: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          date: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          date?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      email_account_settings: {
+        Row: {
+          created_at: string
+          email_account_id: string
+          forward_all: boolean
+          id: string
+          notify_on_new: boolean
+          selected_folders: Json | null
+          sync_frequency: number
+          updated_at: string
+          use_folders: boolean
+        }
+        Insert: {
+          created_at?: string
+          email_account_id: string
+          forward_all?: boolean
+          id?: string
+          notify_on_new?: boolean
+          selected_folders?: Json | null
+          sync_frequency?: number
+          updated_at?: string
+          use_folders?: boolean
+        }
+        Update: {
+          created_at?: string
+          email_account_id?: string
+          forward_all?: boolean
+          id?: string
+          notify_on_new?: boolean
+          selected_folders?: Json | null
+          sync_frequency?: number
+          updated_at?: string
+          use_folders?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_account_settings_email_account_id_fkey"
+            columns: ["email_account_id"]
+            isOneToOne: false
+            referencedRelation: "email_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_accounts: {
         Row: {
           access_token: string | null
@@ -64,6 +189,8 @@ export type Database = {
           status: string | null
           updated_at: string | null
           user_id: string
+          watch_expiration: string | null
+          watch_history_id: string | null
         }
         Insert: {
           access_token?: string | null
@@ -77,6 +204,8 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
           user_id: string
+          watch_expiration?: string | null
+          watch_history_id?: string | null
         }
         Update: {
           access_token?: string | null
@@ -90,8 +219,66 @@ export type Database = {
           status?: string | null
           updated_at?: string | null
           user_id?: string
+          watch_expiration?: string | null
+          watch_history_id?: string | null
         }
         Relationships: []
+      }
+      email_sync_history: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          email_account_id: string
+          emails_fetched: number
+          emails_processed: number
+          error: string | null
+          error_message: string | null
+          id: string
+          last_email_date: string | null
+          status: string
+          sync_type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          email_account_id: string
+          emails_fetched?: number
+          emails_processed?: number
+          error?: string | null
+          error_message?: string | null
+          id?: string
+          last_email_date?: string | null
+          status: string
+          sync_type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          email_account_id?: string
+          emails_fetched?: number
+          emails_processed?: number
+          error?: string | null
+          error_message?: string | null
+          id?: string
+          last_email_date?: string | null
+          status?: string
+          sync_type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sync_history_email_account_id_fkey"
+            columns: ["email_account_id"]
+            isOneToOne: false
+            referencedRelation: "email_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       emails: {
         Row: {
@@ -235,6 +422,33 @@ export type Database = {
           },
         ]
       }
+      message_templates: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          name: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          name: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          name?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       oauth_states: {
         Row: {
           code_verifier: string | null
@@ -265,6 +479,45 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_history: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          flutterwave_ref: string | null
+          id: string
+          payment_date: string
+          plan_tier: string
+          status: string
+          transaction_ref: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          flutterwave_ref?: string | null
+          id?: string
+          payment_date?: string
+          plan_tier: string
+          status: string
+          transaction_ref: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          flutterwave_ref?: string | null
+          id?: string
+          payment_date?: string
+          plan_tier?: string
+          status?: string
+          transaction_ref?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       payment_transactions: {
         Row: {
           amount: number
@@ -273,6 +526,7 @@ export type Database = {
           flutterwave_ref: string | null
           id: string
           payment_processor_response: Json | null
+          payment_provider: string | null
           plan_id: string
           status: string
           transaction_ref: string
@@ -286,6 +540,7 @@ export type Database = {
           flutterwave_ref?: string | null
           id?: string
           payment_processor_response?: Json | null
+          payment_provider?: string | null
           plan_id: string
           status: string
           transaction_ref: string
@@ -299,9 +554,43 @@ export type Database = {
           flutterwave_ref?: string | null
           id?: string
           payment_processor_response?: Json | null
+          payment_provider?: string | null
           plan_id?: string
           status?: string
           transaction_ref?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      posts: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          scheduled_for: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          scheduled_for?: string | null
+          status: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          scheduled_for?: string | null
+          status?: string
+          title?: string
           updated_at?: string
           user_id?: string
         }
@@ -391,6 +680,51 @@ export type Database = {
           token_expires_at?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          flutterwave_customer_id: string | null
+          id: string
+          is_trial: boolean
+          subscribed: boolean
+          subscription_end: string | null
+          subscription_start: string | null
+          subscription_tier: string | null
+          trial_end: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          flutterwave_customer_id?: string | null
+          id?: string
+          is_trial?: boolean
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_start?: string | null
+          subscription_tier?: string | null
+          trial_end?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          flutterwave_customer_id?: string | null
+          id?: string
+          is_trial?: boolean
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_start?: string | null
+          subscription_tier?: string | null
+          trial_end?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -520,6 +854,63 @@ export type Database = {
           },
         ]
       }
+      whatsapp_verification_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          expires_at: string
+          id: string
+          phone_number: string
+          used: boolean | null
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          phone_number: string
+          used?: boolean | null
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          phone_number?: string
+          used?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      whatsapp_verifications: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: number
+          phone_number: string
+          used: boolean | null
+          verification_code: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: never
+          phone_number: string
+          used?: boolean | null
+          verification_code: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: never
+          phone_number?: string
+          used?: boolean | null
+          verification_code?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -534,6 +925,18 @@ export type Database = {
           | { _user_id: string; _role: Database["public"]["Enums"]["app_role"] }
           | { _user_id: string; _role: string }
         Returns: boolean
+      }
+      log_activity: {
+        Args:
+          | Record<PropertyKey, never>
+          | {
+              _action: string
+              _resource_type: string
+              _resource_id: string
+              _status: string
+              _details: Json
+            }
+        Returns: undefined
       }
     }
     Enums: {
