@@ -5,11 +5,14 @@ import { Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
+  console.log('Header component is rendering');
+  
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('Header useEffect is running');
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
       setIsScrolled(scrollPosition > 10);
