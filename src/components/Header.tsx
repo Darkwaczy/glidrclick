@@ -4,8 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+// Cache bust: 2025-06-01-20:12:00
+console.log('Header.tsx loading - timestamp: 2025-06-01-20:12:00');
+
 const Header = () => {
-  console.log('Header component is rendering v2');
+  console.log('Header component is rendering v3 - latest version');
   
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -38,21 +41,21 @@ const Header = () => {
   const handleLoginClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('Login clicked');
+    console.log('Login clicked - navigating to dashboard');
     navigate('/dashboard/analytics');
   };
 
   const handleTrialClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('Trial clicked');
+    console.log('Trial clicked - scrolling to pricing');
     scrollToSection('pricing');
   };
 
   const handlePricingClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('Pricing clicked');
+    console.log('Pricing clicked - scrolling to pricing');
     scrollToSection('pricing');
   };
 
