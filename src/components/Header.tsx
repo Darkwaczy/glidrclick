@@ -1,15 +1,21 @@
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+// Cache bust: 2025-06-01-20:12:00
+console.log('Header.tsx loading - timestamp: 2025-06-01-20:12:00');
+
 const Header = () => {
+  console.log('Header component is rendering v3 - latest version');
+  
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('Header useEffect is running');
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
       setIsScrolled(scrollPosition > 10);
@@ -28,17 +34,28 @@ const Header = () => {
   };
 
   const handleFeatureClick = (feature: string) => {
-    // For now, just scroll to the demo section as a placeholder
+    console.log('Feature clicked:', feature);
     scrollToSection('interactive-demo');
   };
 
-  const handleLoginClick = () => {
-    // Navigate to dashboard for now (you can change this to a login page later)
+  const handleLoginClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Login clicked - navigating to dashboard');
     navigate('/dashboard/analytics');
   };
 
-  const handleTrialClick = () => {
-    // Scroll to pricing section to start trial
+  const handleTrialClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Trial clicked - scrolling to pricing');
+    scrollToSection('pricing');
+  };
+
+  const handlePricingClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Pricing clicked - scrolling to pricing');
     scrollToSection('pricing');
   };
 
@@ -48,7 +65,7 @@ const Header = () => {
         isScrolled ? 'bg-white/95 shadow-md py-4' : 'bg-transparent py-6'
       }`}
     >
-      <div className="container mx-auto flex justify-between items-center">
+      <div className="container mx-auto flex justify-between items-center px-4">
         <div className="flex items-center">
           <h1 className="text-2xl font-bold gradient-text">Glidrclick</h1>
         </div>
@@ -84,7 +101,7 @@ const Header = () => {
           </div>
           <button 
             className="text-gray-700 hover:text-glidr-purple transition-colors"
-            onClick={() => scrollToSection('pricing')}
+            onClick={handlePricingClick}
           >
             Pricing
           </button>
@@ -114,7 +131,7 @@ const Header = () => {
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-lg py-4 animate-fade-in">
-          <div className="container mx-auto flex flex-col space-y-4">
+          <div className="container mx-auto flex flex-col space-y-4 px-4">
             <button className="text-left px-4 py-2 text-gray-700 hover:bg-gray-100">
               Features
             </button>
@@ -140,7 +157,7 @@ const Header = () => {
             </div>
             <button 
               className="text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-              onClick={() => scrollToSection('pricing')}
+              onClick={handlePricingClick}
             >
               Pricing
             </button>

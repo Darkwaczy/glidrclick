@@ -18,36 +18,39 @@ import { AuthProvider } from './context/AuthContext';
 // Create the client
 const queryClient = new QueryClient();
 
-const App = () => {
-  return (
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                
-                {/* Dashboard Routes */}
-                <Route path="/dashboard" element={<DashboardLayout />}>
-                  <Route path="analytics" element={<Analytics />} />
-                  <Route path="create" element={<Create />} />
-                  <Route path="users" element={<Users />} />
-                  <Route path="calendar" element={<CalendarPage />} />
-                  <Route path="settings" element={<Settings />} />
-                  {/* Add more dashboard routes as needed */}
-                </Route>
+// Cache bust: 2025-06-01-20:12:00
+console.log('App.tsx loading - timestamp: 2025-06-01-20:12:00');
 
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </React.StrictMode>
+const App = () => {
+  console.log('App component rendering');
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              
+              {/* Dashboard Routes */}
+              <Route path="/dashboard" element={<DashboardLayout />}>
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="create" element={<Create />} />
+                <Route path="users" element={<Users />} />
+                <Route path="calendar" element={<CalendarPage />} />
+                <Route path="settings" element={<Settings />} />
+                {/* Add more dashboard routes as needed */}
+              </Route>
+
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 };
 
