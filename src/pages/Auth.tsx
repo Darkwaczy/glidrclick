@@ -51,9 +51,9 @@ const Auth = () => {
       <div className="w-full max-w-md">
         <Card>
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-3xl font-bold">Welcome to Glidrclick</CardTitle>
+            <CardTitle className="text-3xl font-bold gradient-text">Welcome to FlowCraft</CardTitle>
             <CardDescription>
-              Your all-in-one social media management platform
+              Your all-in-one content automation platform
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -81,7 +81,7 @@ const Auth = () => {
                       <Label htmlFor="password">Password</Label>
                       <Link 
                         to="/forgot-password"
-                        className="text-sm text-blue-600 hover:underline"
+                        className="text-sm text-ocean-primary hover:underline"
                       >
                         Forgot password?
                       </Link>
@@ -95,7 +95,7 @@ const Auth = () => {
                       onChange={(e) => setPassword(e.target.value)}
                     />
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full gradient-button text-white" disabled={isLoading}>
                     {isLoading ? "Signing in..." : "Sign In"}
                   </Button>
                 </form>
@@ -128,7 +128,7 @@ const Auth = () => {
                       Password must be at least 8 characters long
                     </p>
                   </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full gradient-button text-white" disabled={isLoading}>
                     {isLoading ? "Creating account..." : "Create Account"}
                   </Button>
                 </form>
@@ -154,9 +154,9 @@ const Auth = () => {
             </div>
             <p className="text-xs text-center text-gray-500 mt-4">
               By using our service, you agree to our{" "}
-              <Link to="/terms" className="text-blue-600 hover:underline">Terms of Service</Link>
+              <Link to="/terms" className="text-ocean-primary hover:underline">Terms of Service</Link>
               {" "}and{" "}
-              <Link to="/privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>
+              <Link to="/privacy" className="text-ocean-primary hover:underline">Privacy Policy</Link>
             </p>
           </CardFooter>
         </Card>
