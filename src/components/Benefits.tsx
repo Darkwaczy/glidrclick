@@ -47,7 +47,7 @@ const Benefits = () => {
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-ocean-deep">
             Measurable Results for Your Business
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -57,16 +57,16 @@ const Benefits = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {benefits.map((benefit, index) => (
-            <Card key={index} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+            <Card key={index} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-ocean-foam/20 animate-ocean-glow">
               <CardContent className="p-8 text-center">
-                <div className="bg-gradient-to-br from-[#9b87f5] to-[#7E69AB] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                <div className="bg-gradient-to-br from-ocean-primary to-ocean-accent rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                   <benefit.icon className="text-white" size={32} />
                 </div>
                 
-                <h3 className="text-xl font-bold mb-3">{benefit.title}</h3>
+                <h3 className="text-xl font-bold mb-3 text-ocean-deep">{benefit.title}</h3>
                 <p className="text-gray-600 mb-4 leading-relaxed">{benefit.description}</p>
                 
-                <div className="bg-gradient-to-r from-[#9b87f5] to-[#7E69AB] bg-clip-text text-transparent font-bold text-lg">
+                <div className="gradient-text font-bold text-lg">
                   {benefit.metric}
                 </div>
               </CardContent>
@@ -74,10 +74,10 @@ const Benefits = () => {
           ))}
         </div>
 
-        <div className="mt-16 bg-gradient-to-r from-[#9b87f5] to-[#7E69AB] rounded-2xl p-8 text-white text-center">
+        <div className="mt-16 bg-gradient-to-r from-ocean-primary to-ocean-secondary rounded-2xl p-8 text-white text-center">
           <h3 className="text-2xl font-bold mb-4">Ready to See These Results?</h3>
           <p className="text-lg mb-6 opacity-90">
-            Join thousands of businesses already experiencing these benefits with Glidrclick
+            Join thousands of businesses already experiencing these benefits with FlowCraft
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <div className="text-sm opacity-75">⭐⭐⭐⭐⭐ Rated 4.9/5 by 2,000+ users</div>
