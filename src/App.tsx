@@ -18,12 +18,7 @@ import { AuthProvider } from './context/AuthContext';
 // Create the client
 const queryClient = new QueryClient();
 
-// Cache bust: 2025-06-01-20:12:00
-console.log('App.tsx loading - timestamp: 2025-06-01-20:12:00');
-
 const App = () => {
-  console.log('App component rendering');
-  
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
