@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { X, Sparkles } from 'lucide-react';
+import { X, Waves } from 'lucide-react';
 
 const StickyCTA = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -33,15 +33,15 @@ const StickyCTA = () => {
 
   return (
     <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in-up">
-      <div className="bg-white shadow-2xl rounded-2xl border border-gray-200 p-4 max-w-md mx-4">
+      <div className="bg-white shadow-2xl rounded-2xl border border-ocean-light p-4 max-w-md mx-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-glidr-purple to-glidr-bright-purple rounded-full flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 bg-gradient-to-r from-ocean-primary to-ocean-bright rounded-full flex items-center justify-center">
+              <Waves className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="font-semibold text-gray-800">Ready to get started?</div>
-              <div className="text-sm text-gray-600">Try Glidrclick free for 7 days</div>
+              <div className="font-semibold text-ocean-deep">Ready to transform your content?</div>
+              <div className="text-sm text-gray-600">Try FlowCraft free for 14 days</div>
             </div>
           </div>
           <button
@@ -53,10 +53,10 @@ const StickyCTA = () => {
         </div>
         
         <div className="mt-4 flex gap-2">
-          <Button className="flex-1 gradient-button text-white text-sm">
+          <Button className="flex-1 gradient-button text-white text-sm font-semibold">
             Start Free Trial
           </Button>
-          <Button variant="outline" size="sm" onClick={handleDismiss}>
+          <Button variant="outline" size="sm" onClick={handleDismiss} className="border-ocean-light text-ocean-primary hover:bg-ocean-mist">
             Later
           </Button>
         </div>
