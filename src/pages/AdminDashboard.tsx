@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminTabContent from "@/components/admin/dashboard/AdminTabContent";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthContext } from "@/context/AuthContext";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ const AdminDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("users");
   const [activePage, setActivePage] = useState("admin-dashboard");
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, loading } = useAuthContext();
 
   console.log("AdminDashboard rendering, path:", location.pathname);
 

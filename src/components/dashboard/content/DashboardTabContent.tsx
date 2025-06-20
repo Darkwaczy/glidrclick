@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { TabsContent } from "@/components/ui/tabs";
 import { usePosts } from "@/hooks/usePosts";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthContext } from "@/context/AuthContext";
 import { getScheduledPosts, getPublishedPosts, checkAndUpdatePostStatus } from "@/utils/social";
 import PostsTabContent from "./tabs/PostsTabContent";
 import AnalyticsTabContent from "./tabs/AnalyticsTabContent";
@@ -30,7 +30,7 @@ const DashboardTabContent: React.FC<DashboardTabContentProps> = ({
   onViewAllPublished,
   onViewAllDrafts
 }) => {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const { posts: allPosts, isLoading: isPostsLoading, getPostAnalytics } = usePosts();
   const [scheduledPosts, setScheduledPosts] = useState<any[]>([]);
   const [publishedPosts, setPublishedPosts] = useState<any[]>([]);
