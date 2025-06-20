@@ -1,176 +1,124 @@
 
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Menu, X, Waves } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useAuthContext } from '@/context/AuthContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { User, LogOut, Settings, LayoutDashboard } from "lucide-react";
 
 const Header = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { isAuthenticated, isAdmin, signOut } = useAuthContext();
   const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      setIsScrolled(scrollPosition > 10);
+      const isScrolled = window.scrollY > 50;
+      if (isScrolled !== scrolled) {
+        setScrolled(isScrolled);
+      }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [scrolled]);
 
-  const scrollToSection = (sectionId: string) => {
-    const section = document.getElementById(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth' });
-    }
-    setIsMobileMenuOpen(false);
+  const handleLogin = () => {
+    navigate("/auth");
   };
 
-  const handleFeatureClick = (feature: string) => {
-    scrollToSection('interactive-demo');
-  };
-
-  const handleLoginClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    navigate('/dashboard/analytics');
-  };
-
-  const handleTrialClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    scrollToSection('pricing');
-  };
-
-  const handlePricingClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    scrollToSection('pricing');
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
   };
 
   return (
     <header
-      className={`fixed w-full z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white/95 shadow-lg shadow-ocean-primary/10 py-4' : 'bg-transparent py-6'
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled ? "bg-white shadow-md py-2" : "bg-transparent py-4"
       }`}
     >
-      <div className="container mx-auto flex justify-between items-center px-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-ocean-primary to-ocean-bright rounded-lg flex items-center justify-center">
-            <Waves className="w-5 h-5 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold gradient-text">FlowCraft</h1>
-        </div>
-        
-        {/* Desktop Menu */}
-        <nav className="hidden md:flex items-center space-x-8">
-          <div className="relative group">
-            <button className="text-gray-700 hover:text-ocean-primary transition-colors font-medium">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between">
+          <Link to="/" className="flex items-center">
+            <h1 className="text-2xl font-bold">
+              <span className="text-[#9b87f5]">Glidr</span>
+              <span className="text-gray-800">click</span>
+            </h1>
+          </Link>
+
+          <div className="hidden md:flex items-center space-x-6 text-gray-600">
+            <Link
+              to="/features/social-sharing"
+              className="hover:text-glidr-purple transition-colors"
+            >
               Features
-            </button>
-            <div className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-ocean-light opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-              <div className="py-2 px-4">
-                <button 
-                  onClick={() => handleFeatureClick('ai-writing')}
-                  className="block py-2 text-sm text-gray-700 hover:text-ocean-primary w-full text-left transition-colors"
-                >
-                  AI Content Generation
-                </button>
-                <button 
-                  onClick={() => handleFeatureClick('auto-posting')}
-                  className="block py-2 text-sm text-gray-700 hover:text-ocean-primary w-full text-left transition-colors"
-                >
-                  Smart Automation
-                </button>
-                <button 
-                  onClick={() => handleFeatureClick('social-sharing')}
-                  className="block py-2 text-sm text-gray-700 hover:text-ocean-primary w-full text-left transition-colors"
-                >
-                  Multi-Platform Publishing
-                </button>
-              </div>
-            </div>
-          </div>
-          <button 
-            className="text-gray-700 hover:text-ocean-primary transition-colors font-medium"
-            onClick={handlePricingClick}
-          >
-            Pricing
-          </button>
-          <button 
-            className="text-gray-700 hover:text-ocean-primary transition-colors font-medium"
-            onClick={handleLoginClick}
-          >
-            Login
-          </button>
-          <Button 
-            className="gradient-button text-white rounded-full px-8 font-semibold shadow-lg hover:shadow-xl transition-all"
-            onClick={handleTrialClick}
-          >
-            Start Free Trial
-          </Button>
-        </nav>
-        
-        {/* Mobile Menu Button */}
-        <button 
-          className="md:hidden text-gray-700 hover:text-ocean-primary transition-colors"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          {isMobileMenuOpen ? <X /> : <Menu />}
-        </button>
-      </div>
-      
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-md shadow-lg py-4 animate-fade-in border-t border-ocean-light">
-          <div className="container mx-auto flex flex-col space-y-4 px-4">
-            <button className="text-left px-4 py-2 text-gray-700 hover:bg-ocean-mist rounded-lg transition-colors">
-              Features
-            </button>
-            <div className="px-8 py-2 flex flex-col space-y-2 text-sm">
-              <button 
-                onClick={() => handleFeatureClick('ai-writing')}
-                className="text-gray-700 hover:text-ocean-primary text-left transition-colors"
-              >
-                AI Content Generation
-              </button>
-              <button 
-                onClick={() => handleFeatureClick('auto-posting')}
-                className="text-gray-700 hover:text-ocean-primary text-left transition-colors"
-              >
-                Smart Automation
-              </button>
-              <button 
-                onClick={() => handleFeatureClick('social-sharing')}
-                className="text-gray-700 hover:text-ocean-primary text-left transition-colors"
-              >
-                Multi-Platform Publishing
-              </button>
-            </div>
-            <button 
-              className="text-left px-4 py-2 text-gray-700 hover:bg-ocean-mist rounded-lg transition-colors"
-              onClick={handlePricingClick}
+            </Link>
+            <Link
+              to="/pricing"
+              className="hover:text-glidr-purple transition-colors"
             >
               Pricing
-            </button>
-            <button 
-              className="text-left px-4 py-2 text-gray-700 hover:bg-ocean-mist rounded-lg transition-colors"
-              onClick={handleLoginClick}
+            </Link>
+            <Link
+              to="/blog"
+              className="hover:text-glidr-purple transition-colors"
             >
-              Login
-            </button>
-            <div className="px-4 pt-2">
-              <Button 
-                className="w-full gradient-button text-white rounded-full font-semibold"
-                onClick={handleTrialClick}
+              Blog
+            </Link>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="rounded-full">
+                    <User size={18} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                    <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate("/admin-dashboard")}>
+                      <Settings className="mr-2 h-4 w-4" /> Admin
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" /> Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={handleLogin}
+                className="border-glidr-purple text-glidr-purple hover:bg-glidr-purple/10"
               >
-                Start Free Trial
+                Login
               </Button>
-            </div>
+            )}
+            {!isAuthenticated && (
+              <Button
+                onClick={() => navigate("/auth", { state: { initialTab: "sign-up" } })}
+                className="gradient-button"
+              >
+                Sign Up
+              </Button>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </header>
   );
 };

@@ -1,15 +1,25 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 interface TypeAnimationProps {
-  text: string;
+  texts?: string[];  // Made optional with ?
   speed?: number;
   className?: string;
 }
 
-const TypeAnimation = ({ text, speed = 100, className = '' }: TypeAnimationProps) => {
+const TypeAnimation = ({ 
+  texts = [
+    "Streamline your content marketing workflow",
+    "Schedule posts across multiple platforms",
+    "Generate AI-powered content ideas",
+    "Analyze performance with detailed metrics"
+  ], 
+  speed = 100, 
+  className = '' 
+}: TypeAnimationProps) => {
   const [displayText, setDisplayText] = useState('');
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentTextIndex, setCurrentTextIndex] = useState(0);
+  const [currentCharIndex, setCurrentCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const pauseDelay = 2000;
@@ -27,26 +37,27 @@ const TypeAnimation = ({ text, speed = 100, className = '' }: TypeAnimationProps
     if (isDeleting) {
       if (displayText.length === 0) {
         setIsDeleting(false);
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % text.length);
+        setCurrentTextIndex((prevIndex) => (prevIndex + 1) % texts.length);
       } else {
         const timeout = setTimeout(() => {
-          setDisplayText(text.substring(0, displayText.length - 1));
+          setDisplayText(displayText.substring(0, displayText.length - 1));
         }, speed / 2);
         
         return () => clearTimeout(timeout);
       }
     } else {
-      if (displayText === text) {
+      const currentText = texts[currentTextIndex];
+      if (displayText === currentText) {
         setIsPaused(true);
       } else {
         const timeout = setTimeout(() => {
-          setDisplayText(text.substring(0, displayText.length + 1));
+          setDisplayText(currentText.substring(0, displayText.length + 1));
         }, speed);
         
         return () => clearTimeout(timeout);
       }
     }
-  }, [displayText, text, isDeleting, isPaused, speed]);
+  }, [displayText, texts, currentTextIndex, isDeleting, isPaused, speed]);
 
   return (
     <div className={`inline-block ${className}`}>
