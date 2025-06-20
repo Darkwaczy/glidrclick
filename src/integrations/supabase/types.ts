@@ -9,156 +9,319 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      admin_logs: {
+      activity_logs: {
         Row: {
           action: string
-          admin_id: string | null
           created_at: string
           details: Json | null
-          entity_id: string | null
-          entity_type: string
+          email: string | null
           id: string
+          ip_address: string | null
+          resource_id: string | null
+          resource_type: string
+          status: string
+          user_agent: string | null
+          user_id: string | null
         }
         Insert: {
           action: string
-          admin_id?: string | null
           created_at?: string
           details?: Json | null
-          entity_id?: string | null
-          entity_type: string
+          email?: string | null
           id?: string
+          ip_address?: string | null
+          resource_id?: string | null
+          resource_type: string
+          status: string
+          user_agent?: string | null
+          user_id?: string | null
         }
         Update: {
           action?: string
-          admin_id?: string | null
           created_at?: string
           details?: Json | null
-          entity_id?: string | null
-          entity_type?: string
+          email?: string | null
           id?: string
+          ip_address?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          status?: string
+          user_agent?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
-      content_templates: {
+      analytics_conversions: {
         Row: {
-          category: string | null
-          content: string
+          conversions: number
           created_at: string
-          creator_id: string | null
+          date: string
           id: string
-          is_public: boolean | null
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          category?: string | null
-          content: string
-          created_at?: string
-          creator_id?: string | null
-          id?: string
-          is_public?: boolean | null
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          category?: string | null
-          content?: string
-          created_at?: string
-          creator_id?: string | null
-          id?: string
-          is_public?: boolean | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      email_accounts: {
-        Row: {
-          access_token: string | null
-          created_at: string
-          credentials: Json | null
-          email: string
-          expires_at: string | null
-          id: string
-          last_synced: string | null
-          provider: Database["public"]["Enums"]["email_provider_type"]
-          refresh_token: string | null
-          status: Database["public"]["Enums"]["connection_status"] | null
           updated_at: string
           user_id: string
         }
         Insert: {
-          access_token?: string | null
+          conversions?: number
           created_at?: string
-          credentials?: Json | null
-          email: string
-          expires_at?: string | null
+          date: string
           id?: string
-          last_synced?: string | null
-          provider: Database["public"]["Enums"]["email_provider_type"]
-          refresh_token?: string | null
-          status?: Database["public"]["Enums"]["connection_status"] | null
           updated_at?: string
           user_id: string
         }
         Update: {
-          access_token?: string | null
+          conversions?: number
           created_at?: string
-          credentials?: Json | null
-          email?: string
-          expires_at?: string | null
+          date?: string
           id?: string
-          last_synced?: string | null
-          provider?: Database["public"]["Enums"]["email_provider_type"]
-          refresh_token?: string | null
-          status?: Database["public"]["Enums"]["connection_status"] | null
           updated_at?: string
           user_id?: string
         }
         Relationships: []
       }
+      analytics_sources: {
+        Row: {
+          count: number
+          created_at: string
+          id: string
+          source: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          id?: string
+          source: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          id?: string
+          source?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      analytics_visitors: {
+        Row: {
+          count: number
+          created_at: string
+          date: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          date: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          date?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      email_account_settings: {
+        Row: {
+          created_at: string
+          email_account_id: string
+          forward_all: boolean
+          id: string
+          notify_on_new: boolean
+          selected_folders: Json | null
+          sync_frequency: number
+          updated_at: string
+          use_folders: boolean
+        }
+        Insert: {
+          created_at?: string
+          email_account_id: string
+          forward_all?: boolean
+          id?: string
+          notify_on_new?: boolean
+          selected_folders?: Json | null
+          sync_frequency?: number
+          updated_at?: string
+          use_folders?: boolean
+        }
+        Update: {
+          created_at?: string
+          email_account_id?: string
+          forward_all?: boolean
+          id?: string
+          notify_on_new?: boolean
+          selected_folders?: Json | null
+          sync_frequency?: number
+          updated_at?: string
+          use_folders?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_account_settings_email_account_id_fkey"
+            columns: ["email_account_id"]
+            isOneToOne: false
+            referencedRelation: "email_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_accounts: {
+        Row: {
+          access_token: string | null
+          created_at: string | null
+          email: string
+          expires_at: number | null
+          id: string
+          last_synced: string | null
+          provider: string
+          refresh_token: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+          watch_expiration: string | null
+          watch_history_id: string | null
+        }
+        Insert: {
+          access_token?: string | null
+          created_at?: string | null
+          email: string
+          expires_at?: number | null
+          id?: string
+          last_synced?: string | null
+          provider: string
+          refresh_token?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+          watch_expiration?: string | null
+          watch_history_id?: string | null
+        }
+        Update: {
+          access_token?: string | null
+          created_at?: string | null
+          email?: string
+          expires_at?: number | null
+          id?: string
+          last_synced?: string | null
+          provider?: string
+          refresh_token?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+          watch_expiration?: string | null
+          watch_history_id?: string | null
+        }
+        Relationships: []
+      }
+      email_sync_history: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          email_account_id: string
+          emails_fetched: number
+          emails_processed: number
+          error: string | null
+          error_message: string | null
+          id: string
+          last_email_date: string | null
+          status: string
+          sync_type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          email_account_id: string
+          emails_fetched?: number
+          emails_processed?: number
+          error?: string | null
+          error_message?: string | null
+          id?: string
+          last_email_date?: string | null
+          status: string
+          sync_type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          email_account_id?: string
+          emails_fetched?: number
+          emails_processed?: number
+          error?: string | null
+          error_message?: string | null
+          id?: string
+          last_email_date?: string | null
+          status?: string
+          sync_type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sync_history_email_account_id_fkey"
+            columns: ["email_account_id"]
+            isOneToOne: false
+            referencedRelation: "email_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       emails: {
         Row: {
           body_html: string | null
           body_text: string | null
-          conversation_id: string | null
           created_at: string
           email_account_id: string
           id: string
           message_id: string
-          processed: boolean | null
+          processed: boolean
           received_at: string
           recipients: Json
           sender: string
           subject: string | null
+          updated_at: string
         }
         Insert: {
           body_html?: string | null
           body_text?: string | null
-          conversation_id?: string | null
           created_at?: string
           email_account_id: string
           id?: string
           message_id: string
-          processed?: boolean | null
-          received_at: string
-          recipients: Json
+          processed?: boolean
+          received_at?: string
+          recipients?: Json
           sender: string
           subject?: string | null
+          updated_at?: string
         }
         Update: {
           body_html?: string | null
           body_text?: string | null
-          conversation_id?: string | null
           created_at?: string
           email_account_id?: string
           id?: string
           message_id?: string
-          processed?: boolean | null
+          processed?: boolean
           received_at?: string
           recipients?: Json
           sender?: string
           subject?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -170,14 +333,55 @@ export type Database = {
           },
         ]
       }
+      filters: {
+        Row: {
+          active: boolean
+          condition: Json
+          created_at: string
+          email_account_id: string
+          id: string
+          last_triggered: string | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          condition: Json
+          created_at?: string
+          email_account_id: string
+          id?: string
+          last_triggered?: string | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          condition?: Json
+          created_at?: string
+          email_account_id?: string
+          id?: string
+          last_triggered?: string | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "filters_email_account_id_fkey"
+            columns: ["email_account_id"]
+            isOneToOne: false
+            referencedRelation: "email_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forwarding_rules: {
         Row: {
           created_at: string
-          email_account_id: string
           enabled: boolean
-          filter_from: string[] | null
-          filter_labels: string[] | null
-          filter_subject: string[] | null
+          filter_id: string
           id: string
           updated_at: string
           user_id: string
@@ -185,11 +389,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          email_account_id: string
           enabled?: boolean
-          filter_from?: string[] | null
-          filter_labels?: string[] | null
-          filter_subject?: string[] | null
+          filter_id: string
           id?: string
           updated_at?: string
           user_id: string
@@ -197,11 +398,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          email_account_id?: string
           enabled?: boolean
-          filter_from?: string[] | null
-          filter_labels?: string[] | null
-          filter_subject?: string[] | null
+          filter_id?: string
           id?: string
           updated_at?: string
           user_id?: string
@@ -209,10 +407,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "forwarding_rules_email_account_id_fkey"
-            columns: ["email_account_id"]
+            foreignKeyName: "forwarding_rules_filter_id_fkey"
+            columns: ["filter_id"]
             isOneToOne: false
-            referencedRelation: "email_accounts"
+            referencedRelation: "filters"
             referencedColumns: ["id"]
           },
           {
@@ -224,422 +422,355 @@ export type Database = {
           },
         ]
       }
-      mentions: {
-        Row: {
-          content: string
-          created_at: string | null
-          id: string
-          is_read: boolean | null
-          original_id: string | null
-          platform_id: string | null
-          username: string
-        }
-        Insert: {
-          content: string
-          created_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          original_id?: string | null
-          platform_id?: string | null
-          username: string
-        }
-        Update: {
-          content?: string
-          created_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          original_id?: string | null
-          platform_id?: string | null
-          username?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mentions_platform_id_fkey"
-            columns: ["platform_id"]
-            isOneToOne: false
-            referencedRelation: "social_platforms"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      messages: {
+      message_templates: {
         Row: {
           content: string
           created_at: string
           id: string
-          is_read: boolean | null
-          recipient_id: string | null
-          sender_id: string
+          name: string
+          type: string
           updated_at: string
         }
         Insert: {
           content: string
           created_at?: string
           id?: string
-          is_read?: boolean | null
-          recipient_id?: string | null
-          sender_id: string
+          name: string
+          type: string
           updated_at?: string
         }
         Update: {
           content?: string
           created_at?: string
           id?: string
-          is_read?: boolean | null
-          recipient_id?: string | null
-          sender_id?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      post_analytics: {
-        Row: {
-          clicks: number | null
-          comments: number | null
-          created_at: string | null
-          id: string
-          likes: number | null
-          platform_id: string | null
-          post_id: string | null
-          shares: number | null
-          updated_at: string | null
-          views: number | null
-        }
-        Insert: {
-          clicks?: number | null
-          comments?: number | null
-          created_at?: string | null
-          id?: string
-          likes?: number | null
-          platform_id?: string | null
-          post_id?: string | null
-          shares?: number | null
-          updated_at?: string | null
-          views?: number | null
-        }
-        Update: {
-          clicks?: number | null
-          comments?: number | null
-          created_at?: string | null
-          id?: string
-          likes?: number | null
-          platform_id?: string | null
-          post_id?: string | null
-          shares?: number | null
-          updated_at?: string | null
-          views?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "post_analytics_platform_id_fkey"
-            columns: ["platform_id"]
-            isOneToOne: false
-            referencedRelation: "social_platforms"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "post_analytics_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "posts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      post_platforms: {
-        Row: {
-          created_at: string | null
-          external_post_id: string | null
-          id: string
-          platform_id: string | null
-          post_id: string | null
-          status: string
-        }
-        Insert: {
-          created_at?: string | null
-          external_post_id?: string | null
-          id?: string
-          platform_id?: string | null
-          post_id?: string | null
-          status?: string
-        }
-        Update: {
-          created_at?: string | null
-          external_post_id?: string | null
-          id?: string
-          platform_id?: string | null
-          post_id?: string | null
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "post_platforms_platform_id_fkey"
-            columns: ["platform_id"]
-            isOneToOne: false
-            referencedRelation: "social_platforms"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "post_platforms_post_id_fkey"
-            columns: ["post_id"]
-            isOneToOne: false
-            referencedRelation: "posts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      posts: {
-        Row: {
-          content: string | null
-          created_at: string | null
-          id: string
-          image_url: string | null
-          published_at: string | null
-          scheduled_for: string | null
-          status: string
-          title: string
-          type: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          content?: string | null
-          created_at?: string | null
-          id?: string
-          image_url?: string | null
-          published_at?: string | null
-          scheduled_for?: string | null
-          status: string
-          title: string
-          type: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          content?: string | null
-          created_at?: string | null
-          id?: string
-          image_url?: string | null
-          published_at?: string | null
-          scheduled_for?: string | null
-          status?: string
-          title?: string
-          type?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      rss_feeds: {
-        Row: {
-          added_by: string | null
-          category: string
-          country: string
-          created_at: string
-          id: string
-          is_default: boolean | null
-          title: string
-          updated_at: string
-          url: string
-        }
-        Insert: {
-          added_by?: string | null
-          category: string
-          country: string
-          created_at?: string
-          id?: string
-          is_default?: boolean | null
-          title: string
-          updated_at?: string
-          url: string
-        }
-        Update: {
-          added_by?: string | null
-          category?: string
-          country?: string
-          created_at?: string
-          id?: string
-          is_default?: boolean | null
-          title?: string
-          updated_at?: string
-          url?: string
-        }
-        Relationships: []
-      }
-      social_platforms: {
-        Row: {
-          access_token: string | null
-          account_name: string | null
-          created_at: string | null
-          icon: string
-          id: string
-          is_connected: boolean | null
-          last_sync: string | null
-          name: string
-          notifications: Json | null
-          platform_id: string
-          refresh_token: string | null
-          sync_frequency: string | null
-          token_expires_at: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          access_token?: string | null
-          account_name?: string | null
-          created_at?: string | null
-          icon: string
-          id?: string
-          is_connected?: boolean | null
-          last_sync?: string | null
-          name: string
-          notifications?: Json | null
-          platform_id: string
-          refresh_token?: string | null
-          sync_frequency?: string | null
-          token_expires_at?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          access_token?: string | null
-          account_name?: string | null
-          created_at?: string | null
-          icon?: string
-          id?: string
-          is_connected?: boolean | null
-          last_sync?: string | null
           name?: string
-          notifications?: Json | null
-          platform_id?: string
-          refresh_token?: string | null
-          sync_frequency?: string | null
-          token_expires_at?: string | null
-          updated_at?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      oauth_states: {
+        Row: {
+          code_verifier: string | null
+          created_at: string
+          expires_at: string
+          platform: string
+          redirect_url: string
+          state: string
+          user_id: string
+        }
+        Insert: {
+          code_verifier?: string | null
+          created_at?: string
+          expires_at?: string
+          platform: string
+          redirect_url: string
+          state: string
+          user_id: string
+        }
+        Update: {
+          code_verifier?: string | null
+          created_at?: string
+          expires_at?: string
+          platform?: string
+          redirect_url?: string
+          state?: string
           user_id?: string
         }
         Relationships: []
       }
-      subscriptions: {
+      payment_history: {
         Row: {
           amount: number
-          billing_cycle: string
           created_at: string
           currency: string
+          flutterwave_ref: string | null
           id: string
-          next_billing_date: string | null
-          payment_details: Json | null
-          payment_reference: string | null
-          plan: string
+          payment_date: string
+          plan_tier: string
           status: string
+          transaction_ref: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          flutterwave_ref?: string | null
+          id?: string
+          payment_date?: string
+          plan_tier: string
+          status: string
+          transaction_ref: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          flutterwave_ref?: string | null
+          id?: string
+          payment_date?: string
+          plan_tier?: string
+          status?: string
+          transaction_ref?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          flutterwave_ref: string | null
+          id: string
+          payment_processor_response: Json | null
+          payment_provider: string | null
+          plan_id: string
+          status: string
+          transaction_ref: string
           updated_at: string
           user_id: string
         }
         Insert: {
           amount: number
-          billing_cycle: string
           created_at?: string
           currency?: string
+          flutterwave_ref?: string | null
           id?: string
-          next_billing_date?: string | null
-          payment_details?: Json | null
-          payment_reference?: string | null
-          plan: string
+          payment_processor_response?: Json | null
+          payment_provider?: string | null
+          plan_id: string
           status: string
+          transaction_ref: string
           updated_at?: string
           user_id: string
         }
         Update: {
           amount?: number
-          billing_cycle?: string
           created_at?: string
           currency?: string
+          flutterwave_ref?: string | null
           id?: string
-          next_billing_date?: string | null
-          payment_details?: Json | null
-          payment_reference?: string | null
-          plan?: string
+          payment_processor_response?: Json | null
+          payment_provider?: string | null
+          plan_id?: string
           status?: string
+          transaction_ref?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      posts: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          scheduled_for: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          scheduled_for?: string | null
+          status: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          scheduled_for?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          consent_status: string | null
+          created_at: string
+          id: string
+          name: string | null
+          plan: string | null
+          status: string | null
+          subscription_end_date: string | null
+          subscription_start_date: string | null
+          updated_at: string
+          whatsapp_number: string | null
+          whatsapp_verified: boolean | null
+        }
+        Insert: {
+          consent_status?: string | null
+          created_at?: string
+          id: string
+          name?: string | null
+          plan?: string | null
+          status?: string | null
+          subscription_end_date?: string | null
+          subscription_start_date?: string | null
+          updated_at?: string
+          whatsapp_number?: string | null
+          whatsapp_verified?: boolean | null
+        }
+        Update: {
+          consent_status?: string | null
+          created_at?: string
+          id?: string
+          name?: string | null
+          plan?: string | null
+          status?: string | null
+          subscription_end_date?: string | null
+          subscription_start_date?: string | null
+          updated_at?: string
+          whatsapp_number?: string | null
+          whatsapp_verified?: boolean | null
+        }
+        Relationships: []
+      }
+      social_connections: {
+        Row: {
+          access_token: string
+          created_at: string
+          id: string
+          meta: Json | null
+          platform: string
+          platform_user_id: string
+          platform_username: string | null
+          refresh_token: string | null
+          scope: string | null
+          token_expires_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          id?: string
+          meta?: Json | null
+          platform: string
+          platform_user_id: string
+          platform_username?: string | null
+          refresh_token?: string | null
+          scope?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          id?: string
+          meta?: Json | null
+          platform?: string
+          platform_user_id?: string
+          platform_username?: string | null
+          refresh_token?: string | null
+          scope?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          flutterwave_customer_id: string | null
+          id: string
+          is_trial: boolean
+          subscribed: boolean
+          subscription_end: string | null
+          subscription_start: string | null
+          subscription_tier: string | null
+          trial_end: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          flutterwave_customer_id?: string | null
+          id?: string
+          is_trial?: boolean
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_start?: string | null
+          subscription_tier?: string | null
+          trial_end?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          flutterwave_customer_id?: string | null
+          id?: string
+          is_trial?: boolean
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_start?: string | null
+          subscription_tier?: string | null
+          trial_end?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
       system_settings: {
         Row: {
-          description: string | null
+          created_at: string | null
           id: string
-          key: string
-          updated_at: string
-          updated_by: string | null
-          value: string | null
+          setting_key: string
+          setting_value: Json
+          updated_at: string | null
         }
         Insert: {
-          description?: string | null
+          created_at?: string | null
           id?: string
-          key: string
-          updated_at?: string
-          updated_by?: string | null
-          value?: string | null
+          setting_key: string
+          setting_value: Json
+          updated_at?: string | null
         }
         Update: {
-          description?: string | null
+          created_at?: string | null
           id?: string
-          key?: string
-          updated_at?: string
-          updated_by?: string | null
-          value?: string | null
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string | null
         }
         Relationships: []
-      }
-      user_feeds: {
-        Row: {
-          created_at: string
-          feed_id: string
-          id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          feed_id: string
-          id?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          feed_id?: string
-          id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_feeds_feed_id_fkey"
-            columns: ["feed_id"]
-            isOneToOne: false
-            referencedRelation: "rss_feeds"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       user_roles: {
         Row: {
           created_at: string
           id: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: string
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
-          role?: Database["public"]["Enums"]["app_role"]
+          role: string
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
-          role?: Database["public"]["Enums"]["app_role"]
+          role?: string
           updated_at?: string
           user_id?: string
         }
@@ -650,30 +781,24 @@ export type Database = {
           created_at: string
           id: string
           phone_number: string
-          status: Database["public"]["Enums"]["connection_status"] | null
           updated_at: string
           user_id: string
-          verification_code: string | null
           verified: boolean
         }
         Insert: {
           created_at?: string
           id?: string
           phone_number: string
-          status?: Database["public"]["Enums"]["connection_status"] | null
           updated_at?: string
           user_id: string
-          verification_code?: string | null
           verified?: boolean
         }
         Update: {
           created_at?: string
           id?: string
           phone_number?: string
-          status?: Database["public"]["Enums"]["connection_status"] | null
           updated_at?: string
           user_id?: string
-          verification_code?: string | null
           verified?: boolean
         }
         Relationships: []
@@ -681,43 +806,34 @@ export type Database = {
       whatsapp_messages: {
         Row: {
           created_at: string
-          delivered_at: string | null
-          direction: string | null
+          direction: string
           email_id: string | null
           id: string
-          media_url: string | null
           message_text: string
-          read_at: string | null
-          sent_at: string | null
-          status: string | null
+          status: string
+          updated_at: string
           whatsapp_connection_id: string
           whatsapp_message_id: string | null
         }
         Insert: {
           created_at?: string
-          delivered_at?: string | null
-          direction?: string | null
+          direction: string
           email_id?: string | null
           id?: string
-          media_url?: string | null
           message_text: string
-          read_at?: string | null
-          sent_at?: string | null
-          status?: string | null
+          status?: string
+          updated_at?: string
           whatsapp_connection_id: string
           whatsapp_message_id?: string | null
         }
         Update: {
           created_at?: string
-          delivered_at?: string | null
-          direction?: string | null
+          direction?: string
           email_id?: string | null
           id?: string
-          media_url?: string | null
           message_text?: string
-          read_at?: string | null
-          sent_at?: string | null
-          status?: string | null
+          status?: string
+          updated_at?: string
           whatsapp_connection_id?: string
           whatsapp_message_id?: string | null
         }
@@ -738,17 +854,89 @@ export type Database = {
           },
         ]
       }
+      whatsapp_verification_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          expires_at: string
+          id: string
+          phone_number: string
+          used: boolean | null
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          phone_number: string
+          used?: boolean | null
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          phone_number?: string
+          used?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      whatsapp_verifications: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: number
+          phone_number: string
+          used: boolean | null
+          verification_code: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: never
+          phone_number: string
+          used?: boolean | null
+          verification_code: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: never
+          phone_number?: string
+          used?: boolean | null
+          verification_code?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_oauth_states: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       has_role: {
-        Args: {
-          _user_id: string
-          _role: Database["public"]["Enums"]["app_role"]
-        }
+        Args:
+          | { _user_id: string; _role: Database["public"]["Enums"]["app_role"] }
+          | { _user_id: string; _role: string }
         Returns: boolean
+      }
+      log_activity: {
+        Args:
+          | Record<PropertyKey, never>
+          | {
+              _action: string
+              _resource_type: string
+              _resource_id: string
+              _status: string
+              _details: Json
+            }
+        Returns: undefined
       }
     }
     Enums: {

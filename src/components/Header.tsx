@@ -69,10 +69,16 @@ const Header = () => {
               Pricing
             </Link>
             <Link
-              to="/blog"
+              to="/about"
               className="hover:text-glidr-purple transition-colors"
             >
-              Blog
+              About Us
+            </Link>
+            <Link
+              to="/contact"
+              className="hover:text-glidr-purple transition-colors"
+            >
+              Contact
             </Link>
           </div>
 
@@ -100,21 +106,21 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button
-                variant="outline"
-                onClick={handleLogin}
-                className="border-glidr-purple text-glidr-purple hover:bg-glidr-purple/10"
-              >
-                Login
-              </Button>
-            )}
-            {!isAuthenticated && (
-              <Button
-                onClick={() => navigate("/auth", { state: { initialTab: "sign-up" } })}
-                className="gradient-button"
-              >
-                Sign Up
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  onClick={handleLogin}
+                  className="border-glidr-purple text-glidr-purple hover:bg-glidr-purple/10 hidden sm:flex"
+                >
+                  Login
+                </Button>
+                <Button
+                  onClick={() => navigate("/auth", { state: { initialTab: "sign-up" } })}
+                  className="gradient-button"
+                >
+                  Get Started
+                </Button>
+              </>
             )}
           </div>
         </div>

@@ -47,14 +47,14 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Company</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#about" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/about" className="text-gray-400 hover:text-white transition-colors">
                   About Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#careers" className="text-gray-400 hover:text-white transition-colors">
-                  Careers
-                </a>
+                <Link to="/contact" className="text-gray-400 hover:text-white transition-colors">
+                  Contact
+                </Link>
               </li>
               <li>
                 <a href="#blog" className="text-gray-400 hover:text-white transition-colors">
@@ -70,7 +70,7 @@ const Footer = () => {
               <Link to="/auth">
                 <Button variant="outline" className="w-full">Sign In</Button>
               </Link>
-              <Link to="/register">
+              <Link to="/auth">
                 <Button className="w-full">Sign Up Free</Button>
               </Link>
             </div>
