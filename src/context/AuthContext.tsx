@@ -50,12 +50,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
         
         if (session?.user) {
           setIsAdmin(session.user.email?.includes('admin') ?? false);
+        } else {
+          setIsAdmin(false);
         }
       }
     );
@@ -79,6 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [loading]);
   
   const signIn = async (credentials: { email: string; password: string }): Promise<boolean> => {
+    console.log('Attempting sign in...');
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email: credentials.email,
@@ -86,6 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (error) {
+        console.error('Sign in error:', error);
         toast.error(error.message);
         return false;
       }
@@ -100,6 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
   
   const signUp = async (credentials: { email: string; password: string }): Promise<void> => {
+    console.log('Attempting sign up...');
     try {
       const { error } = await supabase.auth.signUp({
         email: credentials.email,
@@ -107,6 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (error) {
+        console.error('Sign up error:', error);
         toast.error(error.message);
         return;
       }
@@ -119,10 +126,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
   
   const signOut = async (): Promise<void> => {
+    console.log('Attempting sign out...');
     try {
       const { error } = await supabase.auth.signOut();
       
       if (error) {
+        console.error('Sign out error:', error);
         toast.error(error.message);
         return;
       }
@@ -144,6 +153,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signUp,
     signOut
   };
+
+  console.log('Auth state:', { user: !!user, loading, isInitializing });
 
   if (isInitializing) {
     return (
