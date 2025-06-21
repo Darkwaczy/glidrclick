@@ -16,25 +16,67 @@ const SocialSharing: React.FC = () => {
   const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
   
   useEffect(() => {
-    if (searchParams.get('code')) {
-      handleOAuthCallback(searchParams.get('code'), navigate);
+    // Check if this is an OAuth callback
+    const platform = searchParams.get('platform');
+    const code = searchParams.get('code');
+    const error = searchParams.get('error');
+    const state = searchParams.get('state');
+    
+    if (platform && code) {
       setIsProcessingOAuth(true);
+      
+      // Process OAuth callback
+      (async () => {
+        try {
+          // Verify state
+          const storedState = sessionStorage.getItem('oauth_state');
+          if (state && storedState && state !== storedState) {
+            throw new Error('Invalid state parameter');
+          }
+          
+          // Clear state
+          sessionStorage.removeItem('oauth_state');
+          
+          // Handle OAuth callback
+          const success = await handleOAuthCallback(platform, code);
+          
+          if (success) {
+            // Redirect to dashboard
+            setTimeout(() => {
+              navigate('/dashboard/social');
+            }, 1000);
+          }
+        } catch (err) {
+          console.error('Error processing OAuth callback:', err);
+          toast.error(`Authentication failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        } finally {
+          setIsProcessingOAuth(false);
+        }
+      })();
+    } else if (error) {
+      toast.error(`Authentication error: ${error}`);
     }
   }, [searchParams, navigate]);
   
   if (isProcessingOAuth) {
     return (
-      <div className="container max-w-6xl py-8">
-        <Card className="glass-card border-white/20">
-          <CardHeader>
-            <CardTitle className="text-center text-white">Processing Authentication</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center py-8">
-            <RefreshCw className="animate-spin h-12 w-12 mb-4 text-neon-electric" />
-            <p className="text-lg text-white">Completing your social media connection...</p>
-            <p className="text-sm text-gray-400 mt-2">Please don't close this window.</p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 pt-20">
+          <div className="container max-w-6xl py-8">
+            <Card className="glass-card border-white/20">
+              <CardHeader>
+                <CardTitle className="text-center text-white">Processing Authentication</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center py-8">
+                <RefreshCw className="animate-spin h-12 w-12 mb-4 text-neon-electric" />
+                <p className="text-lg text-white">Completing your social media connection...</p>
+                <p className="text-sm text-gray-400 mt-2">Please don't close this window.</p>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+        <Footer />
       </div>
     );
   }
