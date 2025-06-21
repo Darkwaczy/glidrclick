@@ -26,7 +26,7 @@ type Transaction = {
   status: string;
   created_at: string;
   description: string;
-  plan: string; // Add the plan property that was missing
+  plan: string;
 };
 
 const BillingPage = () => {
@@ -129,32 +129,32 @@ const BillingPage = () => {
   const getPlanBadgeColor = (plan: string) => {
     switch (plan) {
       case 'free':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-500/20 text-gray-300 border-gray-500/50';
       case 'pro':
-        return 'bg-glidr-soft-purple text-glidr-purple';
+        return 'bg-neon-electric/20 text-neon-electric border-neon-electric/50';
       case 'elite':
-        return 'bg-black text-white';
+        return 'bg-white/20 text-white border-white/50';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-500/20 text-gray-300 border-gray-500/50';
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-300 border border-green-500/50">
           <CheckCircle className="w-3 h-3 mr-1" />Active
         </span>;
       case 'pending':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-300 border border-yellow-500/50">
           <Clock className="w-3 h-3 mr-1" />Pending
         </span>;
       case 'cancelled':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500/20 text-red-300 border border-red-500/50">
           <AlertCircle className="w-3 h-3 mr-1" />Cancelled
         </span>;
       default:
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-500/20 text-gray-300 border border-gray-500/50">
           {status}
         </span>;
     }
@@ -163,23 +163,23 @@ const BillingPage = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-12">
-        <Loader2 className="h-8 w-8 animate-spin text-glidr-purple" />
+        <Loader2 className="h-8 w-8 animate-spin text-neon-electric" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 bg-transparent">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Billing & Subscription</h1>
-        <p className="text-muted-foreground">Manage your subscription and view your billing history</p>
+        <h1 className="text-2xl font-bold tracking-tight text-white">Billing & Subscription</h1>
+        <p className="text-gray-300">Manage your subscription and view your billing history</p>
       </div>
 
       {/* Current Subscription */}
-      <Card>
+      <Card className="glass-card border-white/20 bg-dark-secondary/50">
         <CardHeader>
-          <CardTitle>Current Plan</CardTitle>
-          <CardDescription>Your current subscription details</CardDescription>
+          <CardTitle className="text-white">Current Plan</CardTitle>
+          <CardDescription className="text-gray-300">Your current subscription details</CardDescription>
         </CardHeader>
         <CardContent>
           {subscription ? (
@@ -187,23 +187,23 @@ const BillingPage = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className={`px-2.5 py-0.5 rounded-full text-sm font-medium ${getPlanBadgeColor(subscription.plan)}`}>
+                    <span className={`px-2.5 py-0.5 rounded-full text-sm font-medium border ${getPlanBadgeColor(subscription.plan)}`}>
                       {subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)} Plan
                     </span>
                     {getStatusBadge(subscription.status)}
                   </div>
-                  <p className="mt-2 text-sm text-gray-500">
+                  <p className="mt-2 text-sm text-gray-400">
                     {subscription.billing_cycle.charAt(0).toUpperCase() + subscription.billing_cycle.slice(1)} billing
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold">₦{subscription.amount.toLocaleString()}</p>
-                  <p className="text-sm text-gray-500">per {subscription.billing_cycle === 'monthly' ? 'month' : 'year'}</p>
+                  <p className="text-2xl font-bold text-white">₦{subscription.amount.toLocaleString()}</p>
+                  <p className="text-sm text-gray-400">per {subscription.billing_cycle === 'monthly' ? 'month' : 'year'}</p>
                 </div>
               </div>
 
-              <div className="border-t pt-4 flex justify-between items-center">
-                <div className="flex items-center text-sm text-gray-500">
+              <div className="border-t border-white/20 pt-4 flex justify-between items-center">
+                <div className="flex items-center text-sm text-gray-400">
                   <Calendar size={16} className="mr-2" />
                   Next billing date: {subscription.next_billing_date 
                     ? format(new Date(subscription.next_billing_date), 'MMMM d, yyyy') 
@@ -216,6 +216,7 @@ const BillingPage = () => {
                       size="sm"
                       onClick={handleCancelSubscription}
                       disabled={isUpdating}
+                      className="bg-white/10 border-white/20 text-white hover:bg-white/20"
                     >
                       {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       Cancel Plan
@@ -224,6 +225,7 @@ const BillingPage = () => {
                   <Button 
                     size="sm"
                     onClick={handleUpgradeSubscription}
+                    className="btn-neon"
                   >
                     {subscription.plan !== 'elite' ? 'Upgrade' : 'Renew'} Plan
                   </Button>
@@ -232,12 +234,12 @@ const BillingPage = () => {
             </div>
           ) : (
             <div className="text-center py-6">
-              <div className="bg-gray-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
-                <CreditCard className="h-6 w-6 text-gray-500" />
+              <div className="bg-white/10 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                <CreditCard className="h-6 w-6 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold">No Active Subscription</h3>
-              <p className="text-gray-500 mt-1 mb-4">You're currently on the free plan with limited features.</p>
-              <Button onClick={handleUpgradeSubscription}>
+              <h3 className="text-lg font-semibold text-white">No Active Subscription</h3>
+              <p className="text-gray-400 mt-1 mb-4">You're currently on the free plan with limited features.</p>
+              <Button onClick={handleUpgradeSubscription} className="btn-neon">
                 Upgrade to Premium
               </Button>
             </div>
@@ -246,31 +248,31 @@ const BillingPage = () => {
       </Card>
 
       {/* Transaction History */}
-      <Card>
+      <Card className="glass-card border-white/20 bg-dark-secondary/50">
         <CardHeader>
-          <CardTitle>Billing History</CardTitle>
-          <CardDescription>Your recent transactions</CardDescription>
+          <CardTitle className="text-white">Billing History</CardTitle>
+          <CardDescription className="text-gray-300">Your recent transactions</CardDescription>
         </CardHeader>
         <CardContent>
           {transactions.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left border-b text-sm">
-                    <th className="pb-2 font-medium">Date</th>
-                    <th className="pb-2 font-medium">Description</th>
-                    <th className="pb-2 font-medium">Amount</th>
-                    <th className="pb-2 font-medium">Status</th>
+                  <tr className="text-left border-b border-white/20 text-sm">
+                    <th className="pb-2 font-medium text-white">Date</th>
+                    <th className="pb-2 font-medium text-white">Description</th>
+                    <th className="pb-2 font-medium text-white">Amount</th>
+                    <th className="pb-2 font-medium text-white">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {transactions.map((transaction) => (
-                    <tr key={transaction.id} className="border-b last:border-b-0">
-                      <td className="py-3 text-sm">{format(new Date(transaction.created_at), 'MMM d, yyyy')}</td>
-                      <td className="py-3 text-sm">
+                    <tr key={transaction.id} className="border-b border-white/20 last:border-b-0">
+                      <td className="py-3 text-sm text-gray-300">{format(new Date(transaction.created_at), 'MMM d, yyyy')}</td>
+                      <td className="py-3 text-sm text-gray-300">
                         {transaction.plan.charAt(0).toUpperCase() + transaction.plan.slice(1)} Plan Subscription
                       </td>
-                      <td className="py-3 text-sm">₦{transaction.amount.toLocaleString()}</td>
+                      <td className="py-3 text-sm text-white">₦{transaction.amount.toLocaleString()}</td>
                       <td className="py-3">{getStatusBadge(transaction.status)}</td>
                     </tr>
                   ))}
@@ -279,12 +281,12 @@ const BillingPage = () => {
             </div>
           ) : (
             <div className="text-center py-6">
-              <p className="text-gray-500">No transaction history available</p>
+              <p className="text-gray-400">No transaction history available</p>
             </div>
           )}
         </CardContent>
-        <CardFooter className="border-t bg-gray-50">
-          <p className="text-sm text-gray-500">
+        <CardFooter className="border-t border-white/20 bg-white/5">
+          <p className="text-sm text-gray-400">
             For any billing issues, please contact our support team at support@glidrclick.com
           </p>
         </CardFooter>

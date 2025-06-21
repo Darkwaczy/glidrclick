@@ -48,89 +48,89 @@ const AnalyticsPage: React.FC = () => {
   ];
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-transparent">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
+        <h1 className="text-2xl font-bold text-white">Analytics Dashboard</h1>
       </div>
       
-      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="overview">Dashboard Overview</TabsTrigger>
-          <TabsTrigger value="reports">Performance Reports</TabsTrigger>
-          <TabsTrigger value="insights">Content Insights</TabsTrigger>
+      <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="glass-card border-white/20">
+        <TabsList className="glass-card border-white/20 bg-dark-secondary/50">
+          <TabsTrigger value="overview" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white text-gray-300">Dashboard Overview</TabsTrigger>
+          <TabsTrigger value="reports" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white text-gray-300">Performance Reports</TabsTrigger>
+          <TabsTrigger value="insights" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white text-gray-300">Content Insights</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Engagement</CardTitle>
+            <Card className="glass-card border-white/20 bg-dark-secondary/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-300">Total Engagement</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">8,942</div>
-                <p className="text-xs text-muted-foreground">+12% from last month</p>
+                <div className="text-2xl font-bold text-white">8,942</div>
+                <p className="text-xs text-gray-400">+12% from last month</p>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Follower Growth</CardTitle>
+            <Card className="glass-card border-white/20 bg-dark-secondary/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-300">Follower Growth</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">+1,234</div>
-                <p className="text-xs text-muted-foreground">+8% from last month</p>
+                <div className="text-2xl font-bold text-white">+1,234</div>
+                <p className="text-xs text-gray-400">+8% from last month</p>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Post Reach</CardTitle>
+            <Card className="glass-card border-white/20 bg-dark-secondary/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-300">Post Reach</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">245,678</div>
-                <p className="text-xs text-muted-foreground">+23% from last month</p>
+                <div className="text-2xl font-bold text-white">245,678</div>
+                <p className="text-xs text-gray-400">+23% from last month</p>
               </CardContent>
             </Card>
           </div>
           
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Performance Metrics</h2>
+            <h2 className="text-lg font-semibold text-white">Performance Metrics</h2>
             <div className="flex items-center space-x-4">
               <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[180px] bg-white/10 border-white/20 text-white">
                   <SelectValue placeholder="Select Platform" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Platforms</SelectItem>
-                  <SelectItem value="facebook">Facebook</SelectItem>
-                  <SelectItem value="twitter">Twitter</SelectItem>
-                  <SelectItem value="instagram">Instagram</SelectItem>
-                  <SelectItem value="linkedin">LinkedIn</SelectItem>
+                <SelectContent className="bg-dark-primary border-white/20">
+                  <SelectItem value="all" className="text-white hover:bg-white/10">All Platforms</SelectItem>
+                  <SelectItem value="facebook" className="text-white hover:bg-white/10">Facebook</SelectItem>
+                  <SelectItem value="twitter" className="text-white hover:bg-white/10">Twitter</SelectItem>
+                  <SelectItem value="instagram" className="text-white hover:bg-white/10">Instagram</SelectItem>
+                  <SelectItem value="linkedin" className="text-white hover:bg-white/10">LinkedIn</SelectItem>
                 </SelectContent>
               </Select>
               
               <Select value={dateRange} onValueChange={setDateRange}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[180px] bg-white/10 border-white/20 text-white">
                   <SelectValue placeholder="Date Range" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="last7">Last 7 days</SelectItem>
-                  <SelectItem value="last30">Last 30 days</SelectItem>
-                  <SelectItem value="last90">Last 90 days</SelectItem>
-                  <SelectItem value="year">This Year</SelectItem>
+                <SelectContent className="bg-dark-primary border-white/20">
+                  <SelectItem value="last7" className="text-white hover:bg-white/10">Last 7 days</SelectItem>
+                  <SelectItem value="last30" className="text-white hover:bg-white/10">Last 30 days</SelectItem>
+                  <SelectItem value="last90" className="text-white hover:bg-white/10">Last 90 days</SelectItem>
+                  <SelectItem value="year" className="text-white hover:bg-white/10">This Year</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+            <Card className="glass-card border-white/20 bg-dark-secondary/50">
               <CardHeader>
-                <CardTitle>Engagement Metrics</CardTitle>
-                <CardDescription>Weekly performance breakdown</CardDescription>
+                <CardTitle className="text-white">Engagement Metrics</CardTitle>
+                <CardDescription className="text-gray-300">Weekly performance breakdown</CardDescription>
               </CardHeader>
               <CardContent className="h-96">
                 {isLoading ? (
                   <div className="flex justify-center items-center h-full">
-                    <Loader2 className="h-8 w-8 animate-spin" />
+                    <Loader2 className="h-8 w-8 animate-spin text-neon-electric" />
                   </div>
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
@@ -152,10 +152,10 @@ const AnalyticsPage: React.FC = () => {
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className="glass-card border-white/20 bg-dark-secondary/50">
               <CardHeader>
-                <CardTitle>Platform Distribution</CardTitle>
-                <CardDescription>Engagement by platform</CardDescription>
+                <CardTitle className="text-white">Platform Distribution</CardTitle>
+                <CardDescription className="text-gray-300">Engagement by platform</CardDescription>
               </CardHeader>
               <CardContent className="h-96">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
@@ -180,7 +180,7 @@ const AnalyticsPage: React.FC = () => {
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Platform Performance</h3>
+                    <h3 className="text-lg font-medium text-white">Platform Performance</h3>
                     <div className="space-y-2">
                       {platformData.map((platform, index) => (
                         <div key={platform.name} className="flex justify-between items-center">
@@ -189,9 +189,9 @@ const AnalyticsPage: React.FC = () => {
                               className="w-3 h-3 rounded-full mr-2" 
                               style={{ backgroundColor: COLORS[index % COLORS.length] }}
                             />
-                            <span>{platform.name}</span>
+                            <span className="text-gray-300">{platform.name}</span>
                           </div>
-                          <span className="font-medium">{platform.value} engagements</span>
+                          <span className="font-medium text-white">{platform.value} engagements</span>
                         </div>
                       ))}
                     </div>
@@ -201,10 +201,10 @@ const AnalyticsPage: React.FC = () => {
             </Card>
           </div>
           
-          <Card>
+          <Card className="glass-card border-white/20 bg-dark-secondary/50">
             <CardHeader>
-              <CardTitle>Content Performance</CardTitle>
-              <CardDescription>Performance by content type over time</CardDescription>
+              <CardTitle className="text-white">Content Performance</CardTitle>
+              <CardDescription className="text-gray-300">Performance by content type over time</CardDescription>
             </CardHeader>
             <CardContent className="h-80">
               <ResponsiveContainer width="100%" height="100%">
@@ -232,111 +232,111 @@ const AnalyticsPage: React.FC = () => {
         
         <TabsContent value="insights" className="space-y-6 mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card>
+            <Card className="glass-card border-white/20 bg-dark-secondary/50">
               <CardHeader className="flex flex-row items-center space-y-0">
-                <div className="bg-primary/20 p-3 rounded-lg mr-3">
-                  <Calendar className="h-5 w-5 text-primary" />
+                <div className="bg-neon-electric/20 p-3 rounded-lg mr-3">
+                  <Calendar className="h-5 w-5 text-neon-electric" />
                 </div>
                 <div>
-                  <CardTitle className="text-sm">Best Posting Times</CardTitle>
-                  <CardDescription>Based on engagement data</CardDescription>
+                  <CardTitle className="text-sm text-white">Best Posting Times</CardTitle>
+                  <CardDescription className="text-gray-300">Based on engagement data</CardDescription>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 pt-2">
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">Weekdays</span>
-                    <span className="text-gray-600">6:00 PM - 9:00 PM</span>
+                    <span className="font-medium text-white">Weekdays</span>
+                    <span className="text-gray-300">6:00 PM - 9:00 PM</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">Weekends</span>
-                    <span className="text-gray-600">11:00 AM - 2:00 PM</span>
+                    <span className="font-medium text-white">Weekends</span>
+                    <span className="text-gray-300">11:00 AM - 2:00 PM</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">Best day</span>
-                    <span className="text-gray-600">Thursday</span>
+                    <span className="font-medium text-white">Best day</span>
+                    <span className="text-gray-300">Thursday</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">Worst day</span>
-                    <span className="text-gray-600">Monday</span>
+                    <span className="font-medium text-white">Worst day</span>
+                    <span className="text-gray-300">Monday</span>
                   </div>
                 </div>
-                <div className="mt-4 pt-4 border-t">
-                  <p className="text-sm text-gray-500">
+                <div className="mt-4 pt-4 border-t border-white/20">
+                  <p className="text-sm text-gray-400">
                     Posts published on Thursday evenings receive 42% more engagement.
                   </p>
                 </div>
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className="glass-card border-white/20 bg-dark-secondary/50">
               <CardHeader className="flex flex-row items-center space-y-0">
-                <div className="bg-primary/20 p-3 rounded-lg mr-3">
-                  <BarChart2 className="h-5 w-5 text-primary" />
+                <div className="bg-neon-electric/20 p-3 rounded-lg mr-3">
+                  <BarChart2 className="h-5 w-5 text-neon-electric" />
                 </div>
                 <div>
-                  <CardTitle className="text-sm">Content Format</CardTitle>
-                  <CardDescription>Highest performing types</CardDescription>
+                  <CardTitle className="text-sm text-white">Content Format</CardTitle>
+                  <CardDescription className="text-gray-300">Highest performing types</CardDescription>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 pt-2">
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">Videos</span>
-                    <span className="text-green-600">+35% engagement</span>
+                    <span className="font-medium text-white">Videos</span>
+                    <span className="text-green-400">+35% engagement</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">Carousels</span>
-                    <span className="text-green-600">+28% engagement</span>
+                    <span className="font-medium text-white">Carousels</span>
+                    <span className="text-green-400">+28% engagement</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">Images</span>
-                    <span className="text-green-600">+15% engagement</span>
+                    <span className="font-medium text-white">Images</span>
+                    <span className="text-green-400">+15% engagement</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">Text only</span>
-                    <span className="text-red-600">-5% engagement</span>
+                    <span className="font-medium text-white">Text only</span>
+                    <span className="text-red-400">-5% engagement</span>
                   </div>
                 </div>
-                <div className="mt-4 pt-4 border-t">
-                  <p className="text-sm text-gray-500">
+                <div className="mt-4 pt-4 border-t border-white/20">
+                  <p className="text-sm text-gray-400">
                     Short-form video content (30-60 seconds) performs best overall.
                   </p>
                 </div>
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className="glass-card border-white/20 bg-dark-secondary/50">
               <CardHeader className="flex flex-row items-center space-y-0">
-                <div className="bg-primary/20 p-3 rounded-lg mr-3">
-                  <FileSpreadsheet className="h-5 w-5 text-primary" />
+                <div className="bg-neon-electric/20 p-3 rounded-lg mr-3">
+                  <FileSpreadsheet className="h-5 w-5 text-neon-electric" />
                 </div>
                 <div>
-                  <CardTitle className="text-sm">Hashtag Performance</CardTitle>
-                  <CardDescription>Most effective tags</CardDescription>
+                  <CardTitle className="text-sm text-white">Hashtag Performance</CardTitle>
+                  <CardDescription className="text-gray-300">Most effective tags</CardDescription>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 pt-2">
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">#marketing</span>
-                    <span className="text-gray-600">450 uses</span>
+                    <span className="font-medium text-white">#marketing</span>
+                    <span className="text-gray-300">450 uses</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">#socialmedia</span>
-                    <span className="text-gray-600">380 uses</span>
+                    <span className="font-medium text-white">#socialmedia</span>
+                    <span className="text-gray-300">380 uses</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">#digital</span>
-                    <span className="text-gray-600">320 uses</span>
+                    <span className="font-medium text-white">#digital</span>
+                    <span className="text-gray-300">320 uses</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">#business</span>
-                    <span className="text-gray-600">290 uses</span>
+                    <span className="font-medium text-white">#business</span>
+                    <span className="text-gray-300">290 uses</span>
                   </div>
                 </div>
-                <div className="mt-4 pt-4 border-t">
-                  <p className="text-sm text-gray-500">
+                <div className="mt-4 pt-4 border-t border-white/20">
+                  <p className="text-sm text-gray-400">
                     Using 5-7 relevant hashtags increases post reach by ~28%.
                   </p>
                 </div>
@@ -344,19 +344,19 @@ const AnalyticsPage: React.FC = () => {
             </Card>
           </div>
           
-          <Card>
+          <Card className="glass-card border-white/20 bg-dark-secondary/50">
             <CardHeader>
-              <CardTitle>Content Recommendations</CardTitle>
-              <CardDescription>AI-powered suggestions based on your performance data</CardDescription>
+              <CardTitle className="text-white">Content Recommendations</CardTitle>
+              <CardDescription className="text-gray-300">AI-powered suggestions based on your performance data</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="p-4 border rounded-lg bg-gray-50">
-                  <h3 className="text-lg font-medium mb-2">Improve Video Content</h3>
-                  <p className="text-gray-700 mb-2">
+                <div className="p-4 border border-white/20 rounded-lg bg-white/5">
+                  <h3 className="text-lg font-medium mb-2 text-white">Improve Video Content</h3>
+                  <p className="text-gray-300 mb-2">
                     Your video content is performing 35% better than other formats. Consider increasing video production with these specifics:
                   </p>
-                  <ul className="list-disc list-inside text-gray-600 space-y-1">
+                  <ul className="list-disc list-inside text-gray-400 space-y-1">
                     <li>Focus on short-form videos (30-60 seconds)</li>
                     <li>Include captions for better accessibility</li>
                     <li>Post videos on Thursday evenings for maximum reach</li>
@@ -364,12 +364,12 @@ const AnalyticsPage: React.FC = () => {
                   </ul>
                 </div>
                 
-                <div className="p-4 border rounded-lg bg-gray-50">
-                  <h3 className="text-lg font-medium mb-2">Optimize Hashtag Strategy</h3>
-                  <p className="text-gray-700 mb-2">
+                <div className="p-4 border border-white/20 rounded-lg bg-white/5">
+                  <h3 className="text-lg font-medium mb-2 text-white">Optimize Hashtag Strategy</h3>
+                  <p className="text-gray-300 mb-2">
                     Data shows your hashtag usage could be more effective. Consider these adjustments:
                   </p>
-                  <ul className="list-disc list-inside text-gray-600 space-y-1">
+                  <ul className="list-disc list-inside text-gray-400 space-y-1">
                     <li>Use 5-7 highly relevant hashtags per post</li>
                     <li>Mix popular (#marketing) with niche (#digitalstrategy2025) hashtags</li>
                     <li>Create a branded hashtag for your content</li>
@@ -377,12 +377,12 @@ const AnalyticsPage: React.FC = () => {
                   </ul>
                 </div>
                 
-                <div className="p-4 border rounded-lg bg-gray-50">
-                  <h3 className="text-lg font-medium mb-2">Audience Targeting</h3>
-                  <p className="text-gray-700 mb-2">
+                <div className="p-4 border border-white/20 rounded-lg bg-white/5">
+                  <h3 className="text-lg font-medium mb-2 text-white">Audience Targeting</h3>
+                  <p className="text-gray-300 mb-2">
                     Your content performs best with the 25-34 age demographic. Consider:
                   </p>
-                  <ul className="list-disc list-inside text-gray-600 space-y-1">
+                  <ul className="list-disc list-inside text-gray-400 space-y-1">
                     <li>Develop content specifically addressing this demographic's interests</li>
                     <li>Use language and cultural references that resonate with this age group</li>
                     <li>Schedule content during their peak usage hours (evenings and weekends)</li>

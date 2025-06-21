@@ -62,7 +62,7 @@ const ContentPage = () => {
   };
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-transparent">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">Content Management</h1>
@@ -75,12 +75,12 @@ const ContentPage = () => {
       </div>
       
       <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="glass-card border-white/20">
-          <TabsTrigger value="all" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white">All Content</TabsTrigger>
-          <TabsTrigger value="published" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white">Published</TabsTrigger>
-          <TabsTrigger value="draft" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white">Drafts</TabsTrigger>
-          <TabsTrigger value="scheduled" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white">Scheduled</TabsTrigger>
-          <TabsTrigger value="archived" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white">Archived</TabsTrigger>
+        <TabsList className="glass-card border-white/20 bg-dark-secondary/50">
+          <TabsTrigger value="all" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white text-gray-300">All Content</TabsTrigger>
+          <TabsTrigger value="published" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white text-gray-300">Published</TabsTrigger>
+          <TabsTrigger value="draft" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white text-gray-300">Drafts</TabsTrigger>
+          <TabsTrigger value="scheduled" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white text-gray-300">Scheduled</TabsTrigger>
+          <TabsTrigger value="archived" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white text-gray-300">Archived</TabsTrigger>
         </TabsList>
         
         <TabsContent value="all" className="mt-6">
@@ -228,7 +228,7 @@ interface ContentListProps {
 const ContentList = ({ items, isLoading, onView, onEdit, onDelete }: ContentListProps) => {
   if (isLoading) {
     return (
-      <Card className="glass-card border-white/20">
+      <Card className="glass-card border-white/20 bg-dark-secondary/50">
         <CardContent className="p-6 text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-neon-electric" />
           <p className="text-gray-300 mt-2">Loading content...</p>
@@ -239,7 +239,7 @@ const ContentList = ({ items, isLoading, onView, onEdit, onDelete }: ContentList
 
   if (!items?.length) {
     return (
-      <Card className="glass-card border-white/20">
+      <Card className="glass-card border-white/20 bg-dark-secondary/50">
         <CardContent className="p-6 text-center">
           <p className="text-gray-300">No content found</p>
         </CardContent>
@@ -248,7 +248,7 @@ const ContentList = ({ items, isLoading, onView, onEdit, onDelete }: ContentList
   }
   
   return (
-    <Card className="glass-card border-white/20">
+    <Card className="glass-card border-white/20 bg-dark-secondary/50">
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <table className="w-full">
