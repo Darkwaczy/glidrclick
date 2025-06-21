@@ -8,9 +8,50 @@ const corsHeaders = {
 
 interface GenerateImageRequest {
   prompt: string;
-  size?: string;
-  quality?: string;
+  imageType?: 'featured' | 'in-post' | 'thumbnail' | 'sidebar';
+  aspectRatio?: '16:9' | '4:3' | '1:1' | '3:2';
+  quality?: 'high' | 'standard' | 'low';
 }
+
+const getImageDimensions = (imageType: string, aspectRatio: string) => {
+  const dimensions = {
+    'featured': {
+      '16:9': '1200x675',
+      '4:3': '1024x768', 
+      '1:1': '600x600',
+      '3:2': '600x400'
+    },
+    'in-post': {
+      '16:9': '960x540',
+      '4:3': '800x600',
+      '1:1': '500x500', 
+      '3:2': '450x300'
+    },
+    'thumbnail': {
+      '16:9': '480x270',
+      '4:3': '400x300',
+      '1:1': '400x400',
+      '3:2': '300x200'
+    },
+    'sidebar': {
+      '16:9': '320x180',
+      '4:3': '300x225',
+      '1:1': '250x250',
+      '3:2': '300x200'
+    }
+  };
+  
+  return dimensions[imageType]?.[aspectRatio] || '1024x1024';
+};
+
+const getQualityLevel = (quality: string) => {
+  const levels = {
+    'high': 'hd',
+    'standard': 'standard', 
+    'low': 'standard'
+  };
+  return levels[quality] || 'standard';
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -18,7 +59,12 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, size = '1024x1024', quality = 'standard' }: GenerateImageRequest = await req.json();
+    const { 
+      prompt, 
+      imageType = 'featured', 
+      aspectRatio = '16:9',
+      quality = 'standard'
+    }: GenerateImageRequest = await req.json();
 
     if (!prompt?.trim()) {
       return new Response(
@@ -35,7 +81,10 @@ serve(async (req) => {
       );
     }
 
-    console.log('Generating image with prompt:', prompt);
+    const size = getImageDimensions(imageType, aspectRatio);
+    const qualityLevel = getQualityLevel(quality);
+    
+    console.log('Generating image with:', { prompt, imageType, aspectRatio, size, quality: qualityLevel });
 
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
@@ -45,10 +94,10 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'dall-e-3',
-        prompt: prompt,
+        prompt: `${prompt}. Professional blog image, clean composition, web-optimized`,
         n: 1,
         size: size,
-        quality: quality,
+        quality: qualityLevel,
         response_format: 'url'
       })
     });
@@ -65,7 +114,15 @@ serve(async (req) => {
     console.log('Image generated successfully:', imageUrl);
 
     return new Response(
-      JSON.stringify({ imageUrl }),
+      JSON.stringify({ 
+        imageUrl,
+        metadata: {
+          imageType,
+          aspectRatio,
+          size,
+          quality: qualityLevel
+        }
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {

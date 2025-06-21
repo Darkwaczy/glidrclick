@@ -51,18 +51,24 @@ export const generateContent = async (
   };
 };
 
-// Generate image using Supabase Edge Function
+// Generate image using Supabase Edge Function with enhanced options
 export const generateImage = async (
   prompt: string,
-  options: { size?: string; quality?: string } = {}
-): Promise<string> => {
+  options: { 
+    imageType?: string; 
+    aspectRatio?: string; 
+    quality?: string;
+    size?: string;
+  } = {}
+): Promise<{ imageUrl: string; metadata?: any }> => {
   try {
     console.log('Generating image with prompt:', prompt, 'options:', options);
     
     const { data, error } = await supabase.functions.invoke('generate-image', {
       body: {
         prompt,
-        size: options.size || '1024x1024',
+        imageType: options.imageType || 'featured',
+        aspectRatio: options.aspectRatio || '16:9',
         quality: options.quality || 'standard'
       }
     });
@@ -77,7 +83,10 @@ export const generateImage = async (
     }
 
     console.log('Image generated successfully:', data.imageUrl);
-    return data.imageUrl;
+    return {
+      imageUrl: data.imageUrl,
+      metadata: data.metadata
+    };
   } catch (error) {
     console.error('Error in generateImage:', error);
     throw error;

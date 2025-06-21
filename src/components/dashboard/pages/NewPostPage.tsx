@@ -55,6 +55,7 @@ const NewPostPage: React.FC = () => {
   const [generatedContent, setGeneratedContent] = useState('');
   const [generatedTitle, setGeneratedTitle] = useState('');
   const [generatedImage, setGeneratedImage] = useState('');
+  const [imageMetadata, setImageMetadata] = useState<any>(null);
   
   const platforms = [
     { id: 'facebook', name: 'Facebook', connected: true },
@@ -126,9 +127,10 @@ const NewPostPage: React.FC = () => {
     }
   };
 
-  const handleImageGenerated = (imageUrl: string) => {
-    console.log('Image generated:', imageUrl);
+  const handleImageGenerated = (imageUrl: string, metadata?: any) => {
+    console.log('Image generated:', imageUrl, metadata);
     setGeneratedImage(imageUrl);
+    setImageMetadata(metadata);
   };
 
   const handlePublish = () => {
@@ -263,7 +265,7 @@ const NewPostPage: React.FC = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-white">Generate Image</Label>
+                    <Label className="text-white">Generate Hero Image</Label>
                     <ImageGenerator onImageGenerated={handleImageGenerated} />
                   </div>
                   
@@ -287,7 +289,7 @@ const NewPostPage: React.FC = () => {
                     </Button>
                   </div>
                   
-                  {generatedContent && (
+                  {(generatedContent || generatedImage) && (
                     <div className="space-y-4 mt-6">
                       <div className="space-y-2">
                         <Label className="text-white">Generated Title</Label>
@@ -297,6 +299,25 @@ const NewPostPage: React.FC = () => {
                           className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
                         />
                       </div>
+
+                      {generatedImage && (
+                        <div className="space-y-2">
+                          <Label className="text-white">Hero Image</Label>
+                          <div className="relative">
+                            <img 
+                              src={generatedImage} 
+                              alt="Generated hero image" 
+                              className="w-full rounded-lg border border-white/20"
+                              style={{ aspectRatio: imageMetadata?.aspectRatio === '16:9' ? '16/9' : 'auto' }}
+                            />
+                            {imageMetadata && (
+                              <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                                {imageMetadata.aspectRatio} • {imageMetadata.size}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                       
                       <div className="space-y-2">
                         <Label className="text-white">Generated Content</Label>
@@ -305,17 +326,6 @@ const NewPostPage: React.FC = () => {
                           onChange={setGeneratedContent}
                         />
                       </div>
-
-                      {generatedImage && (
-                        <div className="space-y-2">
-                          <Label className="text-white">Generated Image</Label>
-                          <img 
-                            src={generatedImage} 
-                            alt="Generated content image" 
-                            className="w-full max-w-md rounded-lg border border-white/20"
-                          />
-                        </div>
-                      )}
                     </div>
                   )}
                 </TabsContent>
@@ -487,21 +497,36 @@ const NewPostPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Preview */}
+          {/* Enhanced Preview with proper blog structure */}
           <Card className="glass-card border-white/20 bg-dark-secondary/50">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
                 <Eye size={20} className="text-neon-electric" />
-                Preview
+                Blog Preview
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="bg-white/5 p-4 rounded-lg border border-white/10">
-                {getCurrentTitle() || getCurrentContent() ? (
-                  <div className="space-y-3">
-                    {getCurrentTitle() && (
-                      <h3 className="font-bold text-white text-lg">{getCurrentTitle()}</h3>
+                {getCurrentTitle() || getCurrentContent() || generatedImage ? (
+                  <div className="space-y-4">
+                    {/* Hero Image first */}
+                    {generatedImage && (
+                      <div className="w-full">
+                        <img 
+                          src={generatedImage} 
+                          alt="Hero image" 
+                          className="w-full rounded border border-white/20"
+                          style={{ aspectRatio: imageMetadata?.aspectRatio === '16:9' ? '16/9' : 'auto' }}
+                        />
+                      </div>
                     )}
+                    
+                    {/* Title after image */}
+                    {getCurrentTitle() && (
+                      <h1 className="font-bold text-white text-xl leading-tight">{getCurrentTitle()}</h1>
+                    )}
+                    
+                    {/* Content below title */}
                     {getCurrentContent() && (
                       <div className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">
                         {getCurrentContent().length > 300 
@@ -510,15 +535,10 @@ const NewPostPage: React.FC = () => {
                         }
                       </div>
                     )}
-                    {generatedImage && (
-                      <img 
-                        src={generatedImage} 
-                        alt="Preview" 
-                        className="w-full max-w-48 rounded border border-white/20"
-                      />
-                    )}
+                    
+                    {/* Hashtags at the bottom */}
                     {hashtags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
+                      <div className="flex flex-wrap gap-1 pt-2 border-t border-white/10">
                         {hashtags.slice(0, 5).map((tag, index) => (
                           <span key={index} className="text-neon-electric text-xs">
                             #{tag}
@@ -532,7 +552,7 @@ const NewPostPage: React.FC = () => {
                   </div>
                 ) : (
                   <p className="text-gray-400 text-sm">
-                    Your post preview will appear here as you type...
+                    Your blog post preview will appear here as you create content...
                   </p>
                 )}
               </div>
