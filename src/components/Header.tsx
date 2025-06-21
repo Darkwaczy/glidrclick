@@ -84,14 +84,14 @@ const Header = () => {
                   <ChevronDown size={16} className="ml-1" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="center" className="glass-dark border-white/20 text-white">
-                <DropdownMenuItem onClick={() => navigate("/features/ai-writing")} className="hover:bg-white/10">
+              <DropdownMenuContent align="center" className="glass-card border-white/20 bg-dark-primary/95 backdrop-blur-md z-50">
+                <DropdownMenuItem onClick={() => navigate("/features/ai-writing")} className="text-white hover:bg-white/10">
                   AI Writing
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/features/auto-posting")} className="hover:bg-white/10">
+                <DropdownMenuItem onClick={() => navigate("/features/auto-posting")} className="text-white hover:bg-white/10">
                   Auto Posting
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/features/social-sharing")} className="hover:bg-white/10">
+                <DropdownMenuItem onClick={() => navigate("/features/social-sharing")} className="text-white hover:bg-white/10">
                   Social Sharing
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -125,17 +125,17 @@ const Header = () => {
                     <User size={18} className="text-neon-electric" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="glass-dark border-white/20 text-white">
-                  <DropdownMenuItem onClick={handleDashboardClick} className="hover:bg-white/10">
+                <DropdownMenuContent align="end" className="glass-card border-white/20 bg-dark-primary/95 backdrop-blur-md z-50">
+                  <DropdownMenuItem onClick={handleDashboardClick} className="text-white hover:bg-white/10">
                     <LayoutDashboard className="mr-2 h-4 w-4 text-neon-electric" /> Dashboard
                   </DropdownMenuItem>
                   {isAdmin && (
-                    <DropdownMenuItem onClick={() => navigate("/admin-dashboard")} className="hover:bg-white/10">
+                    <DropdownMenuItem onClick={() => navigate("/admin-dashboard")} className="text-white hover:bg-white/10">
                       <Settings className="mr-2 h-4 w-4 text-neon-pink" /> Admin
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator className="bg-white/20" />
-                  <DropdownMenuItem onClick={handleLogout} className="hover:bg-white/10">
+                  <DropdownMenuItem onClick={handleLogout} className="text-white hover:bg-white/10">
                     <LogOut className="mr-2 h-4 w-4 text-gray-400" /> Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -161,7 +161,7 @@ const Header = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden glass-card mt-4 p-6 border-white/20">
+          <div className="md:hidden glass-card mt-4 p-6 border-white/20 bg-dark-primary/95 backdrop-blur-md">
             <nav className="flex flex-col space-y-4">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -170,23 +170,23 @@ const Header = () => {
                     <ChevronDown size={16} className="ml-1" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="glass-dark border-white/20 text-white">
+                <DropdownMenuContent align="start" className="glass-card border-white/20 bg-dark-primary/95 backdrop-blur-md z-50">
                   <DropdownMenuItem onClick={() => {
                     navigate("/features/ai-writing");
                     setMobileMenuOpen(false);
-                  }} className="hover:bg-white/10">
+                  }} className="text-white hover:bg-white/10">
                     AI Writing
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => {
                     navigate("/features/auto-posting");
                     setMobileMenuOpen(false);
-                  }} className="hover:bg-white/10">
+                  }} className="text-white hover:bg-white/10">
                     Auto Posting
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => {
                     navigate("/features/social-sharing");
                     setMobileMenuOpen(false);
-                  }} className="hover:bg-white/10">
+                  }} className="text-white hover:bg-white/10">
                     Social Sharing
                   </DropdownMenuItem>
                 </DropdownMenuContent>

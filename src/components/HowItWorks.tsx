@@ -28,7 +28,7 @@ const steps = [
 
 const HowItWorks = () => {
   return (
-    <section className="py-24 relative" id="how-it-works">
+    <section className="py-24 relative bg-dark-primary" id="how-it-works">
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-neon-electric/10 to-transparent rounded-full blur-3xl"></div>
@@ -61,7 +61,7 @@ const HowItWorks = () => {
                   </div>
                 </div>
 
-                <Card className="glass-card hover:bg-white/15 transition-all duration-500 group-hover:scale-105 h-full border-white/20 hover:border-white/40">
+                <Card className="glass-card hover:bg-white/15 transition-all duration-500 group-hover:scale-105 h-full border-white/20 hover:border-white/40 bg-dark-secondary/50">
                   <CardContent className="p-8 text-center h-full flex flex-col">
                     <div className={`inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-r from-${step.color}/20 to-${step.color}/10 border border-${step.color}/30 mx-auto mb-6 group-hover:animate-neon-glow transition-all duration-300`}>
                       <step.icon className={`text-${step.color} group-hover:scale-110 transition-transform`} size={36} />
@@ -89,7 +89,7 @@ const HowItWorks = () => {
 
         {/* Bottom CTA */}
         <div className="text-center mt-20">
-          <div className="glass-card p-8 max-w-2xl mx-auto border-white/20">
+          <div className="glass-card p-8 max-w-2xl mx-auto border-white/20 bg-dark-secondary/50">
             <h3 className="text-2xl font-bold mb-4 text-white">
               Ready to <span className="neon-text">Automate</span> Your Content?
             </h3>

@@ -3,8 +3,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
-  Calendar,
-  Settings,
   HelpCircle,
   Bell,
   User,
@@ -36,7 +34,8 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
   };
 
   const handleHowItWorks = () => {
-    toast.info("How It Works demo coming soon! Check back later for tutorials and guides.");
+    // Navigate to the home page where the How It Works section is located
+    navigate("/#how-it-works");
   };
 
   return (
@@ -64,25 +63,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
               <span className="text-white">Craft</span>
             </h1>
           </Button>
-
-          <div className="hidden md:flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-              onClick={() => navigate("/dashboard/schedule")}
-            >
-              <Calendar size={16} className="mr-2" /> Schedule
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-              onClick={() => navigate("/dashboard/settings")}
-            >
-              <Settings size={16} className="mr-2" /> Settings
-            </Button>
-          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -104,7 +84,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 glass-card border-white/20">
+            <DropdownMenuContent align="end" className="w-80 glass-card border-white/20 bg-dark-primary/95 backdrop-blur-md">
               <div className="p-4 text-center">
                 <h3 className="font-semibold mb-2 text-white">No new notifications</h3>
                 <p className="text-sm text-gray-300">
@@ -126,18 +106,12 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
                 <ChevronDown size={14} />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="glass-card border-white/20">
+            <DropdownMenuContent align="end" className="glass-card border-white/20 bg-dark-primary/95 backdrop-blur-md">
               <DropdownMenuItem 
                 onClick={() => navigate("/dashboard/profile")}
                 className="text-white hover:bg-white/10"
               >
                 <User size={16} className="mr-2" /> Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => navigate("/dashboard/settings")}
-                className="text-white hover:bg-white/10"
-              >
-                <Settings size={16} className="mr-2" /> Settings
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -158,28 +132,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
               }}
             >
               <LayoutDashboard size={16} className="mr-2" /> Overview
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="justify-start text-white hover:bg-white/10"
-              onClick={() => {
-                navigate("/dashboard/schedule");
-                setIsMobileMenuOpen(false);
-              }}
-            >
-              <Calendar size={16} className="mr-2" /> Schedule
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="justify-start text-white hover:bg-white/10"
-              onClick={() => {
-                navigate("/dashboard/settings");
-                setIsMobileMenuOpen(false);
-              }}
-            >
-              <Settings size={16} className="mr-2" /> Settings
             </Button>
             <Button 
               variant="ghost" 
