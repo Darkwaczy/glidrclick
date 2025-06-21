@@ -9,6 +9,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import Auth from './pages/Auth';
 import { Toaster } from './components/ui/toaster';
 import SocialSharing from './pages/features/SocialSharing';
+import AIWriting from './pages/features/AIWriting';
+import AutoPosting from './pages/features/AutoPosting';
 import PaymentSuccess from './pages/PaymentSuccess';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -22,6 +24,8 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/features/ai-writing" element={<AIWriting />} />
+          <Route path="/features/auto-posting" element={<AutoPosting />} />
           <Route path="/features/social-sharing" element={<SocialSharing />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/dashboard/*" element={

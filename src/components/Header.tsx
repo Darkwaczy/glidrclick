@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, Settings, LayoutDashboard, Zap, Menu, X } from "lucide-react";
+import { User, LogOut, Settings, LayoutDashboard, Zap, Menu, X, ChevronDown } from "lucide-react";
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -33,8 +33,25 @@ const Header = () => {
   }, [scrolled]);
 
   const handleLogout = async () => {
-    await signOut();
-    navigate("/");
+    console.log('Header: Attempting logout...');
+    try {
+      await signOut();
+      console.log('Header: Logout successful, navigating to home');
+      navigate("/");
+    } catch (error) {
+      console.error('Header: Logout error:', error);
+    }
+  };
+
+  const handleDashboardClick = () => {
+    console.log('Header: Dashboard clicked, isAuthenticated:', isAuthenticated);
+    if (isAuthenticated) {
+      console.log('Header: Navigating to dashboard');
+      navigate("/dashboard");
+    } else {
+      console.log('Header: Not authenticated, redirecting to auth');
+      navigate("/auth");
+    }
   };
 
   return (
@@ -60,12 +77,25 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link
-              to="/features/social-sharing"
-              className="text-gray-300 hover:text-neon-electric transition-colors duration-300 font-medium"
-            >
-              Features
-            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center text-gray-300 hover:text-neon-electric transition-colors duration-300 font-medium">
+                  Features
+                  <ChevronDown size={16} className="ml-1" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center" className="glass-dark border-white/20 text-white">
+                <DropdownMenuItem onClick={() => navigate("/features/ai-writing")} className="hover:bg-white/10">
+                  AI Writing
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/features/auto-posting")} className="hover:bg-white/10">
+                  Auto Posting
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/features/social-sharing")} className="hover:bg-white/10">
+                  Social Sharing
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Link
               to="/pricing"
               className="text-gray-300 hover:text-neon-electric transition-colors duration-300 font-medium"
@@ -96,7 +126,7 @@ const Header = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="glass-dark border-white/20 text-white">
-                  <DropdownMenuItem onClick={() => navigate("/dashboard")} className="hover:bg-white/10">
+                  <DropdownMenuItem onClick={handleDashboardClick} className="hover:bg-white/10">
                     <LayoutDashboard className="mr-2 h-4 w-4 text-neon-electric" /> Dashboard
                   </DropdownMenuItem>
                   {isAdmin && (
@@ -133,13 +163,34 @@ const Header = () => {
         {mobileMenuOpen && (
           <div className="md:hidden glass-card mt-4 p-6 border-white/20">
             <nav className="flex flex-col space-y-4">
-              <Link
-                to="/features/social-sharing"
-                className="text-gray-300 hover:text-neon-electric transition-colors duration-300 font-medium"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Features
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center text-gray-300 hover:text-neon-electric transition-colors duration-300 font-medium">
+                    Features
+                    <ChevronDown size={16} className="ml-1" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="glass-dark border-white/20 text-white">
+                  <DropdownMenuItem onClick={() => {
+                    navigate("/features/ai-writing");
+                    setMobileMenuOpen(false);
+                  }} className="hover:bg-white/10">
+                    AI Writing
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {
+                    navigate("/features/auto-posting");
+                    setMobileMenuOpen(false);
+                  }} className="hover:bg-white/10">
+                    Auto Posting
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {
+                    navigate("/features/social-sharing");
+                    setMobileMenuOpen(false);
+                  }} className="hover:bg-white/10">
+                    Social Sharing
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Link
                 to="/pricing"
                 className="text-gray-300 hover:text-neon-electric transition-colors duration-300 font-medium"
