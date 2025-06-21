@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -98,25 +97,37 @@ const NewPostPage: React.FC = () => {
 
     setIsGenerating(true);
     try {
+      console.log('Starting content generation...', {
+        selectedCategory,
+        selectedTone,
+        postLength,
+        sectionTitles,
+        selectedAIModel
+      });
+
       const result = await generateBlogContent(
         selectedCategory,
         selectedTone,
         postLength,
-        sectionTitles
+        sectionTitles,
+        selectedAIModel
       );
+      
+      console.log('Content generation result:', result);
       
       setGeneratedTitle(result.title);
       setGeneratedContent(result.content);
       toast.success('Content generated successfully!');
     } catch (error) {
       console.error('Error generating content:', error);
-      toast.error('Failed to generate content. Please try again.');
+      toast.error(`Failed to generate content: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsGenerating(false);
     }
   };
 
   const handleImageGenerated = (imageUrl: string) => {
+    console.log('Image generated:', imageUrl);
     setGeneratedImage(imageUrl);
   };
 

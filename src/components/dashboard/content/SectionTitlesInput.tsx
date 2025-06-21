@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -36,14 +36,14 @@ const SectionTitlesInput: React.FC<SectionTitlesInputProps> = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <Label>Section Titles (3-5 sections)</Label>
+        <Label className="text-white">Section Titles (3-5 sections)</Label>
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={addSection}
           disabled={sections.length >= 5}
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 bg-white/10 border-white/20 text-white hover:bg-white/20"
         >
           <Plus size={14} />
           Add Section
@@ -63,6 +63,7 @@ const SectionTitlesInput: React.FC<SectionTitlesInputProps> = ({
               }
               value={section}
               onChange={(e) => handleSectionChange(index, e.target.value)}
+              className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
             />
             {sections.length > 3 && index !== 0 && index !== sections.length - 1 && (
               <Button
@@ -70,7 +71,7 @@ const SectionTitlesInput: React.FC<SectionTitlesInputProps> = ({
                 variant="outline"
                 size="icon"
                 onClick={() => removeSection(index)}
-                className="flex-shrink-0"
+                className="flex-shrink-0 bg-white/10 border-white/20 text-white hover:bg-white/20"
               >
                 <X size={14} />
               </Button>
@@ -79,7 +80,7 @@ const SectionTitlesInput: React.FC<SectionTitlesInputProps> = ({
         ))}
       </div>
       
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-gray-400">
         First section will be the Introduction, last section will be the Conclusion.
       </p>
     </div>

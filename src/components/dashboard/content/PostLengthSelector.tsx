@@ -26,7 +26,6 @@ const PostLengthSelector: React.FC<PostLengthSelectorProps> = ({
 
   return (
     <div className="space-y-3">
-      <Label>Post Length (words)</Label>
       <div className="space-y-2">
         <Slider
           value={[length]}
@@ -36,7 +35,7 @@ const PostLengthSelector: React.FC<PostLengthSelectorProps> = ({
           step={50}
           className="w-full"
         />
-        <div className="flex justify-between text-sm text-gray-500">
+        <div className="flex justify-between text-sm text-gray-400">
           <span>400 words</span>
           <span>1000 words</span>
         </div>
@@ -46,10 +45,10 @@ const PostLengthSelector: React.FC<PostLengthSelectorProps> = ({
           max={1000}
           value={length}
           onChange={handleInputChange}
-          className="w-20"
+          className="w-20 bg-white/10 border-white/20 text-white"
         />
       </div>
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-gray-400">
         Minimum 400 words, maximum 1000 words for optimal engagement.
       </p>
     </div>
