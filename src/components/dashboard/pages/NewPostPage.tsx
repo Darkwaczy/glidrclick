@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { 
   FileText, 
@@ -21,14 +22,40 @@ import {
   AtSign,
   Link,
   Plus,
-  X
+  X,
+  Wand2,
+  Bot
 } from 'lucide-react';
+
+// Import AI content generation components
+import CategorySelector from '../content/CategorySelector';
+import ToneSelector from '../content/ToneSelector';
+import PostLengthSelector from '../content/PostLengthSelector';
+import SectionTitlesInput from '../content/SectionTitlesInput';
+import AIContentGenerator from '../content/AIContentGenerator';
+import WordCounter from '../content/WordCounter';
+import { generateBlogContent } from '@/services/aiService';
 
 const NewPostPage: React.FC = () => {
   const [postType, setPostType] = useState('text');
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [newHashtag, setNewHashtag] = useState('');
+  const [activeTab, setActiveTab] = useState('manual');
+  
+  // Manual content states
+  const [manualTitle, setManualTitle] = useState('');
+  const [manualContent, setManualContent] = useState('');
+  
+  // AI content generation states
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedTone, setSelectedTone] = useState('');
+  const [postLength, setPostLength] = useState(600);
+  const [sectionTitles, setSectionTitles] = useState(['Introduction', 'Main Content', 'Conclusion']);
+  const [selectedAIModel, setSelectedAIModel] = useState('openai');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState('');
+  const [generatedTitle, setGeneratedTitle] = useState('');
   
   const platforms = [
     { id: 'facebook', name: 'Facebook', connected: true },
@@ -63,7 +90,41 @@ const NewPostPage: React.FC = () => {
     setHashtags(hashtags.filter(t => t !== tag));
   };
 
+  const handleGenerateContent = async () => {
+    if (!selectedCategory || !selectedTone) {
+      toast.error('Please select both category and tone');
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const result = await generateBlogContent(
+        selectedCategory,
+        selectedTone,
+        postLength,
+        sectionTitles
+      );
+      
+      setGeneratedTitle(result.title);
+      setGeneratedContent(result.content);
+      toast.success('Content generated successfully!');
+    } catch (error) {
+      console.error('Error generating content:', error);
+      toast.error('Failed to generate content. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const handlePublish = () => {
+    const title = activeTab === 'manual' ? manualTitle : generatedTitle;
+    const content = activeTab === 'manual' ? manualContent : generatedContent;
+    
+    if (!title.trim() || !content.trim()) {
+      toast.error('Please provide both title and content');
+      return;
+    }
+    
     toast.success('Post published successfully!');
   };
 
@@ -73,6 +134,14 @@ const NewPostPage: React.FC = () => {
 
   const handleSchedule = () => {
     toast.success('Post scheduled successfully!');
+  };
+
+  const getCurrentContent = () => {
+    return activeTab === 'manual' ? manualContent : generatedContent;
+  };
+
+  const getCurrentTitle = () => {
+    return activeTab === 'manual' ? manualTitle : generatedTitle;
   };
 
   return (
@@ -99,31 +168,118 @@ const NewPostPage: React.FC = () => {
         <div className="lg:col-span-2 space-y-6">
           <Card className="glass-card border-white/20 bg-dark-secondary/50">
             <CardHeader>
-              <CardTitle className="text-white">Post Content</CardTitle>
+              <CardTitle className="text-white">Content Creation</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title" className="text-white">Post Title</Label>
-                <Input 
-                  id="title"
-                  placeholder="Enter a catchy title for your post..."
-                  className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="content" className="text-white">Content</Label>
-                <Textarea 
-                  id="content"
-                  placeholder="What's on your mind? Share your thoughts..."
-                  className="min-h-[200px] bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                />
-                <div className="text-sm text-gray-400">
-                  Character count: 0/280
-                </div>
-              </div>
+            <CardContent>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+                <TabsList className="grid grid-cols-2 bg-white/10">
+                  <TabsTrigger value="manual" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white text-gray-300">
+                    <FileText size={16} className="mr-2" />
+                    Manual
+                  </TabsTrigger>
+                  <TabsTrigger value="ai" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white text-gray-300">
+                    <Bot size={16} className="mr-2" />
+                    AI Generate
+                  </TabsTrigger>
+                </TabsList>
 
-              <div className="space-y-2">
+                <TabsContent value="manual" className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title" className="text-white">Post Title</Label>
+                    <Input 
+                      id="title"
+                      placeholder="Enter a catchy title for your post..."
+                      value={manualTitle}
+                      onChange={(e) => setManualTitle(e.target.value)}
+                      className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="content" className="text-white">Content</Label>
+                    <Textarea 
+                      id="content"
+                      placeholder="What's on your mind? Share your thoughts..."
+                      className="min-h-[300px] bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                      value={manualContent}
+                      onChange={(e) => setManualContent(e.target.value)}
+                    />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="ai" className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <CategorySelector
+                      selectedCategory={selectedCategory}
+                      onSelectCategory={setSelectedCategory}
+                    />
+                    <ToneSelector
+                      selectedTone={selectedTone}
+                      onSelectTone={setSelectedTone}
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <PostLengthSelector
+                      length={postLength}
+                      onLengthChange={setPostLength}
+                    />
+                    <AIContentGenerator
+                      selectedModel={selectedAIModel}
+                      onSelectModel={setSelectedAIModel}
+                    />
+                  </div>
+                  
+                  <SectionTitlesInput
+                    sections={sectionTitles}
+                    onSectionsChange={setSectionTitles}
+                  />
+                  
+                  <div className="flex justify-center">
+                    <Button 
+                      onClick={handleGenerateContent}
+                      disabled={isGenerating || !selectedCategory || !selectedTone}
+                      className="btn-neon px-8"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 size={16} className="mr-2" />
+                          Generate Content
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  
+                  {generatedContent && (
+                    <div className="space-y-4 mt-6">
+                      <div className="space-y-2">
+                        <Label className="text-white">Generated Title</Label>
+                        <Input 
+                          value={generatedTitle}
+                          onChange={(e) => setGeneratedTitle(e.target.value)}
+                          className="bg-white/10 border-white/20 text-white"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label className="text-white">Generated Content</Label>
+                        <Textarea 
+                          value={generatedContent}
+                          onChange={(e) => setGeneratedContent(e.target.value)}
+                          className="min-h-[300px] bg-white/10 border-white/20 text-white"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+
+              <div className="space-y-2 mt-4">
                 <Label className="text-white">Post Type</Label>
                 <div className="grid grid-cols-3 gap-3">
                   {postTypes.map((type) => (
@@ -144,7 +300,7 @@ const NewPostPage: React.FC = () => {
               </div>
 
               {postType !== 'text' && (
-                <div className="space-y-2">
+                <div className="space-y-2 mt-4">
                   <Label className="text-white">Media Upload</Label>
                   <div className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center">
                     <div className="space-y-2">
@@ -204,6 +360,19 @@ const NewPostPage: React.FC = () => {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Word Counter */}
+          <Card className="glass-card border-white/20 bg-dark-secondary/50">
+            <CardHeader>
+              <CardTitle className="text-white">Content Statistics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <WordCounter 
+                content={getCurrentContent()} 
+                targetLength={activeTab === 'ai' ? postLength : undefined}
+              />
+            </CardContent>
+          </Card>
+
           {/* Platform Selection */}
           <Card className="glass-card border-white/20 bg-dark-secondary/50">
             <CardHeader>
@@ -286,9 +455,23 @@ const NewPostPage: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="bg-white/5 p-4 rounded-lg border border-white/10">
-                <p className="text-gray-300 text-sm">
-                  Your post preview will appear here as you type...
-                </p>
+                {getCurrentTitle() || getCurrentContent() ? (
+                  <div className="space-y-2">
+                    {getCurrentTitle() && (
+                      <h3 className="font-bold text-white text-lg">{getCurrentTitle()}</h3>
+                    )}
+                    {getCurrentContent() && (
+                      <div className="text-gray-300 text-sm whitespace-pre-wrap">
+                        {getCurrentContent().substring(0, 200)}
+                        {getCurrentContent().length > 200 && '...'}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-gray-300 text-sm">
+                    Your post preview will appear here as you type...
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
