@@ -30,12 +30,12 @@ const Pricing = () => {
   const renderFeature = (value: boolean | string) => {
     if (typeof value === 'boolean') {
       return value ? (
-        <Check size={20} className="text-green-500 mx-auto" />
+        <Check size={20} className="text-neon-lime mx-auto" />
       ) : (
-        <X size={20} className="text-red-500 mx-auto" />
+        <X size={20} className="text-red-400 mx-auto" />
       );
     }
-    return <span>{value}</span>;
+    return <span className="text-white font-medium">{value}</span>;
   };
 
   const handlePlanSelection = async (plan: 'free' | 'pro' | 'elite') => {
@@ -48,12 +48,10 @@ const Pricing = () => {
       setIsLoading(plan);
       
       if (plan === 'free') {
-        // For free plan, just redirect to registration/dashboard
         navigate('/dashboard');
         return;
       }
       
-      // Initiate payment with Flutterwave
       const { data, error } = await supabase.functions.invoke('create-flutterwave-payment', {
         body: { plan, isAnnual },
       });
@@ -63,10 +61,8 @@ const Pricing = () => {
       }
       
       if (data?.payment_url) {
-        // Redirect to Flutterwave payment page
         window.location.href = data.payment_url;
       } else if (data?.redirectUrl) {
-        // For free plan or other direct redirects
         navigate(data.redirectUrl);
       } else {
         throw new Error('No payment URL returned');
@@ -84,47 +80,57 @@ const Pricing = () => {
   };
 
   return (
-    <section className="py-20" id="pricing">
-      <div className="container mx-auto px-4">
+    <section className="py-24 relative" id="pricing">
+      {/* Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/3 left-1/3 w-96 h-96 bg-gradient-to-r from-neon-pink/8 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/3 right-1/3 w-96 h-96 bg-gradient-to-r from-neon-electric/8 to-transparent rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="container mx-auto px-6 relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Pricing Plans</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Choose the plan that fits your needs. All plans include our core AI blog automation.
+          <h2 className="text-4xl md:text-6xl font-bold mb-6">
+            <span className="text-white">Pricing </span>
+            <span className="gradient-text">Plans</span>
+          </h2>
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            Choose the plan that fits your needs. All plans include our 
+            <span className="neon-text font-semibold"> core AI blog automation</span>.
           </p>
           
           <div className="flex items-center justify-center mt-8">
-            <span className={`mr-3 ${!isAnnual ? 'text-glidr-purple font-semibold' : 'text-gray-500'}`}>Monthly</span>
+            <span className={`mr-3 text-lg ${!isAnnual ? 'text-neon-electric font-semibold' : 'text-gray-400'}`}>Monthly</span>
             <button 
               onClick={() => setIsAnnual(!isAnnual)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-glidr-purple ${
-                isAnnual ? 'bg-glidr-purple' : 'bg-gray-200'
+              className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-neon-electric ${
+                isAnnual ? 'bg-gradient-to-r from-neon-electric to-neon-pink' : 'bg-gray-600'
               }`}
             >
               <span 
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  isAnnual ? 'translate-x-6' : 'translate-x-1'
+                className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform shadow-lg ${
+                  isAnnual ? 'translate-x-7' : 'translate-x-1'
                 }`} 
               />
             </button>
-            <span className={`ml-3 ${isAnnual ? 'text-glidr-purple font-semibold' : 'text-gray-500'}`}>
-              Annual <span className="text-xs bg-glidr-soft-purple text-glidr-purple px-2 py-0.5 rounded-full">Save 20%</span>
+            <span className={`ml-3 text-lg ${isAnnual ? 'text-neon-electric font-semibold' : 'text-gray-400'}`}>
+              Annual <span className="text-xs bg-neon-lime/20 text-neon-lime px-2 py-1 rounded-full ml-2">Save 20%</span>
             </span>
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {/* Free Trial Plan */}
-          <div className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300 bg-white animate-fade-in-up">
+          <div className="glass-card border-white/20 rounded-2xl overflow-hidden hover:border-white/40 transition-all duration-300 hover:scale-105 animate-slide-up">
             <div className="p-8">
-              <h3 className="text-xl font-semibold mb-2">Free Trial</h3>
-              <div className="flex items-end">
-                <span className="text-4xl font-bold">₦0</span>
-                <span className="text-gray-600 ml-2 mb-1">/ 7 days</span>
+              <h3 className="text-2xl font-bold mb-4 text-white">Free Trial</h3>
+              <div className="flex items-end mb-6">
+                <span className="text-5xl font-bold text-white">₦0</span>
+                <span className="text-gray-300 ml-2 mb-2 text-lg">/ 7 days</span>
               </div>
               <Button 
                 onClick={() => handlePlanSelection('free')}
                 disabled={isLoading !== null}
-                className="w-full mt-6 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-full"
+                className="w-full btn-glass text-white border-white/30 hover:border-neon-electric/50 font-semibold text-lg py-3"
               >
                 {isLoading === 'free' ? (
                   <>
@@ -134,11 +140,11 @@ const Pricing = () => {
                 ) : 'Try Free'}
               </Button>
             </div>
-            <div className="bg-gray-50 p-8">
+            <div className="glass-dark p-8 border-t border-white/10">
               <ul className="space-y-4">
                 {pricingFeatures.map((feature, index) => (
                   <li key={index} className="flex items-center justify-between">
-                    <span className="text-gray-600">{feature.title}</span>
+                    <span className="text-gray-300 font-medium">{feature.title}</span>
                     <span>{renderFeature(feature.free)}</span>
                   </li>
                 ))}
@@ -147,20 +153,20 @@ const Pricing = () => {
           </div>
           
           {/* Pro Plan */}
-          <div className="relative border-2 border-glidr-bright-purple rounded-2xl overflow-hidden shadow-lg bg-white transform scale-105 z-10 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            <div className="absolute top-0 right-0 bg-glidr-bright-purple text-white px-4 py-1 text-sm font-medium">
+          <div className="relative glass-card border-neon-electric/50 rounded-2xl overflow-hidden shadow-2xl transform scale-105 z-10 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+            <div className="absolute top-0 right-0 bg-gradient-to-r from-neon-electric to-neon-pink text-white px-6 py-2 text-sm font-bold shadow-lg">
               POPULAR
             </div>
             <div className="p-8">
-              <h3 className="text-xl font-semibold mb-2">Pro Plan</h3>
-              <div className="flex items-end">
-                <span className="text-4xl font-bold">₦{isAnnual ? '7,600' : '9,500'}</span>
-                <span className="text-gray-600 ml-2 mb-1">/ mo</span>
+              <h3 className="text-2xl font-bold mb-4 text-white">Pro Plan</h3>
+              <div className="flex items-end mb-6">
+                <span className="text-5xl font-bold gradient-text">₦{isAnnual ? '7,600' : '9,500'}</span>
+                <span className="text-gray-300 ml-2 mb-2 text-lg">/ mo</span>
               </div>
               <Button 
                 onClick={() => handlePlanSelection('pro')}
                 disabled={isLoading !== null}
-                className="w-full mt-6 gradient-button text-white rounded-full"
+                className="w-full btn-neon text-white font-semibold text-lg py-3"
               >
                 {isLoading === 'pro' ? (
                   <>
@@ -170,12 +176,12 @@ const Pricing = () => {
                 ) : 'Get Pro'}
               </Button>
             </div>
-            <div className="bg-glidr-soft-purple p-8">
+            <div className="glass-dark p-8 border-t border-white/10">
               <ul className="space-y-4">
                 {pricingFeatures.map((feature, index) => (
                   <li key={index} className="flex items-center justify-between">
-                    <span className="text-gray-600">{feature.title}</span>
-                    <span className="font-medium">{renderFeature(feature.pro)}</span>
+                    <span className="text-gray-300 font-medium">{feature.title}</span>
+                    <span>{renderFeature(feature.pro)}</span>
                   </li>
                 ))}
               </ul>
@@ -183,17 +189,17 @@ const Pricing = () => {
           </div>
           
           {/* Elite Plan */}
-          <div className="border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300 bg-white animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+          <div className="glass-card border-white/20 rounded-2xl overflow-hidden hover:border-white/40 transition-all duration-300 hover:scale-105 animate-slide-up" style={{ animationDelay: '0.2s' }}>
             <div className="p-8">
-              <h3 className="text-xl font-semibold mb-2">Elite Plan</h3>
-              <div className="flex items-end">
-                <span className="text-4xl font-bold">₦{isAnnual ? '15,200' : '19,000'}</span>
-                <span className="text-gray-600 ml-2 mb-1">/ mo</span>
+              <h3 className="text-2xl font-bold mb-4 text-white">Elite Plan</h3>
+              <div className="flex items-end mb-6">
+                <span className="text-5xl font-bold text-white">₦{isAnnual ? '15,200' : '19,000'}</span>
+                <span className="text-gray-300 ml-2 mb-2 text-lg">/ mo</span>
               </div>
               <Button 
                 onClick={() => handlePlanSelection('elite')}
                 disabled={isLoading !== null}
-                className="w-full mt-6 bg-gray-800 hover:bg-black text-white rounded-full"
+                className="w-full bg-gradient-to-r from-gray-800 to-black hover:from-black hover:to-gray-900 text-white font-semibold text-lg py-3"
               >
                 {isLoading === 'elite' ? (
                   <>
@@ -203,12 +209,12 @@ const Pricing = () => {
                 ) : 'Go Elite'}
               </Button>
             </div>
-            <div className="bg-gray-50 p-8">
+            <div className="glass-dark p-8 border-t border-white/10">
               <ul className="space-y-4">
                 {pricingFeatures.map((feature, index) => (
                   <li key={index} className="flex items-center justify-between">
-                    <span className="text-gray-600">{feature.title}</span>
-                    <span className="font-medium">{renderFeature(feature.elite)}</span>
+                    <span className="text-gray-300 font-medium">{feature.title}</span>
+                    <span>{renderFeature(feature.elite)}</span>
                   </li>
                 ))}
               </ul>

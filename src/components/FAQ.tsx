@@ -15,12 +15,12 @@ const faqItems = [
   {
     question: "Can I edit posts before they go live?",
     answer:
-      "Absolutely! While Glidrclick can fully automate your content, you can set your preference to review posts before publishing. From your dashboard, you can edit, approve, or request a regeneration of any AI-created content."
+      "Absolutely! While FlowCraft can fully automate your content, you can set your preference to review posts before publishing. From your dashboard, you can edit, approve, or request a regeneration of any AI-created content."
   },
   {
     question: "Which social platforms are supported?",
     answer:
-      "Glidrclick currently supports automatic posting to WordPress blogs, Facebook, Twitter, Instagram, and LinkedIn. We're constantly adding more platforms based on user feedback and demand."
+      "FlowCraft currently supports automatic posting to WordPress blogs, Facebook, Twitter, Instagram, and LinkedIn. We're constantly adding more platforms based on user feedback and demand."
   },
   {
     question: "Is there a money-back guarantee?",
@@ -31,27 +31,37 @@ const faqItems = [
 
 const FAQ = () => {
   return (
-    <section className="py-20" id="faq">
-      <div className="container mx-auto px-4">
+    <section className="py-24 relative" id="faq">
+      {/* Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-neon-orange/8 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-neon-electric/8 to-transparent rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="container mx-auto px-6 relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Frequently Asked Questions</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Get answers to the most common questions about Glidrclick.
+          <h2 className="text-4xl md:text-6xl font-bold mb-6">
+            <span className="text-white">Frequently Asked </span>
+            <span className="gradient-text">Questions</span>
+          </h2>
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            Get answers to the most common questions about 
+            <span className="neon-text font-semibold"> FlowCraft</span>.
           </p>
         </div>
         
-        <div className="max-w-3xl mx-auto">
-          <Accordion type="single" collapsible className="space-y-4">
+        <div className="max-w-4xl mx-auto">
+          <Accordion type="single" collapsible className="space-y-6">
             {faqItems.map((item, index) => (
               <AccordionItem 
                 key={index} 
                 value={`item-${index}`}
-                className="border border-gray-200 rounded-xl overflow-hidden bg-white"
+                className="glass-card border-white/20 rounded-2xl overflow-hidden hover:border-white/40 transition-all duration-300"
               >
-                <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-gray-50">
-                  <span className="text-left font-medium">{item.question}</span>
+                <AccordionTrigger className="px-8 py-6 hover:no-underline text-white hover:text-neon-electric transition-colors">
+                  <span className="text-left font-semibold text-lg">{item.question}</span>
                 </AccordionTrigger>
-                <AccordionContent className="px-6 pb-4 pt-2 text-gray-600">
+                <AccordionContent className="px-8 pb-6 pt-2 text-gray-300 leading-relaxed">
                   {item.answer}
                 </AccordionContent>
               </AccordionItem>

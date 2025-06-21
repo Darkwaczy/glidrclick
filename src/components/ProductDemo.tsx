@@ -6,6 +6,7 @@ import { Play, ArrowRight, Monitor, Smartphone, Globe, BarChart3 } from "lucide-
 
 const ProductDemo = () => {
   const [activeDemo, setActiveDemo] = useState("dashboard");
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   const demoTabs = [
     { id: "dashboard", label: "Dashboard", icon: Monitor },
@@ -13,6 +14,12 @@ const ProductDemo = () => {
     { id: "analytics", label: "Analytics", icon: BarChart3 },
     { id: "social", label: "Social", icon: Globe }
   ];
+
+  const handleWatchDemo = () => {
+    setIsVideoPlaying(true);
+    // You can integrate with actual video player here
+    alert("Demo video would play here. Replace this with your actual video integration.");
+  };
 
   return (
     <section className="py-24 relative">
@@ -81,6 +88,7 @@ const ProductDemo = () => {
                     <Button
                       size="lg"
                       className="btn-neon text-white font-semibold group"
+                      onClick={handleWatchDemo}
                     >
                       <Play size={24} className="mr-3 group-hover:scale-110 transition-transform" />
                       Watch Full Demo (2:30)
