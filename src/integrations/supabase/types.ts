@@ -563,14 +563,61 @@ export type Database = {
         }
         Relationships: []
       }
+      post_platforms: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          platform_id: string
+          platform_post_id: string | null
+          post_id: string | null
+          published_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          platform_id: string
+          platform_post_id?: string | null
+          post_id?: string | null
+          published_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          platform_id?: string
+          platform_post_id?: string | null
+          post_id?: string | null
+          published_at?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_platforms_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts: {
         Row: {
           content: string
           created_at: string
           id: string
+          image_url: string | null
+          published_at: string | null
           scheduled_for: string | null
           status: string
           title: string
+          type: string | null
           updated_at: string
           user_id: string
         }
@@ -578,9 +625,12 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          image_url?: string | null
+          published_at?: string | null
           scheduled_for?: string | null
           status: string
           title: string
+          type?: string | null
           updated_at?: string
           user_id: string
         }
@@ -588,9 +638,12 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          image_url?: string | null
+          published_at?: string | null
           scheduled_for?: string | null
           status?: string
           title?: string
+          type?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -598,41 +651,59 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
+          bio: string | null
           consent_status: string | null
           created_at: string
+          email_notifications: boolean | null
           id: string
+          location: string | null
           name: string | null
           plan: string | null
+          push_notifications: boolean | null
           status: string | null
           subscription_end_date: string | null
           subscription_start_date: string | null
           updated_at: string
+          website: string | null
           whatsapp_number: string | null
           whatsapp_verified: boolean | null
         }
         Insert: {
+          avatar_url?: string | null
+          bio?: string | null
           consent_status?: string | null
           created_at?: string
+          email_notifications?: boolean | null
           id: string
+          location?: string | null
           name?: string | null
           plan?: string | null
+          push_notifications?: boolean | null
           status?: string | null
           subscription_end_date?: string | null
           subscription_start_date?: string | null
           updated_at?: string
+          website?: string | null
           whatsapp_number?: string | null
           whatsapp_verified?: boolean | null
         }
         Update: {
+          avatar_url?: string | null
+          bio?: string | null
           consent_status?: string | null
           created_at?: string
+          email_notifications?: boolean | null
           id?: string
+          location?: string | null
           name?: string | null
           plan?: string | null
+          push_notifications?: boolean | null
           status?: string | null
           subscription_end_date?: string | null
           subscription_start_date?: string | null
           updated_at?: string
+          website?: string | null
           whatsapp_number?: string | null
           whatsapp_verified?: boolean | null
         }
@@ -683,6 +754,66 @@ export type Database = {
         }
         Relationships: []
       }
+      social_platforms: {
+        Row: {
+          access_token: string | null
+          account_id: string | null
+          account_name: string | null
+          created_at: string
+          icon: string | null
+          id: string
+          is_connected: boolean | null
+          last_sync: string | null
+          metadata: Json | null
+          name: string
+          notifications: Json | null
+          platform_id: string
+          refresh_token: string | null
+          sync_frequency: string | null
+          token_expires_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          account_id?: string | null
+          account_name?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_connected?: boolean | null
+          last_sync?: string | null
+          metadata?: Json | null
+          name: string
+          notifications?: Json | null
+          platform_id: string
+          refresh_token?: string | null
+          sync_frequency?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          account_id?: string | null
+          account_name?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_connected?: boolean | null
+          last_sync?: string | null
+          metadata?: Json | null
+          name?: string
+          notifications?: Json | null
+          platform_id?: string
+          refresh_token?: string | null
+          sync_frequency?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           created_at: string
@@ -725,6 +856,45 @@ export type Database = {
           trial_end?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          amount: number
+          billing_cycle: string
+          created_at: string
+          currency: string | null
+          id: string
+          next_billing_date: string | null
+          plan: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          billing_cycle: string
+          created_at?: string
+          currency?: string | null
+          id?: string
+          next_billing_date?: string | null
+          plan: string
+          status: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          billing_cycle?: string
+          created_at?: string
+          currency?: string | null
+          id?: string
+          next_billing_date?: string | null
+          plan?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
