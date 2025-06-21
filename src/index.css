@@ -101,6 +101,26 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-space;
   }
+
+  /* Force dark theme on all components */
+  .glass-card {
+    @apply backdrop-blur-xl bg-dark-secondary/50 border border-white/20 rounded-2xl shadow-2xl;
+  }
+
+  /* Override any white backgrounds */
+  [data-radix-popper-content-wrapper],
+  [data-radix-dropdown-menu-content],
+  [data-radix-select-content],
+  [data-radix-dialog-content],
+  [data-radix-popover-content],
+  [data-radix-tabs-content] {
+    @apply bg-dark-primary/95 border-white/20 text-white !important;
+  }
+
+  /* Ensure tab content has proper background */
+  [data-state="active"][data-orientation="horizontal"] {
+    @apply bg-transparent !important;
+  }
 }
 
 .font-inter {
@@ -112,10 +132,6 @@
 }
 
 /* Glassmorphism utilities */
-.glass-card {
-  @apply backdrop-blur-xl bg-glass-white border border-white/20 rounded-2xl shadow-2xl;
-}
-
 .glass-dark {
   @apply backdrop-blur-xl bg-glass-dark border border-white/10 rounded-2xl;
 }

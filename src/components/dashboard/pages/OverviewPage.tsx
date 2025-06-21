@@ -104,7 +104,7 @@ const OverviewPage = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-transparent">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -123,7 +123,7 @@ const OverviewPage = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, index) => (
-          <Card key={index} className="glass-card border-white/20">
+          <Card key={index} className="glass-card border-white/20 bg-dark-secondary/50">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -147,7 +147,7 @@ const OverviewPage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Posts */}
-        <Card className="lg:col-span-2 glass-card border-white/20">
+        <Card className="lg:col-span-2 glass-card border-white/20 bg-dark-secondary/50">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -205,7 +205,7 @@ const OverviewPage = () => {
         </Card>
 
         {/* Quick Actions */}
-        <Card className="glass-card border-white/20">
+        <Card className="glass-card border-white/20 bg-dark-secondary/50">
           <CardHeader>
             <CardTitle className="text-white">Quick Actions</CardTitle>
             <CardDescription className="text-gray-300">Common tasks and shortcuts</CardDescription>
@@ -215,7 +215,7 @@ const OverviewPage = () => {
               <Button
                 key={index}
                 variant="outline"
-                className={`w-full justify-start h-auto p-4 ${action.color} hover:bg-white/20 text-left`}
+                className={`w-full justify-start h-auto p-4 ${action.color} hover:bg-white/20 text-left border-white/20`}
                 onClick={action.action}
               >
                 <div className="flex items-start gap-3">
@@ -232,7 +232,7 @@ const OverviewPage = () => {
       </div>
 
       {/* Content Performance */}
-      <Card className="glass-card border-white/20">
+      <Card className="glass-card border-white/20 bg-dark-secondary/50">
         <CardHeader>
           <CardTitle className="text-white">Content Performance</CardTitle>
           <CardDescription className="text-gray-300">How your content is performing this month</CardDescription>
