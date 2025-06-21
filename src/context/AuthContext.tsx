@@ -23,63 +23,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(true);
   
   useEffect(() => {
-    // Get current session and user
+    let mounted = true;
+    
+    // Initialize auth state
     const initAuth = async () => {
-      setLoading(true);
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        setSession(session);
-        setUser(session?.user ?? null);
         
-        if (session?.user) {
-          // Check if user is admin (simplified - in a real app, this would check roles)
-          setIsAdmin(session.user.email?.includes('admin') ?? false);
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setIsAdmin(session?.user?.email?.includes('admin') ?? false);
+          setLoading(false);
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
-      } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
-    initAuth();
-    
-    // Listen for auth changes
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session);
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-        
-        if (session?.user) {
-          setIsAdmin(session.user.email?.includes('admin') ?? false);
-        } else {
-          setIsAdmin(false);
+        if (mounted) {
+          console.log('Auth state changed:', event, session);
+          setSession(session);
+          setUser(session?.user ?? null);
+          setIsAdmin(session?.user?.email?.includes('admin') ?? false);
+          setLoading(false);
         }
       }
     );
+
+    // Initialize auth
+    initAuth();
     
-    // Set a timeout to prevent UI flickering for fast auth loads
-    const timer = setTimeout(() => {
-      setIsInitializing(false);
-    }, 1000);
-    
-    // If auth finishes loading before timeout, clear the timeout
-    if (!loading) {
-      clearTimeout(timer);
-      setIsInitializing(false);
-    }
-    
-    // Cleanup
+    // Cleanup function
     return () => {
+      mounted = false;
       subscription.unsubscribe();
-      clearTimeout(timer);
     };
-  }, [loading]);
+  }, []); // Remove the loading dependency that was causing the infinite loop
   
   const signIn = async (credentials: { email: string; password: string }): Promise<boolean> => {
     console.log('Attempting sign in...');
@@ -154,14 +142,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signOut
   };
 
-  console.log('Auth state:', { user: !!user, loading, isInitializing });
-
-  if (isInitializing) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-deep-ocean to-midnight-blue">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-12 w-12 animate-spin text-ocean-primary" />
-          <p className="text-lg font-medium text-gray-600">Loading FlowCraft...</p>
+          <Loader2 className="h-12 w-12 animate-spin text-neon-electric" />
+          <p className="text-lg font-medium text-white">Loading FlowCraft...</p>
         </div>
       </div>
     );
