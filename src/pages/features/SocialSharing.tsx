@@ -1,126 +1,200 @@
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'sonner';
+import { Calendar, Share2, MessageSquare, RefreshCw } from 'lucide-react';
+import { useAuthContext } from '@/context/AuthContext';
+import { handleOAuthCallback } from '@/utils/social/authentication';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-
-const SocialSharing = () => {
+const SocialSharing: React.FC = () => {
+  const { isAuthenticated } = useAuthContext();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
+  
+  useEffect(() => {
+    if (searchParams.get('code')) {
+      handleOAuthCallback(searchParams.get('code'), navigate);
+      setIsProcessingOAuth(true);
+    }
+  }, [searchParams, navigate]);
+  
+  if (isProcessingOAuth) {
+    return (
+      <div className="container max-w-6xl py-8">
+        <Card className="glass-card border-white/20">
+          <CardHeader>
+            <CardTitle className="text-center text-white">Processing Authentication</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center py-8">
+            <RefreshCw className="animate-spin h-12 w-12 mb-4 text-neon-electric" />
+            <p className="text-lg text-white">Completing your social media connection...</p>
+            <p className="text-sm text-gray-400 mt-2">Please don't close this window.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-grow">
-        <div className="container mx-auto px-4 py-16 md:py-24">
-          <div className="max-w-4xl mx-auto space-y-12">
-            <div className="text-center space-y-4">
-              <h1 className="text-3xl md:text-5xl font-bold">Social Media Integration</h1>
-              <p className="text-xl text-gray-700">
-                Automatically share your blog content across all your social media channels
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-2xl font-bold mb-4">Multi-Platform Publishing</h2>
-                <p className="text-gray-700 mb-6">
-                  Connect once and publish everywhere. Glidrclick formats your content perfectly for each 
-                  social platform, maximizing engagement and reach.
-                </p>
-                <ul className="space-y-3">
-                  {[
-                    "Facebook, Twitter, LinkedIn, and Instagram support",
-                    "Platform-specific content formatting",
-                    "Hashtag optimization for each network",
-                    "Image resizing for each platform's requirements",
-                    "Custom posting schedules per platform"
-                  ].map((feature, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="text-glidr-purple mr-2">✓</span>
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="space-y-4">
-                <div className="bg-gray-100 rounded-lg p-4">
-                  <div className="flex items-center space-x-2 mb-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xs">f</div>
-                    <div className="text-sm font-medium">Facebook Post</div>
-                  </div>
-                  <div className="bg-white shadow-sm rounded-md p-3 text-sm">
-                    <p className="mb-3">✨ New blog post: 10 Ways to Improve Your Content Strategy</p>
-                    <div className="h-20 bg-gray-200 rounded-md mb-2 flex items-center justify-center text-gray-400 text-xs">Featured Image</div>
-                    <p className="text-gray-700 text-xs">Read more at yourblog.com</p>
-                  </div>
-                </div>
-                
-                <div className="bg-gray-100 rounded-lg p-4">
-                  <div className="flex items-center space-x-2 mb-3">
-                    <div className="w-8 h-8 rounded-full bg-sky-500 flex items-center justify-center text-white font-bold text-xs">t</div>
-                    <div className="text-sm font-medium">Twitter Post</div>
-                  </div>
-                  <div className="bg-white shadow-sm rounded-md p-3 text-sm">
-                    <p>Just published: 10 Ways to Improve Your Content Strategy 🚀 Check it out! yourblog.com/content-strategy #ContentMarketing #BloggingTips</p>
-                  </div>
-                </div>
-                
-                <div className="bg-gray-100 rounded-lg p-4">
-                  <div className="flex items-center space-x-2 mb-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-800 flex items-center justify-center text-white font-bold text-xs">in</div>
-                    <div className="text-sm font-medium">LinkedIn Post</div>
-                  </div>
-                  <div className="bg-white shadow-sm rounded-md p-3 text-sm">
-                    <p className="mb-3">I just published a new article on improving your content strategy. Here are the key takeaways:</p>
-                    <ul className="list-disc pl-5 mb-2 text-xs">
-                      <li>Understanding your audience is crucial</li>
-                      <li>Consistent publishing improves engagement</li>
-                      <li>Quality beats quantity every time</li>
-                    </ul>
-                    <p className="text-gray-700 text-xs">Read the full article: yourblog.com</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="border-t border-gray-200 pt-12">
-              <h2 className="text-2xl font-bold mb-6">Optimize for Each Platform</h2>
-              <div className="grid md:grid-cols-3 gap-8">
-                {[
-                  {
-                    step: "1",
-                    title: "Connect Accounts",
-                    description: "Link your social media profiles with secure OAuth authentication."
-                  },
-                  {
-                    step: "2", 
-                    title: "Configure Templates",
-                    description: "Set up custom formats and styles for each platform's post."
-                  },
-                  {
-                    step: "3",
-                    title: "Automatic Publishing",
-                    description: "Your blog content is shared across all networks on schedule."
-                  }
-                ].map((item) => (
-                  <div key={item.step} className="bg-gray-50 rounded-lg p-6 border border-gray-100 relative">
-                    <div className="absolute -top-4 -left-4 w-8 h-8 rounded-full bg-glidr-purple text-white flex items-center justify-center font-bold">
-                      {item.step}
-                    </div>
-                    <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                    <p className="text-gray-700">{item.description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="bg-gradient-to-r from-glidr-purple/10 to-glidr-bright-purple/10 rounded-xl p-8 text-center">
-              <h2 className="text-2xl font-bold mb-4">Multiply your content's reach</h2>
-              <p className="text-lg mb-6">Join thousands of bloggers saving 10+ hours per week with Glidrclick</p>
-              <Button className="gradient-button text-white rounded-full px-8 py-6 text-lg">
-                Try Free for 7 Days <ArrowRight className="ml-2" size={18} />
+      <main className="flex-1 pt-20">
+        {/* Hero Section */}
+        <section className="py-16 relative">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-neon-electric/8 to-transparent rounded-full blur-3xl"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-neon-pink/8 to-transparent rounded-full blur-3xl"></div>
+          </div>
+          <div className="container mx-auto px-4 text-center relative z-10">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+              Social Media <span className="gradient-text">Integration</span>
+            </h1>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+              Connect all your social media accounts and manage everything from one powerful dashboard. 
+              Share, schedule, and engage across all platforms effortlessly.
+            </p>
+            {isAuthenticated ? (
+              <Button asChild size="lg" className="btn-neon">
+                <Link to="/dashboard/social">Connect Your Accounts</Link>
               </Button>
+            ) : (
+              <Button asChild size="lg" className="btn-neon">
+                <Link to="/auth?redirect=/dashboard/social">Try Social Sharing</Link>
+              </Button>
+            )}
+          </div>
+        </section>
+
+        {/* Features Grid */}
+        <section className="py-16">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <Card className="glass-card border-white/20 hover:border-neon-electric/50 transition-all duration-300">
+                <CardHeader className="bg-gradient-to-br from-blue-500/20 to-blue-700/20 text-white border-b border-white/10">
+                  <CardTitle className="flex items-center gap-2">
+                    <Share2 size={20} />
+                    <span>Unified Social Posting</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <p className="mb-4 text-gray-300">Share your content across multiple platforms simultaneously with a single click.</p>
+                  <p className="mb-6 text-sm text-gray-400">Connect your accounts and start posting to Facebook, Twitter, LinkedIn, and more.</p>
+                  {isAuthenticated ? (
+                    <Button asChild className="w-full btn-neon">
+                      <Link to="/dashboard/social">Connect Your Accounts</Link>
+                    </Button>
+                  ) : (
+                    <Button asChild className="w-full btn-neon">
+                      <Link to="/auth?redirect=/dashboard/social">Sign In to Connect</Link>
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+              
+              <Card className="glass-card border-white/20 hover:border-neon-electric/50 transition-all duration-300">
+                <CardHeader className="bg-gradient-to-br from-purple-500/20 to-purple-700/20 text-white border-b border-white/10">
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar size={20} />
+                    <span>Content Scheduling</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <p className="mb-4 text-gray-300">Plan and schedule your content for optimal engagement times across platforms.</p>
+                  <p className="mb-6 text-sm text-gray-400">Create a content calendar to maintain consistent presence on all your platforms.</p>
+                  {isAuthenticated ? (
+                    <Button asChild className="w-full btn-neon">
+                      <Link to="/dashboard/schedule">Manage Schedule</Link>
+                    </Button>
+                  ) : (
+                    <Button asChild className="w-full btn-neon">
+                      <Link to="/auth?redirect=/dashboard/schedule">Sign In to Schedule</Link>
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+              
+              <Card className="glass-card border-white/20 hover:border-neon-electric/50 transition-all duration-300">
+                <CardHeader className="bg-gradient-to-br from-green-500/20 to-green-700/20 text-white border-b border-white/10">
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageSquare size={20} />
+                    <span>Engagement Tracking</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <p className="mb-4 text-gray-300">Monitor mentions, comments, and messages across all platforms in one place.</p>
+                  <p className="mb-6 text-sm text-gray-400">Never miss an important comment or customer query again.</p>
+                  {isAuthenticated ? (
+                    <Button asChild className="w-full btn-neon">
+                      <Link to="/dashboard/analytics">View Analytics</Link>
+                    </Button>
+                  ) : (
+                    <Button asChild className="w-full btn-neon">
+                      <Link to="/auth?redirect=/dashboard/analytics">Sign In to Track</Link>
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </div>
-        </div>
+        </section>
+        
+        {/* How It Works */}
+        <section className="py-16 relative">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-1/3 right-1/3 w-96 h-96 bg-gradient-to-r from-neon-lime/8 to-transparent rounded-full blur-3xl"></div>
+          </div>
+          <div className="container mx-auto px-4 relative z-10">
+            <h2 className="text-3xl font-bold text-center mb-12 text-white">How It Works</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="bg-gradient-to-r from-neon-electric to-neon-pink rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold">1</span>
+                </div>
+                <h3 className="text-xl font-semibold mb-4 text-white">Connect Your Accounts</h3>
+                <p className="text-gray-300">Securely link your social media accounts with just a few clicks.</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="bg-gradient-to-r from-neon-electric to-neon-pink rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold">2</span>
+                </div>
+                <h3 className="text-xl font-semibold mb-4 text-white">Create & Schedule Content</h3>
+                <p className="text-gray-300">Write once and publish to multiple platforms with customized scheduling.</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="bg-gradient-to-r from-neon-electric to-neon-pink rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold">3</span>
+                </div>
+                <h3 className="text-xl font-semibold mb-4 text-white">Track Performance</h3>
+                <p className="text-gray-300">Analyze engagement metrics and optimize your social media strategy.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        {/* CTA Section */}
+        <section className="py-16">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl font-bold mb-6 text-white">Ready to Simplify Your Social Media Management?</h2>
+            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+              Join thousands of businesses that use FlowCraft to streamline their social media presence.
+            </p>
+            {isAuthenticated ? (
+              <Button asChild size="lg" className="btn-neon">
+                <Link to="/dashboard/social">Get Started Now</Link>
+              </Button>
+            ) : (
+              <Button asChild size="lg" className="btn-neon">
+                <Link to="/auth?redirect=/dashboard">Sign Up Free</Link>
+              </Button>
+            )}
+          </div>
+        </section>
       </main>
       <Footer />
     </div>

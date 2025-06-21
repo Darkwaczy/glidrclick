@@ -1,106 +1,154 @@
 
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PenTool, Zap, Target, Users } from 'lucide-react';
+import { useAuthContext } from '@/context/AuthContext';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
-const AIWriting = () => {
+const AIWriting: React.FC = () => {
+  const { isAuthenticated } = useAuthContext();
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-grow">
-        <div className="container mx-auto px-4 py-16 md:py-24">
-          <div className="max-w-4xl mx-auto space-y-12">
-            <div className="text-center space-y-4">
-              <h1 className="text-3xl md:text-5xl font-bold">AI-Powered Content Creation</h1>
-              <p className="text-xl text-gray-700">
-                Generate high-quality, SEO-optimized blog posts with a single click
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-2xl font-bold mb-4">Smart Content Generation</h2>
-                <p className="text-gray-700 mb-6">
-                  Our advanced AI understands your brand voice, industry context, and audience preferences
-                  to create engaging content that resonates with your readers.
-                </p>
-                <ul className="space-y-3">
-                  {[
-                    "Human-like writing that passes AI detection",
-                    "SEO-optimized for better search rankings",
-                    "Customizable tone and style options",
-                    "Factually accurate with proper citations",
-                    "Multi-language support"
-                  ].map((feature, index) => (
-                    <li key={index} className="flex items-start">
-                      <span className="text-glidr-purple mr-2">✓</span>
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="bg-gray-100 p-8 rounded-lg shadow-inner">
-                <div className="bg-white shadow-md rounded-md p-6 border border-gray-200">
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="flex space-x-1">
-                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                    </div>
-                    <div className="text-xs text-gray-500">AI Writer</div>
-                  </div>
-                  <h3 className="text-lg font-bold mb-2">10 Ways to Improve Your Content Strategy</h3>
-                  <div className="space-y-3 text-sm text-gray-700">
-                    <p>Creating compelling content starts with understanding your audience...</p>
-                    <p>First, research your target demographic and identify their pain points...</p>
-                    <p className="animate-pulse border-r-2 border-glidr-bright-purple">Second, develop a consistent publishing schedule that keeps readers engaged...|</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="border-t border-gray-200 pt-12">
-              <h2 className="text-2xl font-bold mb-6">How It Works</h2>
-              <div className="grid md:grid-cols-3 gap-8">
-                {[
-                  {
-                    step: "1",
-                    title: "Define Your Topic",
-                    description: "Choose your subject matter, keywords, and content parameters."
-                  },
-                  {
-                    step: "2", 
-                    title: "AI Does the Writing",
-                    description: "Our AI crafts a complete article with proper structure and SEO optimization."
-                  },
-                  {
-                    step: "3",
-                    title: "Review & Publish",
-                    description: "Make any final edits and publish directly to your blog with one click."
-                  }
-                ].map((item) => (
-                  <div key={item.step} className="bg-gray-50 rounded-lg p-6 border border-gray-100 relative">
-                    <div className="absolute -top-4 -left-4 w-8 h-8 rounded-full bg-glidr-purple text-white flex items-center justify-center font-bold">
-                      {item.step}
-                    </div>
-                    <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                    <p className="text-gray-700">{item.description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="bg-gradient-to-r from-glidr-purple/10 to-glidr-bright-purple/10 rounded-xl p-8 text-center">
-              <h2 className="text-2xl font-bold mb-4">Ready to revolutionize your content creation?</h2>
-              <p className="text-lg mb-6">Join thousands of bloggers saving 10+ hours per week with Glidrclick</p>
-              <Button className="gradient-button text-white rounded-full px-8 py-6 text-lg">
-                Try Free for 7 Days <ArrowRight className="ml-2" size={18} />
+      <main className="flex-1 pt-20">
+        {/* Hero Section */}
+        <section className="py-16 relative">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-neon-electric/8 to-transparent rounded-full blur-3xl"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-neon-pink/8 to-transparent rounded-full blur-3xl"></div>
+          </div>
+          <div className="container mx-auto px-4 text-center relative z-10">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+              AI-Powered <span className="gradient-text">Content Writing</span>
+            </h1>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+              Create high-quality, engaging content in seconds with our advanced AI writing assistant. 
+              From blog posts to social media captions, let AI handle your content creation.
+            </p>
+            {isAuthenticated ? (
+              <Button asChild size="lg" className="btn-neon">
+                <Link to="/dashboard/content">Start Writing</Link>
               </Button>
+            ) : (
+              <Button asChild size="lg" className="btn-neon">
+                <Link to="/auth?redirect=/dashboard/content">Try AI Writing</Link>
+              </Button>
+            )}
+          </div>
+        </section>
+
+        {/* Features Grid */}
+        <section className="py-16">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              <Card className="glass-card border-white/20 hover:border-neon-electric/50 transition-all duration-300">
+                <CardHeader className="text-center">
+                  <div className="bg-gradient-to-r from-neon-electric to-neon-pink rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <PenTool className="text-white" size={24} />
+                  </div>
+                  <CardTitle className="text-white">Smart Content Generation</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p className="text-gray-300">Generate blog posts, articles, and social media content with advanced AI that understands your brand voice.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="glass-card border-white/20 hover:border-neon-electric/50 transition-all duration-300">
+                <CardHeader className="text-center">
+                  <div className="bg-gradient-to-r from-neon-electric to-neon-pink rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <Zap className="text-white" size={24} />
+                  </div>
+                  <CardTitle className="text-white">Lightning Fast</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p className="text-gray-300">Create content in seconds, not hours. Our AI processes your requirements instantly for immediate results.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="glass-card border-white/20 hover:border-neon-electric/50 transition-all duration-300">
+                <CardHeader className="text-center">
+                  <div className="bg-gradient-to-r from-neon-electric to-neon-pink rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <Target className="text-white" size={24} />
+                  </div>
+                  <CardTitle className="text-white">SEO Optimized</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p className="text-gray-300">All content is automatically optimized for search engines to help your content rank higher and reach more people.</p>
+                </CardContent>
+              </Card>
+
+              <Card className="glass-card border-white/20 hover:border-neon-electric/50 transition-all duration-300">
+                <CardHeader className="text-center">
+                  <div className="bg-gradient-to-r from-neon-electric to-neon-pink rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <Users className="text-white" size={24} />
+                  </div>
+                  <CardTitle className="text-white">Multiple Formats</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p className="text-gray-300">Create blog posts, social media content, product descriptions, emails, and more with one powerful tool.</p>
+                </CardContent>
+              </Card>
             </div>
           </div>
-        </div>
+        </section>
+
+        {/* How It Works */}
+        <section className="py-16 relative">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-1/3 right-1/3 w-96 h-96 bg-gradient-to-r from-neon-lime/8 to-transparent rounded-full blur-3xl"></div>
+          </div>
+          <div className="container mx-auto px-4 relative z-10">
+            <h2 className="text-3xl font-bold text-center mb-12 text-white">How AI Writing Works</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="bg-gradient-to-r from-neon-electric to-neon-pink rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold">1</span>
+                </div>
+                <h3 className="text-xl font-semibold mb-4 text-white">Describe Your Content</h3>
+                <p className="text-gray-300">Tell our AI what you want to write about, your target audience, and the tone you prefer.</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="bg-gradient-to-r from-neon-electric to-neon-pink rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold">2</span>
+                </div>
+                <h3 className="text-xl font-semibold mb-4 text-white">AI Generates Content</h3>
+                <p className="text-gray-300">Our advanced AI processes your requirements and creates high-quality, original content in seconds.</p>
+              </div>
+              
+              <div className="text-center">
+                <div className="bg-gradient-to-r from-neon-electric to-neon-pink rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold">3</span>
+                </div>
+                <h3 className="text-xl font-semibold mb-4 text-white">Edit & Publish</h3>
+                <p className="text-gray-300">Review, edit if needed, and publish directly to your blog or social media platforms.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl font-bold mb-6 text-white">Ready to Transform Your Content Creation?</h2>
+            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+              Join thousands of content creators who use FlowCraft AI to produce amazing content faster than ever.
+            </p>
+            {isAuthenticated ? (
+              <Button asChild size="lg" className="btn-neon">
+                <Link to="/dashboard/content">Start Creating Content</Link>
+              </Button>
+            ) : (
+              <Button asChild size="lg" className="btn-neon">
+                <Link to="/auth?redirect=/dashboard">Get Started Free</Link>
+              </Button>
+            )}
+          </div>
+        </section>
       </main>
       <Footer />
     </div>

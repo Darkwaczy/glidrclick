@@ -24,7 +24,6 @@ const Contact = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the form data to your backend
     toast.success("Thank you for your message! We'll get back to you soon.");
     setFormData({ name: "", email: "", subject: "", message: "" });
   };
@@ -34,13 +33,17 @@ const Contact = () => {
       <Header />
       <main className="flex-1 pt-20">
         {/* Hero Section */}
-        <section className="bg-gradient-to-b from-[#e5deff] to-white py-16">
-          <div className="container mx-auto px-4 text-center">
+        <section className="py-16 relative">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-neon-electric/8 to-transparent rounded-full blur-3xl"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-neon-pink/8 to-transparent rounded-full blur-3xl"></div>
+          </div>
+          <div className="container mx-auto px-4 text-center relative z-10">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Get in <span className="text-[#9b87f5]">Touch</span>
+              Get in <span className="gradient-text">Touch</span>
             </h1>
-            <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-              Have questions about Glidrclick? Need help getting started? 
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Have questions about FlowCraft? Need help getting started? 
               We're here to help you succeed with your content marketing.
             </p>
           </div>
@@ -51,15 +54,15 @@ const Contact = () => {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
               {/* Contact Form */}
-              <Card>
+              <Card className="glass-card border-white/20">
                 <CardHeader>
-                  <CardTitle>Send us a Message</CardTitle>
+                  <CardTitle className="text-white">Send us a Message</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label htmlFor="name" className="block text-sm font-medium mb-2">
+                        <label htmlFor="name" className="block text-sm font-medium mb-2 text-gray-300">
                           Name *
                         </label>
                         <Input
@@ -69,10 +72,11 @@ const Contact = () => {
                           onChange={handleInputChange}
                           required
                           placeholder="Your full name"
+                          className="glass-card text-white placeholder-gray-400"
                         />
                       </div>
                       <div>
-                        <label htmlFor="email" className="block text-sm font-medium mb-2">
+                        <label htmlFor="email" className="block text-sm font-medium mb-2 text-gray-300">
                           Email *
                         </label>
                         <Input
@@ -83,11 +87,12 @@ const Contact = () => {
                           onChange={handleInputChange}
                           required
                           placeholder="your@email.com"
+                          className="glass-card text-white placeholder-gray-400"
                         />
                       </div>
                     </div>
                     <div>
-                      <label htmlFor="subject" className="block text-sm font-medium mb-2">
+                      <label htmlFor="subject" className="block text-sm font-medium mb-2 text-gray-300">
                         Subject *
                       </label>
                       <Input
@@ -97,10 +102,11 @@ const Contact = () => {
                         onChange={handleInputChange}
                         required
                         placeholder="What's this about?"
+                        className="glass-card text-white placeholder-gray-400"
                       />
                     </div>
                     <div>
-                      <label htmlFor="message" className="block text-sm font-medium mb-2">
+                      <label htmlFor="message" className="block text-sm font-medium mb-2 text-gray-300">
                         Message *
                       </label>
                       <Textarea
@@ -111,9 +117,10 @@ const Contact = () => {
                         required
                         rows={6}
                         placeholder="Tell us how we can help you..."
+                        className="glass-card text-white placeholder-gray-400"
                       />
                     </div>
-                    <Button type="submit" className="w-full gradient-button">
+                    <Button type="submit" className="w-full btn-neon">
                       Send Message
                     </Button>
                   </form>
@@ -122,14 +129,14 @@ const Contact = () => {
 
               {/* Contact Information */}
               <div className="space-y-6">
-                <Card>
+                <Card className="glass-card border-white/20">
                   <CardContent className="p-6">
                     <div className="flex items-start space-x-4">
-                      <Mail className="text-[#9b87f5] mt-1" size={24} />
+                      <Mail className="text-neon-electric mt-1" size={24} />
                       <div>
-                        <h3 className="font-semibold mb-2">Email Support</h3>
-                        <p className="text-gray-600">support@glidrclick.com</p>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <h3 className="font-semibold mb-2 text-white">Email Support</h3>
+                        <p className="text-gray-300">support@flowcraft.com</p>
+                        <p className="text-sm text-gray-400 mt-1">
                           We typically respond within 24 hours
                         </p>
                       </div>
@@ -137,14 +144,14 @@ const Contact = () => {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="glass-card border-white/20">
                   <CardContent className="p-6">
                     <div className="flex items-start space-x-4">
-                      <Phone className="text-[#9b87f5] mt-1" size={24} />
+                      <Phone className="text-neon-electric mt-1" size={24} />
                       <div>
-                        <h3 className="font-semibold mb-2">Phone Support</h3>
-                        <p className="text-gray-600">+1 (555) 123-4567</p>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <h3 className="font-semibold mb-2 text-white">Phone Support</h3>
+                        <p className="text-gray-300">+1 (555) 123-4567</p>
+                        <p className="text-sm text-gray-400 mt-1">
                           Available for Premium and Enterprise customers
                         </p>
                       </div>
@@ -152,15 +159,15 @@ const Contact = () => {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="glass-card border-white/20">
                   <CardContent className="p-6">
                     <div className="flex items-start space-x-4">
-                      <Clock className="text-[#9b87f5] mt-1" size={24} />
+                      <Clock className="text-neon-electric mt-1" size={24} />
                       <div>
-                        <h3 className="font-semibold mb-2">Business Hours</h3>
-                        <p className="text-gray-600">Monday - Friday: 9AM - 6PM EST</p>
-                        <p className="text-gray-600">Saturday: 10AM - 4PM EST</p>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <h3 className="font-semibold mb-2 text-white">Business Hours</h3>
+                        <p className="text-gray-300">Monday - Friday: 9AM - 6PM EST</p>
+                        <p className="text-gray-300">Saturday: 10AM - 4PM EST</p>
+                        <p className="text-sm text-gray-400 mt-1">
                           Emergency support available 24/7 for Enterprise customers
                         </p>
                       </div>
@@ -168,13 +175,13 @@ const Contact = () => {
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="glass-card border-white/20">
                   <CardContent className="p-6">
                     <div className="flex items-start space-x-4">
-                      <MapPin className="text-[#9b87f5] mt-1" size={24} />
+                      <MapPin className="text-neon-electric mt-1" size={24} />
                       <div>
-                        <h3 className="font-semibold mb-2">Office Location</h3>
-                        <p className="text-gray-600">
+                        <h3 className="font-semibold mb-2 text-white">Office Location</h3>
+                        <p className="text-gray-300">
                           123 Innovation Drive<br />
                           Tech Hub, CA 94105<br />
                           United States
@@ -189,32 +196,35 @@ const Contact = () => {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+        <section className="py-16 relative">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-1/3 left-1/3 w-96 h-96 bg-gradient-to-r from-neon-lime/8 to-transparent rounded-full blur-3xl"></div>
+          </div>
+          <div className="container mx-auto px-4 relative z-10">
+            <h2 className="text-3xl font-bold text-center mb-12 text-white">Frequently Asked Questions</h2>
             <div className="max-w-3xl mx-auto space-y-6">
-              <Card>
+              <Card className="glass-card border-white/20">
                 <CardContent className="p-6">
-                  <h3 className="font-semibold mb-2">How quickly can I get started?</h3>
-                  <p className="text-gray-600">
-                    You can start using Glidrclick immediately after signing up. Our onboarding process 
+                  <h3 className="font-semibold mb-2 text-white">How quickly can I get started?</h3>
+                  <p className="text-gray-300">
+                    You can start using FlowCraft immediately after signing up. Our onboarding process 
                     takes less than 5 minutes, and you'll be creating content right away.
                   </p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="glass-card border-white/20">
                 <CardContent className="p-6">
-                  <h3 className="font-semibold mb-2">Do you offer training or onboarding?</h3>
-                  <p className="text-gray-600">
+                  <h3 className="font-semibold mb-2 text-white">Do you offer training or onboarding?</h3>
+                  <p className="text-gray-300">
                     Yes! We provide comprehensive onboarding for all new users, plus ongoing training 
                     webinars and detailed documentation to help you get the most out of our platform.
                   </p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="glass-card border-white/20">
                 <CardContent className="p-6">
-                  <h3 className="font-semibold mb-2">Can I cancel my subscription anytime?</h3>
-                  <p className="text-gray-600">
+                  <h3 className="font-semibold mb-2 text-white">Can I cancel my subscription anytime?</h3>
+                  <p className="text-gray-300">
                     Absolutely. You can cancel your subscription at any time with no cancellation fees. 
                     Your account will remain active until the end of your current billing cycle.
                   </p>
