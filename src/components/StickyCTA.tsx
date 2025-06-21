@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { X, ArrowRight } from "lucide-react";
+import { X, ArrowRight, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const StickyCTA = () => {
@@ -11,7 +11,7 @@ const StickyCTA = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrolled = window.scrollY > 500; // Show after scrolling 500px
+      const scrolled = window.scrollY > 500;
       setIsVisible(scrolled && !isDismissed);
     };
 
@@ -31,30 +31,40 @@ const StickyCTA = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in">
-      <div className="bg-gradient-to-r from-[#9b87f5] to-[#7E69AB] rounded-full shadow-2xl border border-white/20 backdrop-blur-sm">
-        <div className="flex items-center px-6 py-4 text-white">
-          <div className="mr-4">
-            <p className="font-semibold text-sm">Start Your 7-Day Free Trial</p>
-            <p className="text-xs opacity-90">No credit card required</p>
+    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 animate-slide-up max-w-md w-full mx-4">
+      <div className="glass-card border-white/20 rounded-2xl shadow-2xl relative overflow-hidden">
+        {/* Background Glow */}
+        <div className="absolute inset-0 bg-gradient-to-r from-neon-electric/10 via-neon-pink/10 to-neon-lime/10"></div>
+        
+        <div className="relative z-10 flex items-center p-6">
+          <div className="flex-shrink-0 mr-4">
+            <div className="w-12 h-12 bg-gradient-to-r from-neon-electric to-neon-pink rounded-xl flex items-center justify-center animate-neon-glow">
+              <Sparkles className="text-white" size={24} />
+            </div>
           </div>
           
-          <Button
-            onClick={handleGetStarted}
-            size="sm"
-            className="bg-white text-[#9b87f5] hover:bg-gray-100 mr-3 font-semibold"
-          >
-            Get Started
-            <ArrowRight size={16} className="ml-1" />
-          </Button>
+          <div className="flex-1 min-w-0 mr-4">
+            <p className="font-bold text-white text-lg mb-1">Start Your Free Trial</p>
+            <p className="text-gray-300 text-sm">Transform your content strategy today</p>
+          </div>
           
-          <button
-            onClick={handleDismiss}
-            className="text-white/70 hover:text-white transition-colors p-1"
-            aria-label="Dismiss"
-          >
-            <X size={16} />
-          </button>
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={handleGetStarted}
+              className="btn-neon text-white font-semibold px-6 py-3 text-sm group"
+            >
+              Get Started
+              <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
+            </Button>
+            
+            <button
+              onClick={handleDismiss}
+              className="p-2 text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/10"
+              aria-label="Dismiss"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
       </div>
     </div>

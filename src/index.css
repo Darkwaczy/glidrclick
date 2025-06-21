@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -92,12 +92,14 @@
   }
 
   body {
-    @apply bg-background text-foreground font-inter;
+    @apply bg-dark-primary text-white font-inter;
     font-feature-settings: "rlig" 1, "calt" 1;
+    background: linear-gradient(135deg, #0D1117 0%, #161B22 50%, #21262D 100%);
+    min-height: 100vh;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-poppins;
+    @apply font-space;
   }
 }
 
@@ -105,58 +107,95 @@
   font-family: 'Inter', sans-serif;
 }
 
-.font-poppins {
-  font-family: 'Poppins', sans-serif;
+.font-space {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* Glassmorphism utilities */
+.glass-card {
+  @apply backdrop-blur-xl bg-glass-white border border-white/20 rounded-2xl shadow-2xl;
+}
+
+.glass-dark {
+  @apply backdrop-blur-xl bg-glass-dark border border-white/10 rounded-2xl;
+}
+
+/* Neon text effects */
+.neon-text {
+  @apply text-neon-electric;
+  text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 40px currentColor;
+}
+
+.neon-pink {
+  @apply text-neon-pink;
+  text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 40px currentColor;
+}
+
+.neon-lime {
+  @apply text-neon-lime;
+  text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 40px currentColor;
+}
+
+/* Gradient backgrounds */
+.gradient-neon {
+  background: linear-gradient(45deg, #00F5FF, #FF1493, #32CD32, #9D4EDD);
+  background-size: 300% 300%;
+  animation: gradient-shift 3s ease infinite;
 }
 
 .gradient-text {
-  @apply bg-gradient-to-r from-ocean-primary to-ocean-accent bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-neon-electric via-neon-pink to-neon-lime bg-clip-text text-transparent;
 }
 
-.gradient-button {
-  @apply bg-gradient-to-r from-ocean-primary to-ocean-secondary hover:from-ocean-secondary hover:to-ocean-accent transition-all duration-300;
+/* Button styles */
+.btn-neon {
+  @apply relative px-8 py-4 rounded-full font-semibold transition-all duration-300;
+  background: linear-gradient(45deg, #00F5FF, #FF1493);
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
 }
 
-.gradient-border {
-  @apply border-2 border-transparent bg-gradient-to-r from-ocean-primary to-ocean-secondary bg-origin-border;
+.btn-neon:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 40px rgba(0, 245, 255, 0.6);
 }
 
-.ocean-bg {
-  background: linear-gradient(-45deg, #E8F4F6, #A4D4DB, #6BB5C0, #4A9BA5);
-  background-size: 300% 300%;
-  animation: gradient-flow 15s ease infinite;
+.btn-glass {
+  @apply glass-card px-8 py-4 font-semibold transition-all duration-300 hover:bg-white/20;
 }
 
-.wave-pattern {
+/* Floating particles */
+.floating-particles {
   position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  z-index: 0;
-}
-
-.wave {
-  position: absolute;
-  border-radius: 50%;
-  background: linear-gradient(to right, rgba(30, 95, 122, 0.1), rgba(74, 155, 165, 0.1));
-  animation: drift 8s infinite ease-in-out;
-}
-
-.ocean-particles {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  z-index: 0;
+  pointer-events: none;
 }
 
 .particle {
   position: absolute;
+  background: radial-gradient(circle, rgba(0, 245, 255, 0.8) 0%, transparent 70%);
   border-radius: 50%;
-  background: linear-gradient(to right, rgba(30, 95, 122, 0.2), rgba(107, 181, 192, 0.2));
-  animation: float 6s infinite ease-in-out;
+  animation: float 8s infinite ease-in-out;
+}
+
+.particle:nth-child(2) { animation-delay: -2s; }
+.particle:nth-child(3) { animation-delay: -4s; }
+.particle:nth-child(4) { animation-delay: -6s; }
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-dark-secondary;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-neon-electric/50 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-neon-electric/70;
 }
