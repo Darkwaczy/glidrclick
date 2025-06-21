@@ -17,6 +17,8 @@ const ContentEditor: React.FC<ContentEditorProps> = ({
 }) => {
   const handleFormatting = (formatType: 'bold' | 'italic' | 'link' | 'youtube') => {
     const textarea = document.getElementById('content-editor') as HTMLTextAreaElement;
+    if (!textarea) return;
+    
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = content.substring(start, end);
@@ -63,6 +65,7 @@ const ContentEditor: React.FC<ContentEditorProps> = ({
           variant="outline" 
           size="sm" 
           onClick={() => handleFormatting('bold')}
+          className="bg-white/10 border-white/20 text-white hover:bg-white/20"
         >
           <Bold size={16} className="mr-1" /> Bold
         </Button>
@@ -71,6 +74,7 @@ const ContentEditor: React.FC<ContentEditorProps> = ({
           variant="outline" 
           size="sm" 
           onClick={() => handleFormatting('italic')}
+          className="bg-white/10 border-white/20 text-white hover:bg-white/20"
         >
           <Italic size={16} className="mr-1" /> Italic
         </Button>
@@ -79,6 +83,7 @@ const ContentEditor: React.FC<ContentEditorProps> = ({
           variant="outline" 
           size="sm" 
           onClick={() => handleFormatting('link')}
+          className="bg-white/10 border-white/20 text-white hover:bg-white/20"
         >
           <Link size={16} className="mr-1" /> Link
         </Button>
@@ -87,20 +92,20 @@ const ContentEditor: React.FC<ContentEditorProps> = ({
           variant="outline" 
           size="sm" 
           onClick={() => handleFormatting('youtube')}
+          className="bg-white/10 border-white/20 text-white hover:bg-white/20"
         >
           <Youtube size={16} className="mr-1" /> Embed Video
         </Button>
       </div>
       
-      <Label htmlFor="content-editor">Content</Label>
       <Textarea
         id="content-editor"
         placeholder="Write your post content here..."
         value={content}
         onChange={(e) => onChange(e.target.value)}
-        className="min-h-[250px]"
+        className="min-h-[250px] bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:border-neon-electric/50 resize-none"
       />
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-gray-400">
         Use the formatting buttons above to style your content.
       </p>
     </div>

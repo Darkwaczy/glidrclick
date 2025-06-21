@@ -54,19 +54,19 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({
 
   return (
     <div className="space-y-3">
-      <Label htmlFor="image-prompt">Generate Featured Image</Label>
       <div className="space-y-2">
         <Input
           id="image-prompt"
           placeholder="Describe the image you want to generate"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
+          className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
         />
         <Button 
           type="button"
           onClick={handleGenerateImage} 
           disabled={isGenerating || !prompt.trim()}
-          className="w-full"
+          className="w-full bg-neon-electric/20 border-neon-electric/50 text-neon-electric hover:bg-neon-electric/30"
         >
           {isGenerating ? (
             <>
@@ -79,7 +79,7 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({
           )}
         </Button>
       </div>
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-gray-400">
         Create a custom image based on your description using AI.
       </p>
     </div>

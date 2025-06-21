@@ -22,20 +22,23 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="tone">Select Content Tone</Label>
       <Select value={selectedTone} onValueChange={onSelectTone}>
-        <SelectTrigger>
+        <SelectTrigger className="bg-white/10 border-white/20 text-white">
           <SelectValue placeholder="Select a tone" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-dark-primary border-white/20">
           {tones.map(tone => (
-            <SelectItem key={tone.id} value={tone.id}>
+            <SelectItem 
+              key={tone.id} 
+              value={tone.id}
+              className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white"
+            >
               {tone.name}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      <p className="text-xs text-gray-500 mt-1">
+      <p className="text-xs text-gray-400 mt-1">
         The tone affects how your content will be perceived by your audience.
       </p>
     </div>

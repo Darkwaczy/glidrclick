@@ -22,18 +22,17 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({
 
   return (
     <div className="space-y-3">
-      <Label>Choose AI Engine</Label>
       <RadioGroup 
         value={selectedModel} 
         onValueChange={onSelectModel}
         className="gap-2"
       >
         {aiModels.map(model => (
-          <div key={model.id} className="flex items-center space-x-2 border rounded-md p-3 hover:bg-gray-50">
-            <RadioGroupItem value={model.id} id={model.id} />
-            <Label htmlFor={model.id} className="flex-1 cursor-pointer">
+          <div key={model.id} className="flex items-center space-x-2 border border-white/20 rounded-md p-3 hover:bg-white/5">
+            <RadioGroupItem value={model.id} id={model.id} className="border-white/20 text-white" />
+            <Label htmlFor={model.id} className="flex-1 cursor-pointer text-white">
               <div className="font-medium">{model.name}</div>
-              <p className="text-sm text-gray-500">{model.description}</p>
+              <p className="text-sm text-gray-400">{model.description}</p>
             </Label>
           </div>
         ))}

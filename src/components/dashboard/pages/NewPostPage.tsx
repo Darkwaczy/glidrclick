@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -19,8 +18,6 @@ import {
   Save, 
   Eye,
   Hash,
-  AtSign,
-  Link,
   Plus,
   X,
   Wand2,
@@ -34,6 +31,8 @@ import PostLengthSelector from '../content/PostLengthSelector';
 import SectionTitlesInput from '../content/SectionTitlesInput';
 import AIContentGenerator from '../content/AIContentGenerator';
 import WordCounter from '../content/WordCounter';
+import ContentEditor from '../content/ContentEditor';
+import ImageGenerator from '../content/ImageGenerator';
 import { generateBlogContent } from '@/services/aiService';
 
 const NewPostPage: React.FC = () => {
@@ -56,6 +55,7 @@ const NewPostPage: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
   const [generatedTitle, setGeneratedTitle] = useState('');
+  const [generatedImage, setGeneratedImage] = useState('');
   
   const platforms = [
     { id: 'facebook', name: 'Facebook', connected: true },
@@ -114,6 +114,10 @@ const NewPostPage: React.FC = () => {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleImageGenerated = (imageUrl: string) => {
+    setGeneratedImage(imageUrl);
   };
 
   const handlePublish = () => {
@@ -197,43 +201,60 @@ const NewPostPage: React.FC = () => {
                   
                   <div className="space-y-2">
                     <Label htmlFor="content" className="text-white">Content</Label>
-                    <Textarea 
-                      id="content"
-                      placeholder="What's on your mind? Share your thoughts..."
-                      className="min-h-[300px] bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                      value={manualContent}
-                      onChange={(e) => setManualContent(e.target.value)}
+                    <ContentEditor
+                      content={manualContent}
+                      onChange={setManualContent}
                     />
                   </div>
                 </TabsContent>
 
                 <TabsContent value="ai" className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <CategorySelector
-                      selectedCategory={selectedCategory}
-                      onSelectCategory={setSelectedCategory}
-                    />
-                    <ToneSelector
-                      selectedTone={selectedTone}
-                      onSelectTone={setSelectedTone}
-                    />
+                    <div className="space-y-2">
+                      <Label className="text-white">Select Category</Label>
+                      <CategorySelector
+                        selectedCategory={selectedCategory}
+                        onSelectCategory={setSelectedCategory}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-white">Content Tone</Label>
+                      <ToneSelector
+                        selectedTone={selectedTone}
+                        onSelectTone={setSelectedTone}
+                      />
+                    </div>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <PostLengthSelector
-                      length={postLength}
-                      onLengthChange={setPostLength}
-                    />
-                    <AIContentGenerator
-                      selectedModel={selectedAIModel}
-                      onSelectModel={setSelectedAIModel}
-                    />
+                    <div className="space-y-2">
+                      <Label className="text-white">Post Length</Label>
+                      <PostLengthSelector
+                        length={postLength}
+                        onLengthChange={setPostLength}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-white">AI Engine</Label>
+                      <AIContentGenerator
+                        selectedModel={selectedAIModel}
+                        onSelectModel={setSelectedAIModel}
+                      />
+                    </div>
                   </div>
                   
-                  <SectionTitlesInput
-                    sections={sectionTitles}
-                    onSectionsChange={setSectionTitles}
-                  />
+                  <div className="space-y-2">
+                    <Label className="text-white">Section Titles</Label>
+                    <SectionTitlesInput
+                      sections={sectionTitles}
+                      onSectionsChange={setSectionTitles}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-white">Generate Image</Label>
+                    <ImageGenerator onImageGenerated={handleImageGenerated} />
+                  </div>
                   
                   <div className="flex justify-center">
                     <Button 
@@ -262,18 +283,28 @@ const NewPostPage: React.FC = () => {
                         <Input 
                           value={generatedTitle}
                           onChange={(e) => setGeneratedTitle(e.target.value)}
-                          className="bg-white/10 border-white/20 text-white"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
                         />
                       </div>
                       
                       <div className="space-y-2">
                         <Label className="text-white">Generated Content</Label>
-                        <Textarea 
-                          value={generatedContent}
-                          onChange={(e) => setGeneratedContent(e.target.value)}
-                          className="min-h-[300px] bg-white/10 border-white/20 text-white"
+                        <ContentEditor
+                          content={generatedContent}
+                          onChange={setGeneratedContent}
                         />
                       </div>
+
+                      {generatedImage && (
+                        <div className="space-y-2">
+                          <Label className="text-white">Generated Image</Label>
+                          <img 
+                            src={generatedImage} 
+                            alt="Generated content image" 
+                            className="w-full max-w-md rounded-lg border border-white/20"
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </TabsContent>
@@ -421,9 +452,9 @@ const NewPostPage: React.FC = () => {
                   <SelectValue placeholder="Choose when to publish" />
                 </SelectTrigger>
                 <SelectContent className="bg-dark-primary border-white/20">
-                  <SelectItem value="now" className="text-white">Publish Now</SelectItem>
-                  <SelectItem value="schedule" className="text-white">Schedule for Later</SelectItem>
-                  <SelectItem value="draft" className="text-white">Save as Draft</SelectItem>
+                  <SelectItem value="now" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Publish Now</SelectItem>
+                  <SelectItem value="schedule" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Schedule for Later</SelectItem>
+                  <SelectItem value="draft" className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white">Save as Draft</SelectItem>
                 </SelectContent>
               </Select>
               
@@ -456,19 +487,40 @@ const NewPostPage: React.FC = () => {
             <CardContent>
               <div className="bg-white/5 p-4 rounded-lg border border-white/10">
                 {getCurrentTitle() || getCurrentContent() ? (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {getCurrentTitle() && (
                       <h3 className="font-bold text-white text-lg">{getCurrentTitle()}</h3>
                     )}
                     {getCurrentContent() && (
-                      <div className="text-gray-300 text-sm whitespace-pre-wrap">
-                        {getCurrentContent().substring(0, 200)}
-                        {getCurrentContent().length > 200 && '...'}
+                      <div className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">
+                        {getCurrentContent().length > 300 
+                          ? getCurrentContent().substring(0, 300) + '...'
+                          : getCurrentContent()
+                        }
+                      </div>
+                    )}
+                    {generatedImage && (
+                      <img 
+                        src={generatedImage} 
+                        alt="Preview" 
+                        className="w-full max-w-48 rounded border border-white/20"
+                      />
+                    )}
+                    {hashtags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {hashtags.slice(0, 5).map((tag, index) => (
+                          <span key={index} className="text-neon-electric text-xs">
+                            #{tag}
+                          </span>
+                        ))}
+                        {hashtags.length > 5 && (
+                          <span className="text-gray-400 text-xs">+{hashtags.length - 5} more</span>
+                        )}
                       </div>
                     )}
                   </div>
                 ) : (
-                  <p className="text-gray-300 text-sm">
+                  <p className="text-gray-400 text-sm">
                     Your post preview will appear here as you type...
                   </p>
                 )}

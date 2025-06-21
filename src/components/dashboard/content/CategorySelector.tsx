@@ -1,10 +1,9 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
 
 interface CategorySelectorProps {
@@ -16,110 +15,72 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   selectedCategory,
   onSelectCategory
 }) => {
-  const defaultCategories = [
-    "Travel", 
-    "Education", 
-    "Hotels", 
-    "Lifestyle",
-    "Flight", 
-    "Tours and Adventure"
-  ];
-  
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState([
+    "Travel", "Education", "Hotels", "Lifestyle", "Flight", "Tours and Adventure"
+  ]);
   const [newCategory, setNewCategory] = useState("");
-  const [showAddForm, setShowAddForm] = useState(false);
-
-  // Load categories from localStorage on component mount
-  useEffect(() => {
-    const savedCategories = localStorage.getItem("userCategories");
-    if (savedCategories) {
-      const saved = JSON.parse(savedCategories);
-      // Merge with default categories, avoiding duplicates
-      const merged = [...new Set([...defaultCategories, ...saved])];
-      setCategories(merged);
-    } else {
-      setCategories(defaultCategories);
-      localStorage.setItem("userCategories", JSON.stringify(defaultCategories));
-    }
-  }, []);
+  const [showAddCategory, setShowAddCategory] = useState(false);
 
   const handleAddCategory = () => {
-    if (!newCategory.trim()) {
-      toast.error("Please enter a category name");
-      return;
+    if (newCategory.trim() && !categories.includes(newCategory.trim())) {
+      const updatedCategories = [...categories, newCategory.trim()];
+      setCategories(updatedCategories);
+      onSelectCategory(newCategory.trim());
+      setNewCategory("");
+      setShowAddCategory(false);
     }
-    
-    if (categories.includes(newCategory.trim())) {
-      toast.error("Category already exists");
-      return;
-    }
-    
-    const updatedCategories = [...categories, newCategory.trim()];
-    setCategories(updatedCategories);
-    
-    // Save to localStorage
-    localStorage.setItem("userCategories", JSON.stringify(updatedCategories));
-    
-    onSelectCategory(newCategory.trim());
-    setNewCategory("");
-    setShowAddForm(false);
-    toast.success("New category added successfully!");
   };
 
   return (
-    <div className="space-y-3">
-      <Label>Select Category</Label>
-      {showAddForm ? (
-        <div className="space-y-2">
+    <div className="space-y-2">
+      <Select value={selectedCategory} onValueChange={onSelectCategory}>
+        <SelectTrigger className="bg-white/10 border-white/20 text-white">
+          <SelectValue placeholder="Select a category" />
+        </SelectTrigger>
+        <SelectContent className="bg-dark-primary border-white/20">
+          {categories.map(category => (
+            <SelectItem 
+              key={category} 
+              value={category}
+              className="text-white hover:bg-white/10 focus:bg-white/10 focus:text-white"
+            >
+              {category}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      
+      {showAddCategory ? (
+        <div className="flex gap-2">
           <Input
             placeholder="Enter new category"
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleAddCategory()}
+            className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
           />
-          <div className="flex gap-2">
-            <Button 
-              type="button" 
-              variant="default" 
-              size="sm" 
-              onClick={handleAddCategory}
-            >
-              Add
-            </Button>
-            <Button 
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAddForm(false)}
-            >
-              Cancel
-            </Button>
-          </div>
+          <Button 
+            onClick={handleAddCategory} 
+            size="sm"
+            className="bg-neon-electric/20 border-neon-electric/50 text-neon-electric hover:bg-neon-electric/30"
+          >
+            Add
+          </Button>
         </div>
       ) : (
         <Button 
-          type="button"
+          onClick={() => setShowAddCategory(true)} 
           variant="outline" 
-          className="w-full flex justify-center items-center gap-2 mb-2"
-          onClick={() => setShowAddForm(true)}
+          size="sm"
+          className="bg-white/10 border-white/20 text-white hover:bg-white/20"
         >
-          <Plus size={16} /> Add New Category
+          <Plus size={16} className="mr-1" /> Add Category
         </Button>
       )}
       
-      <RadioGroup 
-        value={selectedCategory} 
-        onValueChange={onSelectCategory}
-        className="max-h-[200px] overflow-y-auto space-y-2"
-      >
-        {categories.map(category => (
-          <div key={category} className="flex items-center space-x-2 border rounded-md p-2 hover:bg-gray-50">
-            <RadioGroupItem value={category} id={category} />
-            <Label htmlFor={category} className="flex-1 cursor-pointer">
-              {category}
-            </Label>
-          </div>
-        ))}
-      </RadioGroup>
+      <p className="text-xs text-gray-400 mt-1">
+        Choose a category that best describes your content topic.
+      </p>
     </div>
   );
 };
