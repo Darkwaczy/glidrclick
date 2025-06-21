@@ -8,7 +8,6 @@ import {
   HelpCircle,
   Bell,
   User,
-  LogOut,
   ChevronDown,
   Menu,
   X,
@@ -29,22 +28,15 @@ interface DashboardHeaderProps {
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
   const navigate = useNavigate();
-  const { user, signOut } = useAuthContext();
-  const [showNotifications, setShowNotifications] = useState(false);
+  const { user } = useAuthContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast.success("Signed out successfully");
-    } catch (error) {
-      console.error("Error signing out:", error);
-      toast.error("Failed to sign out");
-    }
-  };
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handleHowItWorks = () => {
+    toast.info("How It Works demo coming soon! Check back later for tutorials and guides.");
   };
 
   return (
@@ -98,7 +90,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
             variant="outline" 
             size="sm" 
             className="hidden sm:flex bg-white/10 border-white/20 text-white hover:bg-white/20"
-            onClick={onWatchDemo}
+            onClick={handleHowItWorks}
           >
             <HelpCircle size={16} className="mr-2" /> How It Works
           </Button>
@@ -114,25 +106,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80 glass-card border-white/20">
               <div className="p-4 text-center">
-                {user ? (
-                  <>
-                    <h3 className="font-semibold mb-2 text-white">No new notifications</h3>
-                    <p className="text-sm text-gray-300">
-                      We'll notify you when something important happens.
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <h3 className="font-semibold mb-2 text-white">Sign in to view notifications</h3>
-                    <Button 
-                      size="sm" 
-                      className="mt-2 btn-neon"
-                      onClick={() => navigate("/auth")}
-                    >
-                      Sign In
-                    </Button>
-                  </>
-                )}
+                <h3 className="font-semibold mb-2 text-white">No new notifications</h3>
+                <p className="text-sm text-gray-300">
+                  We'll notify you when something important happens.
+                </p>
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -150,35 +127,18 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="glass-card border-white/20">
-              {user ? (
-                <>
-                  <DropdownMenuItem 
-                    onClick={() => navigate("/dashboard/profile")}
-                    className="text-white hover:bg-white/10"
-                  >
-                    <User size={16} className="mr-2" /> Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => navigate("/dashboard/settings")}
-                    className="text-white hover:bg-white/10"
-                  >
-                    <Settings size={16} className="mr-2" /> Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={handleSignOut}
-                    className="text-white hover:bg-white/10"
-                  >
-                    <LogOut size={16} className="mr-2" /> Sign out
-                  </DropdownMenuItem>
-                </>
-              ) : (
-                <DropdownMenuItem 
-                  onClick={() => navigate("/auth")}
-                  className="text-white hover:bg-white/10"
-                >
-                  <User size={16} className="mr-2" /> Sign In
-                </DropdownMenuItem>
-              )}
+              <DropdownMenuItem 
+                onClick={() => navigate("/dashboard/profile")}
+                className="text-white hover:bg-white/10"
+              >
+                <User size={16} className="mr-2" /> Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => navigate("/dashboard/settings")}
+                className="text-white hover:bg-white/10"
+              >
+                <Settings size={16} className="mr-2" /> Settings
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -197,7 +157,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
                 setIsMobileMenuOpen(false);
               }}
             >
-              <LayoutDashboard size={16} className="mr-2" /> Dashboard
+              <LayoutDashboard size={16} className="mr-2" /> Overview
             </Button>
             <Button 
               variant="ghost" 
@@ -226,7 +186,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
               size="sm" 
               className="justify-start text-white hover:bg-white/10"
               onClick={() => {
-                if (onWatchDemo) onWatchDemo();
+                handleHowItWorks();
                 setIsMobileMenuOpen(false);
               }}
             >

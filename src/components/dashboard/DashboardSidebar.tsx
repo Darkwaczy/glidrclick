@@ -25,7 +25,7 @@ const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
   const [isSigningOut, setIsSigningOut] = useState(false);
   
   const sidebarLinks = [
-    { name: 'dashboard', icon: <LayoutDashboard size={18} />, text: 'Dashboard', path: '/dashboard/content' },
+    { name: 'overview', icon: <LayoutDashboard size={18} />, text: 'Overview', path: '/dashboard/overview' },
     { name: 'content', icon: <FileEdit size={18} />, text: 'Content', path: '/dashboard/content' },
     { name: 'social', icon: <Share2 size={18} />, text: 'Social', path: '/dashboard/social' },
     { name: 'schedule', icon: <Calendar size={18} />, text: 'Schedule', path: '/dashboard/schedule' },
@@ -55,8 +55,7 @@ const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
           </AvatarFallback>
         </Avatar>
         <div className="flex flex-col">
-          <span className="font-semibold text-white">{user?.user_metadata?.full_name || user?.email}</span>
-          <span className="text-sm text-gray-300">{user?.email}</span>
+          <span className="font-semibold text-white">{user?.user_metadata?.full_name || user?.email?.split('@')[0]}</span>
         </div>
       </div>
       <div className="flex-1 p-4">

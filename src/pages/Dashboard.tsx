@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
+import OverviewPage from '@/components/dashboard/pages/OverviewPage';
 import ContentPage from '@/components/dashboard/pages/ContentPage';
 import SocialPage from '@/components/dashboard/pages/SocialPage';
 import AnalyticsPage from '@/components/dashboard/pages/AnalyticsPage';
@@ -23,7 +24,8 @@ const Dashboard: React.FC = () => {
   // Extract the active page from the current path
   const getActivePage = () => {
     const path = location.pathname.split('/').pop() || '';
-    return path === 'dashboard' ? 'dashboard' : path;
+    if (path === 'dashboard') return 'overview';
+    return path;
   };
   
   return (
@@ -40,7 +42,8 @@ const Dashboard: React.FC = () => {
         <DashboardHeader onWatchDemo={() => {}} />
         <main className="flex-1 p-6 bg-transparent">
           <Routes>
-            <Route index element={<Navigate to="content" replace />} />
+            <Route index element={<Navigate to="overview" replace />} />
+            <Route path="overview" element={<OverviewPage />} />
             <Route path="content" element={<ContentPage />} />
             <Route path="social" element={<SocialPage />} />
             <Route path="new-post" element={<NewPostPage />} />
@@ -50,7 +53,7 @@ const Dashboard: React.FC = () => {
             <Route path="settings" element={<SettingsPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="billing" element={<BillingPage />} />
-            <Route path="*" element={<Navigate to="content" replace />} />
+            <Route path="*" element={<Navigate to="overview" replace />} />
           </Routes>
         </main>
       </div>
