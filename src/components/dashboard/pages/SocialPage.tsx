@@ -32,10 +32,10 @@ const SocialPage = () => {
       <OAuthProcessingMessage processingOAuth={social.processingOAuth} />
       
       <Tabs defaultValue="accounts" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="accounts">Connected Accounts</TabsTrigger>
-          <TabsTrigger value="mentions">Engagement Monitor</TabsTrigger>
-          <TabsTrigger value="publish">Multi-Platform Publishing</TabsTrigger>
+        <TabsList className="glass-card border-white/20">
+          <TabsTrigger value="accounts" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white">Connected Accounts</TabsTrigger>
+          <TabsTrigger value="mentions" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white">Engagement Monitor</TabsTrigger>
+          <TabsTrigger value="publish" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white">Multi-Platform Publishing</TabsTrigger>
         </TabsList>
         
         <TabsContent value="accounts" className="mt-6">
@@ -47,13 +47,13 @@ const SocialPage = () => {
         </TabsContent>
         
         <TabsContent value="publish" className="mt-6">
-          <div className="bg-gray-50 border rounded-lg p-8 text-center">
-            <h3 className="text-xl font-medium mb-2">Multi-Platform Publishing</h3>
-            <p className="text-gray-600 mb-4">
+          <div className="glass-card border-white/20 rounded-lg p-8 text-center">
+            <h3 className="text-xl font-medium mb-2 text-white">Multi-Platform Publishing</h3>
+            <p className="text-gray-300 mb-4">
               Create and schedule content for multiple social media platforms at once.
             </p>
             <button 
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              className="btn-neon"
               onClick={social.handleCreatePost}
             >
               Create New Post

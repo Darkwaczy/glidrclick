@@ -48,13 +48,13 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
   };
 
   return (
-    <header className="border-b bg-white sticky top-0 z-10">
+    <header className="glass-card border-white/20 sticky top-0 z-20">
       <div className="flex h-16 items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
-            className="sm:hidden"
+            className="sm:hidden text-white hover:bg-white/10"
             onClick={toggleMobileMenu}
             aria-label="Toggle mobile menu"
           >
@@ -64,12 +64,12 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
           <Button
             variant="ghost"
             size="sm"
-            className="hidden sm:flex"
+            className="hidden sm:flex text-white hover:bg-white/10"
             onClick={() => navigate("/dashboard")}
           >
             <h1 className="text-xl font-bold">
-              <span className="text-[#9b87f5]">Glidr</span>
-              <span className="text-gray-800">click</span>
+              <span className="gradient-text">Flow</span>
+              <span className="text-white">Craft</span>
             </h1>
           </Button>
 
@@ -77,6 +77,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
             <Button 
               variant="outline" 
               size="sm" 
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
               onClick={() => navigate("/dashboard/schedule")}
             >
               <Calendar size={16} className="mr-2" /> Schedule
@@ -84,6 +85,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
             <Button 
               variant="outline" 
               size="sm"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
               onClick={() => navigate("/dashboard/settings")}
             >
               <Settings size={16} className="mr-2" /> Settings
@@ -95,7 +97,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
           <Button 
             variant="outline" 
             size="sm" 
-            className="hidden sm:flex"
+            className="hidden sm:flex bg-white/10 border-white/20 text-white hover:bg-white/20"
             onClick={onWatchDemo}
           >
             <HelpCircle size={16} className="mr-2" /> How It Works
@@ -103,29 +105,28 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className="relative text-white hover:bg-white/10">
                 <Bell size={20} />
-                {/* Only show notification badge if user is logged in - no dummy notifications */}
                 {user && (
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-neon-pink rounded-full animate-pulse-neon"></span>
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 bg-white">
+            <DropdownMenuContent align="end" className="w-80 glass-card border-white/20">
               <div className="p-4 text-center">
                 {user ? (
                   <>
-                    <h3 className="font-semibold mb-2">No new notifications</h3>
-                    <p className="text-sm text-gray-500">
+                    <h3 className="font-semibold mb-2 text-white">No new notifications</h3>
+                    <p className="text-sm text-gray-300">
                       We'll notify you when something important happens.
                     </p>
                   </>
                 ) : (
                   <>
-                    <h3 className="font-semibold mb-2">Sign in to view notifications</h3>
+                    <h3 className="font-semibold mb-2 text-white">Sign in to view notifications</h3>
                     <Button 
                       size="sm" 
-                      className="mt-2"
+                      className="mt-2 btn-neon"
                       onClick={() => navigate("/auth")}
                     >
                       Sign In
@@ -138,9 +139,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-1">
-                <div className="h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center">
-                  <User size={14} />
+              <Button variant="ghost" size="sm" className="gap-1 text-white hover:bg-white/10">
+                <div className="h-6 w-6 rounded-full bg-gradient-to-r from-neon-electric to-neon-pink flex items-center justify-center">
+                  <User size={14} className="text-white" />
                 </div>
                 <span className="hidden md:inline">
                   {user ? user.email?.split('@')[0] : 'Account'}
@@ -148,21 +149,33 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
                 <ChevronDown size={14} />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-white">
+            <DropdownMenuContent align="end" className="glass-card border-white/20">
               {user ? (
                 <>
-                  <DropdownMenuItem onClick={() => navigate("/dashboard/profile")}>
+                  <DropdownMenuItem 
+                    onClick={() => navigate("/dashboard/profile")}
+                    className="text-white hover:bg-white/10"
+                  >
                     <User size={16} className="mr-2" /> Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/dashboard/settings")}>
+                  <DropdownMenuItem 
+                    onClick={() => navigate("/dashboard/settings")}
+                    className="text-white hover:bg-white/10"
+                  >
                     <Settings size={16} className="mr-2" /> Settings
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSignOut}>
+                  <DropdownMenuItem 
+                    onClick={handleSignOut}
+                    className="text-white hover:bg-white/10"
+                  >
                     <LogOut size={16} className="mr-2" /> Sign out
                   </DropdownMenuItem>
                 </>
               ) : (
-                <DropdownMenuItem onClick={() => navigate("/auth")}>
+                <DropdownMenuItem 
+                  onClick={() => navigate("/auth")}
+                  className="text-white hover:bg-white/10"
+                >
                   <User size={16} className="mr-2" /> Sign In
                 </DropdownMenuItem>
               )}
@@ -173,12 +186,12 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
       
       {/* Mobile Menu for Dashboard */}
       {isMobileMenuOpen && (
-        <div className="sm:hidden border-t border-gray-100 bg-white">
+        <div className="sm:hidden border-t border-white/10">
           <div className="flex flex-col p-4 space-y-3">
             <Button 
               variant="ghost" 
               size="sm" 
-              className="justify-start"
+              className="justify-start text-white hover:bg-white/10"
               onClick={() => {
                 navigate("/dashboard");
                 setIsMobileMenuOpen(false);
@@ -189,7 +202,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="justify-start"
+              className="justify-start text-white hover:bg-white/10"
               onClick={() => {
                 navigate("/dashboard/schedule");
                 setIsMobileMenuOpen(false);
@@ -200,7 +213,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="justify-start"
+              className="justify-start text-white hover:bg-white/10"
               onClick={() => {
                 navigate("/dashboard/settings");
                 setIsMobileMenuOpen(false);
@@ -211,7 +224,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ onWatchDemo }) => {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="justify-start"
+              className="justify-start text-white hover:bg-white/10"
               onClick={() => {
                 if (onWatchDemo) onWatchDemo();
                 setIsMobileMenuOpen(false);

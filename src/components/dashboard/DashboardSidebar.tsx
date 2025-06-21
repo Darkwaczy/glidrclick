@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -45,15 +46,17 @@ const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
   };
 
   return (
-    <div className="flex flex-col border-r w-64 bg-white">
-      <div className="flex items-center gap-4 p-4 border-b">
-        <Avatar>
+    <div className="flex flex-col w-64 glass-card border-white/20 border-r-0 rounded-none">
+      <div className="flex items-center gap-4 p-4 border-b border-white/10">
+        <Avatar className="ring-2 ring-neon-electric/50">
           <AvatarImage src={user?.user_metadata?.avatar_url as string} />
-          <AvatarFallback>{user?.email?.charAt(0).toUpperCase()}</AvatarFallback>
+          <AvatarFallback className="bg-gradient-to-r from-neon-electric to-neon-pink text-white">
+            {user?.email?.charAt(0).toUpperCase()}
+          </AvatarFallback>
         </Avatar>
         <div className="flex flex-col">
-          <span className="font-semibold">{user?.user_metadata?.full_name || user?.email}</span>
-          <span className="text-sm text-gray-500">{user?.email}</span>
+          <span className="font-semibold text-white">{user?.user_metadata?.full_name || user?.email}</span>
+          <span className="text-sm text-gray-300">{user?.email}</span>
         </div>
       </div>
       <div className="flex-1 p-4">
@@ -63,23 +66,28 @@ const DashboardSidebar = ({ activePage }: DashboardSidebarProps) => {
               <Link
                 to={link.path}
                 className={cn(
-                  "group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100 transition-colors",
+                  "group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-all duration-200",
                   activePage === link.name
-                    ? "bg-gray-100 text-glidr-purple"
-                    : "text-gray-700"
+                    ? "bg-gradient-to-r from-neon-electric/20 to-neon-pink/20 text-white border border-neon-electric/30"
+                    : "text-gray-300 hover:bg-white/10 hover:text-white"
                 )}
               >
-                {link.icon}
+                <span className={cn(
+                  "transition-colors",
+                  activePage === link.name ? "text-neon-electric" : ""
+                )}>
+                  {link.icon}
+                </span>
                 <span className="ml-2">{link.text}</span>
               </Link>
             </li>
           ))}
         </ul>
       </div>
-      <div className="p-4 border-t">
+      <div className="p-4 border-t border-white/10">
         <Button 
           variant="outline" 
-          className="w-full"
+          className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-neon-electric/50"
           onClick={handleSignOut}
           disabled={isSigningOut}
         >

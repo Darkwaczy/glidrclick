@@ -13,10 +13,10 @@ interface SocialPageTabsProps {
 const SocialPageTabs: React.FC<SocialPageTabsProps> = ({ social }) => {
   return (
     <Tabs defaultValue="connected">
-      <TabsList>
-        <TabsTrigger value="connected">Connected Accounts</TabsTrigger>
-        <TabsTrigger value="mentions">Mentions</TabsTrigger>
-        <TabsTrigger value="schedule">Post Schedule</TabsTrigger>
+      <TabsList className="glass-card border-white/20">
+        <TabsTrigger value="connected" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white">Connected Accounts</TabsTrigger>
+        <TabsTrigger value="mentions" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white">Mentions</TabsTrigger>
+        <TabsTrigger value="schedule" className="data-[state=active]:bg-neon-electric/20 data-[state=active]:text-white">Post Schedule</TabsTrigger>
       </TabsList>
       
       <TabsContent value="connected" className="mt-6">
