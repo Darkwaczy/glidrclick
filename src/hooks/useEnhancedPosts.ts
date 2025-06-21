@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/context/AuthContext';
 import { toast } from 'sonner';
+import { socialMediaService } from '@/services/socialMediaService';
 
 export interface EnhancedPost {
   id: string;
@@ -172,6 +173,15 @@ export const useEnhancedPosts = (status?: string) => {
     }
   };
 
+  const getPostAnalytics = async (postId: string) => {
+    try {
+      return await socialMediaService.getPostAnalytics(postId);
+    } catch (error) {
+      console.error('Error fetching post analytics:', error);
+      return null;
+    }
+  };
+
   useEffect(() => {
     fetchPosts();
   }, [user, status]);
@@ -183,6 +193,7 @@ export const useEnhancedPosts = (status?: string) => {
     updatePost,
     deletePost,
     uploadImage,
+    getPostAnalytics,
     refetch: fetchPosts,
   };
 };
