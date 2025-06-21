@@ -17,12 +17,12 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   onSelectCategory
 }) => {
   const defaultCategories = [
-    "Marketing", 
-    "Social Media", 
-    "Technology", 
-    "Business", 
+    "Travel", 
+    "Education", 
+    "Hotels", 
     "Lifestyle",
-    "Health & Wellness"
+    "Flight", 
+    "Tours and Adventure"
   ];
   
   const [categories, setCategories] = useState<string[]>([]);
@@ -33,9 +33,11 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
   useEffect(() => {
     const savedCategories = localStorage.getItem("userCategories");
     if (savedCategories) {
-      setCategories(JSON.parse(savedCategories));
+      const saved = JSON.parse(savedCategories);
+      // Merge with default categories, avoiding duplicates
+      const merged = [...new Set([...defaultCategories, ...saved])];
+      setCategories(merged);
     } else {
-      // Set default categories if none exist
       setCategories(defaultCategories);
       localStorage.setItem("userCategories", JSON.stringify(defaultCategories));
     }

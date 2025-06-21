@@ -15,12 +15,9 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
   const tones = [
     { id: "professional", name: "Professional" },
     { id: "casual", name: "Casual" },
-    { id: "friendly", name: "Friendly" },
-    { id: "authoritative", name: "Authoritative" },
-    { id: "persuasive", name: "Persuasive" },
-    { id: "humorous", name: "Humorous" },
-    { id: "inspirational", name: "Inspirational" },
-    { id: "formal", name: "Formal" }
+    { id: "business", name: "Business" },
+    { id: "motivational", name: "Motivational" },
+    { id: "informative", name: "Informative" }
   ];
 
   return (

@@ -13,15 +13,16 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({
   onSelectModel 
 }) => {
   const aiModels = [
-    { id: "llama", name: "LLaMA 3", description: "Meta's powerful 70B language model" },
-    { id: "claude", name: "Claude", description: "Anthropic's advanced AI assistant" },
-    { id: "groq", name: "Groq", description: "Ultra-fast inference engine" },
-    { id: "gemini", name: "Gemini", description: "Google's multimodal AI model" }
+    { id: "openai", name: "OpenAI", description: "GPT-4 and other OpenAI models" },
+    { id: "gemini", name: "Gemini", description: "Google's multimodal AI model" },
+    { id: "deepseek", name: "DeepSeek", description: "Advanced reasoning capabilities" },
+    { id: "grok", name: "Grok", description: "X's conversational AI model" },
+    { id: "together", name: "Together AI", description: "Open-source model platform" }
   ];
 
   return (
     <div className="space-y-3">
-      <Label>Choose AI Model</Label>
+      <Label>Choose AI Engine</Label>
       <RadioGroup 
         value={selectedModel} 
         onValueChange={onSelectModel}
