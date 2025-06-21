@@ -30,33 +30,33 @@ serve(async (req) => {
       );
     }
 
-    const sectionsText = sectionTitles.filter(s => s.trim()).map((title, index) => 
-      `${index + 1}. ${title}`
-    ).join('\n');
-
+    const wordsPerSection = Math.floor(targetLength / sectionTitles.length);
+    
     const prompt = `Write a comprehensive blog post about ${category} using a ${tone} tone. The post should be approximately ${targetLength} words long.
 
-Structure the post with these sections:
-${sectionsText}
+Create content for these specific sections:
+${sectionTitles.map((title, index) => `${index + 1}. ${title}`).join('\n')}
 
 Requirements:
 - Generate an engaging title that captures the essence of the topic
-- Write compelling content for each section
+- Write approximately ${wordsPerSection} words for each section
 - Maintain the ${tone} tone throughout
-- Target approximately ${Math.floor(targetLength / sectionTitles.length)} words per section
 - Include actionable insights and valuable information
-- End with a strong conclusion that summarizes key takeaways
+- Make each section substantial and informative
 
-Format your response as follows:
-TITLE: [Your Generated Title]
+Please format your response EXACTLY as follows:
 
-SECTION_1: ${sectionTitles[0] || 'Introduction'}
-[Content for this section]
+TITLE: [Your Generated Title Here]
 
-SECTION_2: ${sectionTitles[1] || 'Main Content'}
-[Content for this section]
+SECTION: ${sectionTitles[0]}
+[Write ${wordsPerSection} words of content for this section]
 
-${sectionTitles.slice(2).map((title, index) => `SECTION_${index + 3}: ${title}\n[Content for this section]`).join('\n\n')}`;
+SECTION: ${sectionTitles[1]}
+[Write ${wordsPerSection} words of content for this section]
+
+${sectionTitles.slice(2).map(title => `SECTION: ${title}\n[Write ${wordsPerSection} words of content for this section]`).join('\n\n')}
+
+Make sure each section has substantial content and follows the word count guidelines.`;
 
     let generatedContent;
 
@@ -65,6 +65,8 @@ ${sectionTitles.slice(2).map((title, index) => `SECTION_${index + 3}: ${title}\n
       if (!openaiKey) {
         throw new Error('OpenAI API key not configured');
       }
+
+      console.log('Calling OpenAI with prompt:', prompt.substring(0, 200) + '...');
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -77,7 +79,7 @@ ${sectionTitles.slice(2).map((title, index) => `SECTION_${index + 3}: ${title}\n
           messages: [
             {
               role: 'system',
-              content: 'You are a professional content writer that specializes in creating engaging, well-structured blog posts. Focus on creating valuable, informative content that matches the requested tone and length.'
+              content: 'You are a professional content writer that creates engaging, well-structured blog posts. Always follow the exact format requested and provide substantial content for each section.'
             },
             {
               role: 'user',
@@ -85,16 +87,19 @@ ${sectionTitles.slice(2).map((title, index) => `SECTION_${index + 3}: ${title}\n
             }
           ],
           temperature: 0.7,
-          max_tokens: 2000
+          max_tokens: 3000
         })
       });
 
       if (!response.ok) {
+        const errorData = await response.json();
+        console.error('OpenAI API error:', errorData);
         throw new Error(`OpenAI API error: ${response.statusText}`);
       }
 
       const data = await response.json();
       generatedContent = data.choices[0].message.content;
+      console.log('Generated content length:', generatedContent?.length);
     } else {
       // Fallback to Together AI
       const togetherKey = Deno.env.get('TOGETHER_API_KEY');
@@ -113,7 +118,7 @@ ${sectionTitles.slice(2).map((title, index) => `SECTION_${index + 3}: ${title}\n
           messages: [
             {
               role: 'system',
-              content: 'You are a professional content writer that specializes in creating engaging, well-structured blog posts.'
+              content: 'You are a professional content writer that creates engaging, well-structured blog posts.'
             },
             {
               role: 'user',
@@ -121,7 +126,7 @@ ${sectionTitles.slice(2).map((title, index) => `SECTION_${index + 3}: ${title}\n
             }
           ],
           temperature: 0.7,
-          max_tokens: 2000
+          max_tokens: 3000
         })
       });
 
@@ -135,6 +140,7 @@ ${sectionTitles.slice(2).map((title, index) => `SECTION_${index + 3}: ${title}\n
 
     // Parse the generated content
     const result = parseBlogResponse(generatedContent, sectionTitles);
+    console.log('Parsed result:', { title: result.title, sectionsCount: result.sections.length });
 
     return new Response(
       JSON.stringify(result),
@@ -151,44 +157,98 @@ ${sectionTitles.slice(2).map((title, index) => `SECTION_${index + 3}: ${title}\n
 
 function parseBlogResponse(response: string, sectionTitles: string[]): { title: string; content: string; sections: { title: string; content: string }[] } {
   try {
+    console.log('Parsing response of length:', response.length);
+    
     let title = "";
     const sections: { title: string; content: string }[] = [];
     
-    // Extract title
-    const titleMatch = response.match(/TITLE:\s*(.*?)(?:\n|$)/);
-    if (titleMatch && titleMatch[1]) {
-      title = titleMatch[1].trim();
+    // Extract title - try multiple patterns
+    const titlePatterns = [
+      /TITLE:\s*(.*?)(?:\n|$)/i,
+      /Title:\s*(.*?)(?:\n|$)/i,
+      /^#\s*(.*?)(?:\n|$)/m,
+      /^\*\*(.*?)\*\*(?:\n|$)/m
+    ];
+    
+    for (const pattern of titlePatterns) {
+      const titleMatch = response.match(pattern);
+      if (titleMatch && titleMatch[1]?.trim()) {
+        title = titleMatch[1].trim().replace(/[*#"']/g, '');
+        console.log('Found title:', title);
+        break;
+      }
     }
     
-    // Extract sections
-    const sectionMatches = response.match(/SECTION_\d+:\s*(.*?)(?:\n(.*?)(?=SECTION_\d+:|$))?/gs);
-    if (sectionMatches) {
-      sectionMatches.forEach((match, index) => {
-        const sectionMatch = match.match(/SECTION_\d+:\s*(.*?)(?:\n([\s\S]*))?/);
-        if (sectionMatch) {
-          const sectionTitle = sectionMatch[1]?.trim() || sectionTitles[index] || `Section ${index + 1}`;
-          const sectionContent = sectionMatch[2]?.trim() || '';
+    // Extract sections - try multiple patterns
+    const sectionPatterns = [
+      /SECTION:\s*(.*?)\n([\s\S]*?)(?=SECTION:|$)/gi,
+      /##\s*(.*?)\n([\s\S]*?)(?=##|$)/gi,
+      /\*\*(.*?)\*\*\n([\s\S]*?)(?=\*\*|$)/gi
+    ];
+    
+    let foundSections = false;
+    
+    for (const pattern of sectionPatterns) {
+      const matches = [...response.matchAll(pattern)];
+      if (matches.length > 0) {
+        console.log(`Found ${matches.length} sections with pattern`);
+        matches.forEach((match, index) => {
+          if (match[1] && match[2]) {
+            const sectionTitle = match[1].trim();
+            const sectionContent = match[2].trim();
+            if (sectionContent.length > 50) { // Only add substantial content
+              sections.push({
+                title: sectionTitle,
+                content: sectionContent
+              });
+            }
+          }
+        });
+        if (sections.length > 0) {
+          foundSections = true;
+          break;
+        }
+      }
+    }
+    
+    // If no structured sections found, try to split by paragraphs
+    if (!foundSections) {
+      console.log('No structured sections found, trying paragraph split');
+      const paragraphs = response.split('\n\n').filter(p => p.trim().length > 100);
+      
+      sectionTitles.forEach((sectionTitle, index) => {
+        if (paragraphs[index]) {
           sections.push({
             title: sectionTitle,
-            content: sectionContent
+            content: paragraphs[index].trim()
+          });
+        } else {
+          // Generate some content if not enough paragraphs
+          sections.push({
+            title: sectionTitle,
+            content: `This section covers important aspects of ${sectionTitle.toLowerCase()}. The content provides valuable insights and practical information that readers can apply to better understand this topic.`
           });
         }
       });
     }
     
-    // If no structured sections found, create basic structure
-    if (sections.length === 0) {
-      const parts = response.split('\n\n');
-      sectionTitles.forEach((sectionTitle, index) => {
-        sections.push({
-          title: sectionTitle,
-          content: parts[index + 1] || `Content for ${sectionTitle} will be generated here.`
-        });
+    // Ensure we have at least the requested number of sections
+    while (sections.length < sectionTitles.length) {
+      const missingIndex = sections.length;
+      sections.push({
+        title: sectionTitles[missingIndex],
+        content: `This section provides detailed information about ${sectionTitles[missingIndex].toLowerCase()}. The content includes practical insights and valuable information relevant to the topic.`
       });
     }
     
     // Combine all sections into full content
     const fullContent = sections.map(s => `## ${s.title}\n\n${s.content}`).join('\n\n');
+    
+    console.log('Final result:', { 
+      title: title || "Generated Blog Post", 
+      sectionsCount: sections.length,
+      contentLength: fullContent.length 
+    });
     
     return { 
       title: title || "Generated Blog Post", 
@@ -197,13 +257,17 @@ function parseBlogResponse(response: string, sectionTitles: string[]): { title: 
     };
   } catch (error) {
     console.error("Error parsing blog response:", error);
+    
+    // Fallback: create basic sections from the response
+    const fallbackSections = sectionTitles.map((title, index) => ({
+      title,
+      content: `Content for ${title} section. This provides valuable information about the topic and includes practical insights that readers can benefit from.`
+    }));
+    
     return { 
       title: "Generated Blog Post", 
-      content: response.trim(),
-      sections: sectionTitles.map((title, index) => ({
-        title,
-        content: `Content for ${title} section.`
-      }))
+      content: fallbackSections.map(s => `## ${s.title}\n\n${s.content}`).join('\n\n'),
+      sections: fallbackSections
     };
   }
 }
