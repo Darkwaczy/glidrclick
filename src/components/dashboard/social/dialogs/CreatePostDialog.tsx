@@ -1,104 +1,270 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Facebook, Instagram, FileText } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Facebook, Instagram, FileText, Twitter, Linkedin, Clock, Send } from "lucide-react";
+import { useSocialPlatforms } from "@/hooks/useSocialPlatforms";
+import { useEnhancedPosts } from "@/hooks/useEnhancedPosts";
+import { socialMediaService } from "@/services/socialMediaService";
+import { toast } from "sonner";
 
 interface CreatePostDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  platforms: any[];
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit?: (e: React.FormEvent) => void;
 }
 
-const CreatePostDialog = ({ open, onOpenChange, platforms, onSubmit }: CreatePostDialogProps) => {
+const CreatePostDialog = ({ open, onOpenChange, onSubmit }: CreatePostDialogProps) => {
+  const { platforms, isLoading: platformsLoading } = useSocialPlatforms();
+  const { createPost, refetch } = useEnhancedPosts();
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+  const [isImmediate, setIsImmediate] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState(
+    new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 16)
+  );
+
+  const availablePlatforms = [
+    { id: "facebook", name: "Facebook", icon: Facebook, color: "text-blue-600" },
+    { id: "twitter", name: "Twitter", icon: Twitter, color: "text-blue-400" },
+    { id: "instagram", name: "Instagram", icon: Instagram, color: "text-pink-600" },
+    { id: "linkedin", name: "LinkedIn", icon: Linkedin, color: "text-blue-800" },
+    { id: "blog", name: "Blog", icon: FileText, color: "text-gray-700" }
+  ];
+
+  const connectedPlatforms = availablePlatforms.filter(platform => 
+    platform.id === 'blog' || 
+    platforms.some(p => p.platform_id === platform.id && p.is_connected)
+  );
+
+  const handlePlatformToggle = (platformId: string) => {
+    setSelectedPlatforms(prev => 
+      prev.includes(platformId)
+        ? prev.filter(id => id !== platformId)
+        : [...prev, platformId]
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!title.trim() || !content.trim()) {
+      toast.error('Please fill in both title and content');
+      return;
+    }
+
+    if (selectedPlatforms.length === 0) {
+      toast.error('Please select at least one platform');
+      return;
+    }
+
+    if (!isImmediate && new Date(scheduledDate) <= new Date()) {
+      toast.error('Please select a future date for scheduling');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Create the post first
+      const post = await createPost({
+        title: title.trim(),
+        content: content.trim(),
+        type: 'social',
+        status: isImmediate ? 'published' : 'scheduled',
+        scheduled_for: isImmediate ? undefined : new Date(scheduledDate).toISOString(),
+        platforms: selectedPlatforms,
+      });
+
+      if (!post) {
+        throw new Error('Failed to create post');
+      }
+
+      if (isImmediate) {
+        // Publish immediately to selected platforms
+        const results = await socialMediaService.publishToMultiplePlatforms(
+          post.id,
+          selectedPlatforms,
+          content.trim(),
+          title.trim()
+        );
+
+        const successful = Object.values(results).filter(r => r.success).length;
+        const failed = Object.values(results).filter(r => !r.success).length;
+
+        if (successful > 0) {
+          toast.success(`Post published to ${successful} platform${successful > 1 ? 's' : ''}!`);
+        }
+        if (failed > 0) {
+          toast.error(`Failed to publish to ${failed} platform${failed > 1 ? 's' : ''}`);
+        }
+      } else {
+        // Schedule the post
+        const scheduled = await socialMediaService.schedulePost(
+          post.id,
+          selectedPlatforms,
+          new Date(scheduledDate)
+        );
+
+        if (scheduled) {
+          toast.success('Post scheduled successfully!');
+        }
+      }
+
+      // Reset form
+      setTitle('');
+      setContent('');
+      setSelectedPlatforms([]);
+      setIsImmediate(false);
+      setScheduledDate(new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 16));
+      
+      // Refresh posts list
+      await refetch();
+      
+      // Close dialog
+      onOpenChange(false);
+      
+    } catch (error) {
+      console.error('Error creating/publishing post:', error);
+      toast.error('Failed to create post. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Post</DialogTitle>
         </DialogHeader>
-        <form onSubmit={onSubmit}>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="post-title">Post Title</Label>
-              <Input id="post-title" name="post-title" placeholder="Enter a title for your post" required />
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="post-title">Post Title *</Label>
+            <Input 
+              id="post-title" 
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter a title for your post" 
+              required 
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="post-content">Content *</Label>
+            <Textarea 
+              id="post-content" 
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Write your post content here..." 
+              rows={6}
+              required
+            />
+            <div className="text-sm text-gray-500 text-right">
+              {content.length} characters
             </div>
+          </div>
+          
+          <div className="space-y-3">
+            <Label className="block font-medium">Publish to Platforms *</Label>
             
-            <div className="space-y-2">
-              <Label htmlFor="post-content">Content</Label>
-              <textarea 
-                id="post-content" 
-                name="post-content"
-                placeholder="Write your post content here..." 
-                rows={4}
-                required
-                className="flex h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
-            </div>
-            
-            <div>
-              <Label className="mb-2 block">Publish to Platforms</Label>
-              <div className="bg-gray-50 p-4 rounded-md border">
-                <div className="text-sm font-medium mb-2">Select where to publish this content:</div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {platforms.filter(platform => platform.isConnected).length > 0 ? (
-                    platforms.filter(platform => platform.isConnected).map(platform => (
-                      <div key={platform.id} className="flex items-center space-x-2 bg-white p-2 rounded border">
-                        <input 
-                          type="checkbox" 
-                          id={`platform-${platform.id}`} 
-                          name={`platform-${platform.id}`} 
-                          className="rounded" 
-                          defaultChecked
+            {platformsLoading ? (
+              <div className="text-sm text-gray-500">Loading platforms...</div>
+            ) : connectedPlatforms.length > 0 ? (
+              <div className="space-y-2">
+                {connectedPlatforms.map(platform => {
+                  const Icon = platform.icon;
+                  const isConnected = platform.id === 'blog' || 
+                    platforms.some(p => p.platform_id === platform.id && p.is_connected);
+                  
+                  return (
+                    <div key={platform.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id={`platform-${platform.id}`}
+                          checked={selectedPlatforms.includes(platform.id)}
+                          onCheckedChange={() => handlePlatformToggle(platform.id)}
+                          disabled={!isConnected}
                         />
-                        <Label htmlFor={`platform-${platform.id}`} className="flex items-center cursor-pointer">
-                          {platform.id === 'facebook' && <Facebook size={16} className="text-blue-600 mr-2" />}
-                          {platform.id === 'instagram' && <Instagram size={16} className="text-pink-600 mr-2" />}
-                          {platform.id === 'wordpress' && <FileText size={16} className="text-gray-700 mr-2" />}
+                        <Icon size={20} className={platform.color} />
+                        <Label htmlFor={`platform-${platform.id}`} className="cursor-pointer font-medium">
                           {platform.name}
                         </Label>
                       </div>
-                    ))
-                  ) : (
-                    <div className="col-span-2 text-center py-4 text-amber-600">
-                      <p>No platforms connected. Please connect at least one platform to post content.</p>
+                      
+                      <Badge variant={isConnected ? "default" : "secondary"} className="text-xs">
+                        {isConnected ? "Connected" : "Not Connected"}
+                      </Badge>
                     </div>
-                  )}
-                </div>
+                  );
+                })}
               </div>
-            </div>
-            
-            <div className="flex items-center space-x-2 py-2">
-              <input 
-                type="checkbox" 
-                id="post-immediate" 
-                name="post-immediate" 
-                className="rounded" 
-              />
-              <Label htmlFor="post-immediate">Post immediately</Label>
-            </div>
-            
+            ) : (
+              <div className="text-center py-4 text-amber-600 bg-amber-50 rounded-lg border">
+                <p>No platforms connected. Please connect at least one platform to post content.</p>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex items-center space-x-2 py-2 border-t">
+            <Checkbox 
+              id="post-immediate" 
+              checked={isImmediate}
+              onCheckedChange={(checked) => setIsImmediate(checked === true)}
+            />
+            <Label htmlFor="post-immediate" className="flex items-center cursor-pointer">
+              <Send size={16} className="mr-2" />
+              Post immediately
+            </Label>
+          </div>
+          
+          {!isImmediate && (
             <div className="space-y-2">
-              <Label htmlFor="schedule-date">Schedule Date</Label>
+              <Label htmlFor="schedule-date" className="flex items-center">
+                <Clock size={16} className="mr-2" />
+                Schedule Date & Time
+              </Label>
               <Input 
                 id="schedule-date" 
-                name="schedule-date" 
                 type="datetime-local" 
-                defaultValue={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 16)}
-                required
+                value={scheduledDate}
+                onChange={(e) => setScheduledDate(e.target.value)}
+                min={new Date().toISOString().slice(0, 16)}
+                required={!isImmediate}
               />
             </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          )}
+          
+          <DialogFooter className="flex gap-2 pt-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={platforms.filter(platform => platform.isConnected).length === 0}>
-              {platforms.filter(platform => platform.isConnected).length === 0 ? 
-                'No Platforms Connected' : 'Schedule Post'}
+            <Button 
+              type="submit" 
+              disabled={isSubmitting || connectedPlatforms.length === 0 || selectedPlatforms.length === 0}
+              className="min-w-[120px]"
+            >
+              {isSubmitting ? (
+                'Processing...'
+              ) : isImmediate ? (
+                'Publish Now'
+              ) : (
+                'Schedule Post'
+              )}
             </Button>
           </DialogFooter>
         </form>

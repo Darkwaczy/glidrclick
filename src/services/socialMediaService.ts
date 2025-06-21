@@ -17,11 +17,21 @@ export const socialMediaService = {
     imageUrl?: string
   ): Promise<PublishResult> {
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        return {
+          success: false,
+          error: 'User not authenticated',
+        };
+      }
+
       // Get platform connection
       const { data: platform, error: platformError } = await supabase
         .from('social_platforms')
         .select('*')
         .eq('platform_id', platformId)
+        .eq('user_id', user.id)
         .eq('is_connected', true)
         .single();
 
@@ -32,57 +42,52 @@ export const socialMediaService = {
         };
       }
 
-      // Simulate publishing to different platforms
-      const publishResult = await this.simulatePublish(platformId, content, title, imageUrl);
-
-      // Update post_platforms table
-      const { error: updateError } = await supabase
-        .from('post_platforms')
-        .upsert({
-          post_id: postId,
-          platform_id: platformId,
-          user_id: platform.user_id,
-          status: publishResult.success ? 'published' : 'failed',
-          published_at: publishResult.success ? new Date().toISOString() : null,
-          platform_post_id: publishResult.platformPostId,
-          error_message: publishResult.error,
-        });
-
-      if (updateError) {
-        console.error('Error updating post platform status:', updateError);
+      // Call the appropriate edge function
+      let functionName = '';
+      switch (platformId) {
+        case 'facebook':
+          functionName = 'publish-facebook';
+          break;
+        case 'twitter':
+          functionName = 'publish-twitter';
+          break;
+        case 'instagram':
+          functionName = 'publish-instagram';
+          break;
+        case 'linkedin':
+          functionName = 'publish-linkedin';
+          break;
+        default:
+          return {
+            success: false,
+            error: `Platform ${platformId} not supported`,
+          };
       }
 
-      return publishResult;
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: {
+          postId,
+          content,
+          title,
+          imageUrl,
+          userId: user.id
+        }
+      });
+
+      if (error) {
+        console.error(`Error calling ${functionName}:`, error);
+        return {
+          success: false,
+          error: error.message || 'Failed to publish post',
+        };
+      }
+
+      return data;
     } catch (error) {
       console.error(`Error publishing to ${platformId}:`, error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
-  },
-
-  async simulatePublish(
-    platformId: string,
-    content: string,
-    title?: string,
-    imageUrl?: string
-  ): Promise<PublishResult> {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-
-    // Simulate success/failure (90% success rate)
-    const success = Math.random() > 0.1;
-
-    if (success) {
-      return {
-        success: true,
-        platformPostId: `${platformId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      };
-    } else {
-      return {
-        success: false,
-        error: `Failed to publish to ${platformId}: API rate limit exceeded`,
       };
     }
   },
@@ -103,7 +108,7 @@ export const socialMediaService = {
         
         // Add delay between publishes
         if (platforms.indexOf(platformId) < platforms.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
       } catch (error) {
         results[platformId] = {
@@ -122,6 +127,12 @@ export const socialMediaService = {
     scheduledTime: Date
   ): Promise<boolean> {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('User not authenticated');
+        return false;
+      }
+
       // Update post status to scheduled
       const { error: postError } = await supabase
         .from('posts')
@@ -137,6 +148,7 @@ export const socialMediaService = {
       const platformEntries = platforms.map(platformId => ({
         post_id: postId,
         platform_id: platformId,
+        user_id: user.id,
         status: 'pending',
       }));
 
@@ -156,14 +168,51 @@ export const socialMediaService = {
   },
 
   async getPostAnalytics(postId: string) {
-    // This would integrate with actual social media APIs to get analytics
-    // For now, return mock data
-    return {
-      views: Math.floor(Math.random() * 1000),
-      likes: Math.floor(Math.random() * 100),
-      comments: Math.floor(Math.random() * 50),
-      shares: Math.floor(Math.random() * 25),
-      clicks: Math.floor(Math.random() * 75),
-    };
+    try {
+      // Get post platform data
+      const { data: postPlatforms, error } = await supabase
+        .from('post_platforms')
+        .select('*')
+        .eq('post_id', postId);
+
+      if (error) throw error;
+
+      // For now, return mock analytics data
+      // In a real implementation, you would call the actual social media APIs
+      const analytics = {
+        views: Math.floor(Math.random() * 10000),
+        likes: Math.floor(Math.random() * 500),
+        comments: Math.floor(Math.random() * 100),
+        shares: Math.floor(Math.random() * 50),
+        clicks: Math.floor(Math.random() * 200),
+        platforms: postPlatforms?.map(pp => ({
+          platform: pp.platform_id,
+          status: pp.status,
+          publishedAt: pp.published_at,
+          platformPostId: pp.platform_post_id,
+        })) || []
+      };
+
+      return analytics;
+    } catch (error) {
+      console.error('Error fetching post analytics:', error);
+      return null;
+    }
+  },
+
+  async checkScheduledPosts() {
+    try {
+      const { error } = await supabase.functions.invoke('schedule-posts');
+      
+      if (error) {
+        console.error('Error checking scheduled posts:', error);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error calling schedule-posts function:', error);
+      return false;
+    }
   },
 };
